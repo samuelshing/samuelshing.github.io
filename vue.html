@@ -5,15 +5,53 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script src="https://unpkg.com/vue@next"></script>
+    <!-- <script src="https://unpkg.com/vue@next"></script> -->
 </head>
 <body>
     <div id="app">
-        {{text}}
-        {{num}}
-        <input type="number" v-model="num">
+        <input type="text" v-model="text"><br>
+        <input type="number" v-model="num"><br>
+        text: {{text}}<br>
+        num: {{num}}<br>
+        double: {{double}}<br>
     </div>
-    <script>
+    <script type="module">
+        import {createApp, ref, reactive, onMounted, computed} from 'https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.0-beta.7/vue.esm-browser.min.js';
+        const app = createApp({
+            setup() {
+                const text = ref('XDDDD');
+                const person = ref({
+                    name: 'QAQ'
+                }).value;
+                const array = ref([1, 2, 3, 4, 5]);
+                const num = ref(1);
+                const double = computed(() =>{
+                    return num.value * num.value;
+                });
+
+
+
+
+                function getText() {
+                    console.log('text', text.value);
+                }
+                onMounted(() => {
+                    getText();
+                    console.log('person', person);
+                });
+                console.log(text, person.name, num, array.value);
+                return {
+                    text,
+                    num,
+                    array,
+                    double,
+                    getText
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+    <!-- <script>
         Vue.createApp({
             data: function() {
                 return {
@@ -28,6 +66,6 @@
 
             },
         }).mount('#app');
-    </script>
+    </script> -->
 </body>
 </html>
