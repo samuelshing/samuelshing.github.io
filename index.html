@@ -15,19 +15,30 @@
 
 	<!-- Styles -->
 	<link rel="stylesheet" href="./css/main.css">
-
-	<!-- jQuery -->
-	<!-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
-	<!-- jQuery Poptrox -->
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.poptrox/2.3.0/jquery.poptrox.min.js"></script> -->
-	<!-- Browser (Bowser) -->
-	<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bowser/2.11.0/bowser.min.js"></script> -->
-	<!-- Breakpoints -->
-	<!-- <script src="https://cdn.jsdelivr.net/npm/breakpoints-js@1.0.6/dist/breakpoints.min.js"></script> -->
-	<!-- Scripts -->
-	<!-- <script src="./js/util.js"></script> -->
-	<!-- <script src="./js/main.js"></script> -->
-
+	
+	<script type="module">
+		// Import the functions you need from the SDKs you need
+		import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+		import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+		// TODO: Add SDKs for Firebase products that you want to use
+		// https://firebase.google.com/docs/web/setup#available-libraries
+	  
+		// Your web app's Firebase configuration
+		// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+		const firebaseConfig = {
+		  apiKey: "AIzaSyAmeGum4RaD7Z8Hu0TuIC2_196taGGlxHU",
+		  authDomain: "kanghua-a3016.firebaseapp.com",
+		  projectId: "kanghua-a3016",
+		  storageBucket: "kanghua-a3016.appspot.com",
+		  messagingSenderId: "579590905256",
+		  appId: "1:579590905256:web:4083c95c7ed718307ad19d",
+		  measurementId: "G-YGP9YJM7HB"
+		};
+	  
+		// Initialize Firebase
+		const app = initializeApp(firebaseConfig);
+		const analytics = getAnalytics(app);
+	  </script>
 </head>
 
 <body class="">
@@ -45,12 +56,9 @@
 		<footer id="footer">
 			<div class="inner">
 				<ul class="icons">
-					<li><a href="https://www.youtube.com/@KanghuaChurch/streams" class="icon brands fa-youtube"
-							target="_blank"><span class="label">Youtube</span></a></li>
-					<li><a href="https://www.facebook.com/groups/210724272275020/" class="icon brands fa-facebook"
-							target="_blank"><span class="label">Facebook</span></a></li>
-					<li><a href="mailto:office@kanghua.org.tw" class="icon solid fa-envelope"><span
-								class="label">Email</span></a></li>
+					<li><a href="https://www.youtube.com/@KanghuaChurch/streams" class="icon brands fa-youtube" target="_blank"><span class="label">Youtube</span></a></li>
+					<li><a href="https://www.facebook.com/groups/210724272275020/" class="icon brands fa-facebook" target="_blank"><span class="label">Facebook</span></a></li>
+					<li><a href="mailto:office@kanghua.org.tw" class="icon solid fa-envelope"><span	class="label">Email</span></a></li>
 				</ul>
 				<ul class="copyright">
 					<li>© 財團法人台北基督徒康華禮拜堂</li>
