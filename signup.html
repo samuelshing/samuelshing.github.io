@@ -9,6 +9,7 @@
     <h2>Sign Up</h2>
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
+    <input type="text" id="nickname" placeholder="Eickname">
     <button onclick="signUp()">Sign Up</button>
 
     <h2>Sign In</h2>
@@ -16,8 +17,12 @@
     <input type="password" id="signin-password" placeholder="Password">
     <button onclick="signIn()">Sign In</button>
 
+    <h2>Sign In with Google</h2>
+    <button onclick="signInWithGoogle()">Sign In with Google</button>
+
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
     <script>
         // Firebase 配置
         const firebaseConfig = {
@@ -33,19 +38,34 @@
         // 初始化 Firebase
         firebase.initializeApp(firebaseConfig);
 
+        // 初始化 Firestore
+        const db = firebase.firestore();
+
         // 註冊新用戶
         function signUp() {
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+            const nickname = document.getElementById('nickname').value;
 
             firebase.auth().createUserWithEmailAndPassword(email, password).then((userCredential) => {
                 // 註冊成功
                 var user = userCredential.user;
                 console.log('User registered:', user);
+                // 將用戶資料存入 Firestore
+                return db.collection('users').doc(user.uid).set({
+                    uid: user.uid,
+                    email: email,
+                    nickname: nickname,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }).then(() => {
+                console.log('User data stored in Firestore');
+                // 重導到首頁
+                window.location.href = 'index.html';
             }).catch((error) => {
                 var errorCode = error.code;
                 var errorMessage = error.message;
-                console.error('Error registering:', errorCode, errorMessage);
+                console.error('Error registering or storing data:', errorCode, errorMessage);
             });
         }
 
@@ -58,10 +78,38 @@
                 // 登錄成功
                 var user = userCredential.user;
                 console.log('User signed in:', user);
+                // 重導到首頁
+                window.location.href = 'index.html';
             }).catch((error) => {
                 var errorCode = error.code;
                 var errorMessage = error.message;
                 console.error('Error signing in:', errorCode, errorMessage);
+            });
+        }
+
+        // 使用 Google 登錄
+        function signInWithGoogle() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                var user = result.user;
+                console.log('User signed in with Google:', user);
+
+                // 將用戶資料存入 Firestore
+                return db.collection('users').doc(user.uid).set({
+                    uid: user.uid,
+                    email: user.email,
+                    nickname: user.displayName,
+                    photoURL: user.photoURL,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            }).then(() => {
+                console.log('User data stored in Firestore');
+                // 重導到首頁
+                window.location.href = 'index.html';
+            }).catch((error) => {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.error('Error signing in with Google:', errorCode, errorMessage);
             });
         }
     </script>
