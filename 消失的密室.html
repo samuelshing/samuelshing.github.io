@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+</head>
+
+<body>
+    <div id="app">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+        crossorigin="anonymous"></script>
+    <!-- <script src="https://unpkg.com/vue@next"></script> -->
+    <script type="module">
+        import { createApp, ref, onMounted, computed } from 'https://cdnjs.cloudflare.com/ajax/libs/vue/3.2.0-beta.7/vue.esm-browser.min.js';
+        const app = createApp({
+            setup() {
+                const types = ref([
+                    { id: 1, text: "同理", content: "感同身受" },
+                    { id: 2, text: "接納", content: "不批評" },
+                    { id: 3, text: "分析", content: "思考/理解" },
+                    { id: 4, text: "表達", content: "用語言或圖像或肢體傳達自己的想法" },
+                    { id: 5, text: "支持", content: "精準給予動力" },
+                ]);
+                const questions = ref([
+                    {
+                        id: 1, text: "我剛進入學青沒多久，跟大家都不太熟，但總有一個人用我當話題炒熱氣氛讓我覺得很被冒犯", options: [
+                            { text: "旁敲側擊了解他這樣做的動機", increment: "同理", decrement: "分析" },
+                            { text: "聚會結束後在人來人往的五樓角落跟他表達這樣很被冒犯", increment: "表達", decrement: "接納" },
+                            { text: "不知道怎麼跟他講，再找時間說好了", increment: "接納", decrement: "表達" },
+                            { text: "私下跟朋友說這樣很不舒服，想努力自己消化", increment: "分析", decrement: "同理" },
+                        ]
+                    },
+                    {
+                        id: 2, text: "小組目標是大家要為福音朋友禱告，結果整組有一半以上的人都成功把福音朋友帶來...（而我...）", options: [
+                            { text: "努力邀請朋友，但身邊的朋友似乎開始覺得很煩", increment: "表達", decrement: "同理" },
+                            { text: "繼續為朋友禱告，不過難免還是會出現比較心態", increment: "支持", decrement: "接納" },
+                            { text: "打不過就加入，成為其他人的福音朋友的陪伴者", increment: "支持", decrement: "表達" },
+                            { text: "其實我壓根就忘記要傳福音，哈哈。", increment: "分析", decrement: "接納" },
+                        ]
+                    },
+                    {
+                        id: 3, text: "今天來了一個三五年沒來的朋友，想當初我們是同一個小組，我要怎麼辦", options: [
+                            { text: "我超E，我直接去邀請他參與下周的小組時間", increment: "同理", decrement: "分析" },
+                            { text: "我超I，我想關心他但腦中小劇場爆發", increment: "接納", decrement: "表達" },
+                            { text: "我的E是Ego的E，我先去做我的事，他到時候會自己來找我講話", increment: "分析", decrement: "接納" },
+                            { text: "我的I是ignore的I，他根本從來沒出現在我的腦袋中，他叫什麼 他什麼時候來的", increment: "接納", decrement: "支持" },
+                        ]
+                    },
+                    {
+                        id: 4, text: "我今天領詩要練配搭，司琴大遲到然後又不回訊息，10分鐘後就要開始聚會了，我要瘋掉了", options: [
+                            { text: "清唱感覺也還行，只要有一顆敬拜的心就夠了", increment: "接納", decrement: "表達" },
+                            { text: "結束後詢問他遲到的原因，如果有需要我很願意和他一起禱告", increment: "支持", decrement: "分析" },
+                            { text: "洗他貼圖，搞不好他睡著了還叫得起床", increment: "同理", decrement: "支持" },
+                            { text: "結束後很認真地告誡他以後再怎麼有困難都還是要告知", increment: "表達", decrement: "接納" },
+                        ]
+                    },
+                    {
+                        id: 5, text: "今天我負責帶聚會，結果我有一大段都辭不達意然後整個聚會開始偏題...", options: [
+                            { text: "陷入無限自責，覺得再也不要帶聚會了", increment: "同理", decrement: "分析" },
+                            { text: "分析自己到底說錯了什麼", increment: "分析", decrement: "支持" },
+                            { text: "詢問輔導或有經驗的人能怎麼改進", increment: "支持", decrement: "接納" },
+                            { text: "禱告，希望自己不管講什麼上帝都使用", increment: "接納", decrement: "表達" },
+                        ]
+                    },
+                    {
+                        id: 6, text: "隔天要期末，但契友跟家人吵架問我能不能跟他晚上出去走走", options: [
+                            { text: "二話不說陪他聊聊", increment: "同理", decrement: "表達" },
+                            { text: "聽完之後跟他討論他可以怎麼做", increment: "分析", decrement: "同理" },
+                            { text: "明確的向他說自己明天要考試，跟他說為你禱告", increment: "接納", decrement: "分析" },
+                            { text: "因為自己太興奮了，於是急著跟他最近抽卡運氣有多好", increment: "表達", decrement: "分析" },
+                        ]
+                    },
+                    {
+                        id: 7, text: "賊賊想去六福村水樂園，他在晚餐時間到處問人，但我卻好像被他遺忘...", options: [
+                            { text: "直接詢問她為何不找我一起去，並表示很受傷", increment: "表達", decrement: "支持" },
+                            { text: "直接湊過去說我也想去！", increment: "支持", decrement: "同理" },
+                            { text: "私下跟比較好的朋友Emo", increment: "接納", decrement: "表達" },
+                            { text: "我再自己安排事情好了", increment: "接納", decrement: "分析" },
+                        ]
+                    },
+                    {
+                        id: 8, text: "參加完一個營會之後，跟我同組的一位異性\"朋友\"一直約我，可能是學校就在附近比較好約，但我覺得他好像喜歡我...", options: [
+                            { text: "好暈好暈，但我也說不出來哪裡喜歡他", increment: "支持", decrement: "分析" },
+                            { text: "我覺得不喜歡就不要越界，誰再越界誰是狗！汪汪！", increment: "分析", decrement: "同理" },
+                            { text: "不知道怎麼拒絕ㄟ...沒告白就拒絕很像自作多情ㄟ...", increment: "同理", decrement: "支持" },
+                            { text: "直接表明這樣不太好，但也知道這樣的後果是少一個感覺很親近的朋友", increment: "表達", decrement: "接納" },
+                        ]
+                    },
+                    {
+                        id: 9, text: "我最近在團契有喜歡的人，我跟一個人說之後大家好像若有似無的把我跟他湊一對，我對那個傳我祕密的很生氣", options: [
+                            { text: "詢問他是不是被質問，逼不得已說出秘密", increment: "同理", decrement: "分析" },
+                            { text: "私下跟他說這樣蠻不被尊重的", increment: "表達", decrement: "接納" },
+                            { text: "以後再也不會跟他說心裡話", increment: "分析", decrement: "同理" },
+                            { text: "私下制止其他會湊對的人說這樣會給我喜歡的人造成麻煩", increment: "支持", decrement: "表達" },
+                        ]
+                    },
+                    {
+                        id: 10, text: "異性朋友跟同學告白被拒絕了，他就一直單獨約我出門散散心，他好像很需要人陪，但我怕再這樣下去我們會有火花...", options: [
+                            { text: "他好需要陪伴，先就這樣吧", increment: "同理", decrement: "分析" },
+                            { text: "下次約的時候提議找第三個人一起出門", increment: "支持", decrement: "表達" },
+                            { text: "找一些理由婉拒邀約吧...", increment: "分析", decrement: "支持" },
+                            { text: "跟輔導說實在是有點煩惱", increment: "表達", decrement: "支持" },
+                        ]
+                    },
+                ]);
+
+                return {
+                    types,
+                    questions,
+                }
+            }
+        });
+        app.mount('#app');
+    </script>
+</body>
+
+</html>
