@@ -88,6 +88,7 @@
                     uid: user.uid,
                     email: email,
                     nickname: nickname,
+                    role: "general",  // 預設角色為一般使用者
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }).then(() => {
@@ -132,6 +133,7 @@
                     email: user.email,
                     nickname: user.displayName,
                     photoURL: user.photoURL,
+                    role: "general",  // 預設角色為一般使用者
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 });
             }).then(() => {
