@@ -125,31 +125,27 @@
                 if (user) {
                     db.collection('users').doc(user.uid).collection('godattrs').get().then((querySnapshot) => {
                         let labelsSet = new Set();
-                        let totalData = {};
-                        let countData = {};
+                        let attributeCount = {};
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
-                            for (let key in data) {
-                                labelsSet.add(key);
-                                if (!totalData.hasOwnProperty(key)) {
-                                    totalData[key] = 0;
-                                    countData[key] = 0;
+                            const attribute = data.attribute;
+
+                            // 將屬性加入 Set 並計算每個屬性的次數
+                            if (attribute) {
+                                labelsSet.add(attribute);
+                                if (!attributeCount.hasOwnProperty(attribute)) {
+                                    attributeCount[attribute] = 0;
                                 }
-                                totalData[key] += data[key];
-                                countData[key]++;
+                                attributeCount[attribute]++;
                             }
                         });
                         // 將 Set 轉換為 Array 並設置為雷達圖的標籤
                         let labelsArray = Array.from(labelsSet);
                         myRadarChart.data.labels = labelsArray;
-                        console.log('labelsArray', labelsSet, labelsArray);
                         // 準備每個標籤的最終數據
-                        let finalData = labelsArray.map(label => {
-                            return countData[label] > 0 ? totalData[label] / countData[label] : 0;
-                        });
+                        let finalData = labelsArray.map(label => attributeCount[label] || 0);
                         myRadarChart.data.datasets[0].data = finalData;
                         myRadarChart.update();
-                        console.log('finalData', finalData);
                     }).catch((error) => {
                         console.error('讀取雷達圖資料時發生錯誤: ', error);
                     });
