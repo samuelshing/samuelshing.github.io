@@ -142,7 +142,7 @@
                         // 將 Set 轉換為 Array 並設置為雷達圖的標籤
                         let labelsArray = Array.from(labelsSet);
                         myRadarChart.data.labels = labelsArray;
-                        console.log('labelsArray', labelsArray);
+                        console.log('labelsArray', labelsSet, labelsArray);
                         // 準備每個標籤的最終數據
                         let finalData = labelsArray.map(label => {
                             return countData[label] > 0 ? totalData[label] / countData[label] : 0;
@@ -172,10 +172,8 @@
                             const listItem = document.createElement('div');
                             listItem.classList.add('card', 'mb-2');
                             listItem.innerHTML = `
-                                <div class="card-body">
-                                    <h5 class="card-title">屬性：${data.attribute}</h5>
-                                    <p class="card-text">故事：${data.story}</p>
-                                    <p class="card-text"><small class="text-muted">時間：${data.timestamp?.toDate().toLocaleString() || '未知'}</small></p>
+                                <div class="card-body d-flex justify-content-between align-items-center">
+                                    <span>屬性：${data.attribute} | 故事：${data.story} | 時間：${data.timestamp?.toDate().toLocaleString() || '未知'}</span>
                                 </div>
                             `;
                             godattrsList.appendChild(listItem);
