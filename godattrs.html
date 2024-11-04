@@ -33,7 +33,7 @@
 <body>
     <div class="container">
         <h2 class="mt-5">上帝面板</h2>
-        <canvas id="myRadarChart"></canvas>
+        <canvas id="myRadarChart" width="400" height="400"></canvas>
 
         <h2 class="mt-5">紀錄屬性</h2>
         <form id="dataForm">
@@ -84,7 +84,7 @@
                 labels: [],
                 datasets: [
                     {
-                        label: 'Person A',
+                        label: '上帝面板',
                         data: [],
                         fill: true,
                         backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -108,10 +108,18 @@
             auth.onAuthStateChanged((user) => {
                 if (user) {
                     db.collection('users').doc(user.uid).collection('godattrs').get().then((querySnapshot) => {
+                        if (querySnapshot.empty) {
+                            console.warn('No data found in godattrs collection for the user.');
+                            // 可以在此處設定預設值，或讓圖表顯示提示信息
+                            myRadarChart.data.labels = [];
+                            myRadarChart.data.datasets[0].data = [];
+                            myRadarChart.update();
+                            return;
+                        }
+
                         let labelsSet = new Set();
                         let totalData = {};
                         let countData = {};
-
                         querySnapshot.forEach((doc) => {
                             const data = doc.data();
                             for (let key in data) {
@@ -124,16 +132,13 @@
                                 countData[key]++;
                             }
                         });
-
                         // 將 Set 轉換為 Array 並設置為雷達圖的標籤
                         let labelsArray = Array.from(labelsSet);
                         myRadarChart.data.labels = labelsArray;
-
                         // 準備每個標籤的最終數據
                         let finalData = labelsArray.map(label => {
                             return countData[label] > 0 ? totalData[label] / countData[label] : 0;
                         });
-
                         myRadarChart.data.datasets[0].data = finalData;
                         myRadarChart.update();
                     });
