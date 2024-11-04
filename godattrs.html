@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>上帝面板</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmeGum4RaD7Z8Hu0TuIC2_196taGGlxHU",
+            authDomain: "kanghua-a3016.firebaseapp.com",
+            projectId: "kanghua-a3016",
+            storageBucket: "kanghua-a3016.appspot.com",
+            messagingSenderId: "579590905256",
+            appId: "1:579590905256:web:4083c95c7ed718307ad19d",
+            measurementId: "G-YGP9YJM7HB"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // 初始化 Firestore
+        const db = firebase.firestore();
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h2 class="mt-5">上帝面板</h2>
+        <canvas id="myRadarChart"></canvas>
+
+        <h2 class="mt-5">紀錄屬性</h2>
+        <form id="dataForm">
+            <div class="form-group">
+                <label for="attr">屬性</label>
+                <input list="attributes" name="attr" class="form-control" id="attr" required>
+                <datalist id="attributes">
+                    <option value="慈愛">
+                    <option value="公義">
+                    <option value="良善">
+                    <option value="聖潔">
+                    <option value="智慧">
+                    <option value="榮耀">
+                </datalist>
+            </div>
+            <div class="form-group">
+                <label for="story">故事</label>
+                <input type="text" name="story" class="form-control" id="story" placeholder="寫下與上帝的故事" required>
+            </div>
+            <button type="submit" class="btn btn-primary">新增屬性</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('dataForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            // 從表單中取得值
+            const attr = document.getElementById('attr').value;
+            const story = document.getElementById('story').value;
+
+            // 將資料新增到 Firestore
+            let updateData = {};
+            updateData[attr.toLowerCase()] = 1;
+
+            db.collection('personAData').add(updateData).then(() => {
+                alert('已更新上帝面板！');
+                updateChart();
+            }).catch((error) => {
+                console.error('更新上帝面板時發生錯誤: ', error);
+            });
+        });
+
+        // 初始化圖表
+        var ctx = document.getElementById('myRadarChart').getContext('2d');
+        var myRadarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Person A',
+                        data: [],
+                        fill: true,
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 2,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                scale: {
+                    ticks: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // 更新圖表資料
+        function updateChart() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    db.collection('users').doc(user.uid).collection('godattrs').get().then((querySnapshot) => {
+                        let labelsSet = new Set();
+                        let totalData = {};
+                        let countData = {};
+
+                        querySnapshot.forEach((doc) => {
+                            const data = doc.data();
+                            for (let key in data) {
+                                labelsSet.add(key);
+                                if (!totalData.hasOwnProperty(key)) {
+                                    totalData[key] = 0;
+                                    countData[key] = 0;
+                                }
+                                totalData[key] += data[key];
+                                countData[key]++;
+                            }
+                        });
+
+                        // 將 Set 轉換為 Array 並設置為雷達圖的標籤
+                        let labelsArray = Array.from(labelsSet);
+                        myRadarChart.data.labels = labelsArray;
+
+                        // 準備每個標籤的最終數據
+                        let finalData = labelsArray.map(label => {
+                            return countData[label] > 0 ? totalData[label] / countData[label] : 0;
+                        });
+
+                        myRadarChart.data.datasets[0].data = finalData;
+                        myRadarChart.update();
+                    });
+                } else {
+                    console.error('用戶尚未登入');
+                    window.location.href = './signup.html';
+                }
+            });
+        }
+
+        // 初始化更新圖表
+        updateChart();
+    </script>
+</body>
+
+</html>
