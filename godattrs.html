@@ -159,33 +159,33 @@
 
         // 顯示所有 godattrs 紀錄
         function updateGodattrsList() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    const godattrsList = document.getElementById('godattrsList');
-                    godattrsList.innerHTML = '';
+            // auth.onAuthStateChanged((user) => {
+            //     if (user) {
+            //         const godattrsList = document.getElementById('godattrsList');
+            //         godattrsList.innerHTML = '';
 
-                    db.collection('users').doc(user.uid).collection('godattrs').orderBy('timestamp', 'desc').get().then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const listItem = document.createElement('div');
-                            listItem.classList.add('card', 'mb-2');
-                            listItem.innerHTML = `
-                                <div class="card-body">
-                                    <h5 class="card-title">屬性：${data.attribute}</h5>
-                                    <p class="card-text">故事：${data.story}</p>
-                                    <p class="card-text"><small class="text-muted">時間：${data.timestamp?.toDate().toLocaleString() || '未知'}</small></p>
-                                </div>
-                            `;
-                            godattrsList.appendChild(listItem);
-                        });
-                    }).catch((error) => {
-                        console.error('讀取雷達圖資料時發生錯誤: ', error);
-                    });
-                } else {
-                    console.error('用戶尚未登入');
-                    window.location.href = './signup.html';
-                }
-            });
+            //         db.collection('users').doc(user.uid).collection('godattrs').orderBy('timestamp', 'desc').get().then((querySnapshot) => {
+            //             querySnapshot.forEach((doc) => {
+            //                 const data = doc.data();
+            //                 const listItem = document.createElement('div');
+            //                 listItem.classList.add('card', 'mb-2');
+            //                 listItem.innerHTML = `
+            //                     <div class="card-body">
+            //                         <h5 class="card-title">屬性：${data.attribute}</h5>
+            //                         <p class="card-text">故事：${data.story}</p>
+            //                         <p class="card-text"><small class="text-muted">時間：${data.timestamp?.toDate().toLocaleString() || '未知'}</small></p>
+            //                     </div>
+            //                 `;
+            //                 godattrsList.appendChild(listItem);
+            //             });
+            //         }).catch((error) => {
+            //             console.error('讀取雷達圖資料時發生錯誤: ', error);
+            //         });
+            //     } else {
+            //         console.error('用戶尚未登入');
+            //         window.location.href = './signup.html';
+            //     }
+            // });
         }
 
         // 初始化更新圖表和屬性列表
