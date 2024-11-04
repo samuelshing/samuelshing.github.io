@@ -5,7 +5,7 @@
     <title>上帝面板</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
@@ -21,12 +21,12 @@
             appId: "1:579590905256:web:4083c95c7ed718307ad19d",
             measurementId: "G-YGP9YJM7HB"
         };
-
         // 初始化 Firebase
         firebase.initializeApp(firebaseConfig);
-
         // 初始化 Firestore
         const db = firebase.firestore();
+        // 初始化 Firebase Auth
+        const auth = firebase.auth();
     </script>
 </head>
 
