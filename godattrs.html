@@ -10,6 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
     <script>
         // Firebase 配置
         const firebaseConfig = {
@@ -31,17 +32,17 @@
 </head>
 
 <body>
-    <div class="container">
+    <div id="app" class="container">
         <h2 class="mt-5">上帝面板</h2>
         <div style="max-width: 500px; margin: auto;">
             <canvas id="myRadarChart"></canvas>
         </div>
 
         <h2 class="mt-5">紀錄屬性</h2>
-        <form id="dataForm">
+        <form @submit.prevent="addGodAttr">
             <div class="form-group">
                 <label for="attr">屬性</label>
-                <input list="attributes" name="attr" class="form-control" id="attr" required>
+                <input list="attributes" v-model="newAttr.attribute" class="form-control" id="attr" required>
                 <datalist id="attributes">
                     <option value="慈愛">
                     <option value="公義">
@@ -53,140 +54,140 @@
             </div>
             <div class="form-group">
                 <label for="story">故事</label>
-                <input type="text" name="story" class="form-control" id="story" placeholder="寫下與上帝的故事" required>
+                <input type="text" v-model="newAttr.story" class="form-control" id="story" placeholder="寫下與上帝的故事"
+                    required>
             </div>
             <button type="submit" class="btn btn-primary">新增屬性</button>
         </form>
 
         <h2 class="mt-5">屬性故事</h2>
-        <div id="godattrsList" class="mt-3"></div>
+        <div class="mt-3">
+            <div v-for="(attr, index) in godattrs" :key="index" class="card mb-2">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <span>屬性：{{ attr.attribute }} | 故事：{{ attr.story }} | 時間：{{
+                        attr.timestamp?.toDate().toLocaleString() || '未知' }}</span>
+                </div>
+            </div>
+        </div>
     </div>
+
     <script>
-        document.getElementById('dataForm').addEventListener('submit', function (e) {
-            e.preventDefault();
-            // 從表單中取得值
-            const attr = document.getElementById('attr').value;
-            const story = document.getElementById('story').value;
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    // 將資料新增到該用戶的 Firestore 資料集中
-                    let updateData = {
-                        attribute: attr,
-                        story: story,
-                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-                    db.collection('users').doc(user.uid).collection('godattrs').add(updateData).then(() => {
-                        alert('已更新上帝面板！');
-                        updateChart();
-                        updateGodattrsList();
-                    }).catch((error) => {
-                        console.error('更新上帝面板時發生錯誤: ', error);
-                        if (error.code === 'permission-denied') {
-                            alert('權限不足，請聯絡管理員。');
+        new Vue({
+            el: '#app',
+            data: {
+                newAttr: {
+                    attribute: '',
+                    story: ''
+                },
+                godattrs: []
+            },
+            mounted() {
+                this.initChart();
+                this.updateGodattrsList();
+            },
+            methods: {
+                addGodAttr() {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            let updateData = {
+                                attribute: this.newAttr.attribute,
+                                story: this.newAttr.story,
+                                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            };
+                            db.collection('users').doc(user.uid).collection('godattrs').add(updateData).then(() => {
+                                alert('已更新上帝面板！');
+                                this.updateChart();
+                                this.updateGodattrsList();
+                            }).catch((error) => {
+                                console.error('更新上帝面板時發生錯誤: ', error);
+                                if (error.code === 'permission-denied') {
+                                    alert('權限不足，請聯絡管理員。');
+                                }
+                            });
+                        } else {
+                            console.error('用戶尚未登入');
+                            window.location.href = './signup.html';
                         }
                     });
-                } else {
-                    console.error('用戶尚未登入');
-                    window.location.href = './signup.html';
-                }
-            });
-        });
-
-        // 初始化圖表
-        var ctx = document.getElementById('myRadarChart').getContext('2d');
-        var myRadarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: [],
-                datasets: [
-                    {
-                        label: '上帝面板',
-                        data: [],
-                        fill: true,
-                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                scale: {
-                    ticks: {
-                        beginAtZero: true
-                    }
+                },
+                updateGodattrsList() {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            db.collection('users').doc(user.uid).collection('godattrs').orderBy('timestamp', 'desc').get().then((querySnapshot) => {
+                                this.godattrs = querySnapshot.docs.map(doc => doc.data());
+                            }).catch((error) => {
+                                console.error('讀取 godattrs 紀錄時發生錯誤: ', error);
+                            });
+                        } else {
+                            console.error('用戶尚未登入');
+                            window.location.href = './signup.html';
+                        }
+                    });
+                },
+                initChart() {
+                    var ctx = document.getElementById('myRadarChart').getContext('2d');
+                    this.myRadarChart = new Chart(ctx, {
+                        type: 'radar',
+                        data: {
+                            labels: [],
+                            datasets: [
+                                {
+                                    label: '上帝面板',
+                                    data: [],
+                                    fill: true,
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    borderWidth: 2,
+                                }
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            scale: {
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }
+                        }
+                    });
+                    this.updateChart();
+                },
+                updateChart() {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            db.collection('users').doc(user.uid).collection('godattrs').get().then((querySnapshot) => {
+                                let labelsSet = new Set();
+                                let attributeCount = {};
+                                querySnapshot.forEach((doc) => {
+                                    const data = doc.data();
+                                    const attribute = data.attribute;
+                                    // 將屬性加入 Set 並計算每個屬性的次數
+                                    if (attribute) {
+                                        labelsSet.add(attribute);
+                                        if (!attributeCount.hasOwnProperty(attribute)) {
+                                            attributeCount[attribute] = 0;
+                                        }
+                                        attributeCount[attribute]++;
+                                    }
+                                });
+                                // 將 Set 轉換為 Array 並設置為雷達圖的標籤
+                                let labelsArray = Array.from(labelsSet);
+                                this.myRadarChart.data.labels = labelsArray;
+                                // 準備每個標籤的最終數據
+                                let finalData = labelsArray.map(label => attributeCount[label] || 0);
+                                this.myRadarChart.data.datasets[0].data = finalData;
+                                this.myRadarChart.update();
+                            }).catch((error) => {
+                                console.error('讀取雷達圖資料時發生錯誤: ', error);
+                            });
+                        } else {
+                            console.error('用戶尚未登入');
+                            window.location.href = './signup.html';
+                        }
+                    });
                 }
             }
         });
-
-        // 更新圖表資料
-        function updateChart() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    db.collection('users').doc(user.uid).collection('godattrs').get().then((querySnapshot) => {
-                        let labelsSet = new Set();
-                        let attributeCount = {};
-                        querySnapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const attribute = data.attribute;
-
-                            // 將屬性加入 Set 並計算每個屬性的次數
-                            if (attribute) {
-                                labelsSet.add(attribute);
-                                if (!attributeCount.hasOwnProperty(attribute)) {
-                                    attributeCount[attribute] = 0;
-                                }
-                                attributeCount[attribute]++;
-                            }
-                        });
-                        // 將 Set 轉換為 Array 並設置為雷達圖的標籤
-                        let labelsArray = Array.from(labelsSet);
-                        myRadarChart.data.labels = labelsArray;
-                        // 準備每個標籤的最終數據
-                        let finalData = labelsArray.map(label => attributeCount[label] || 0);
-                        myRadarChart.data.datasets[0].data = finalData;
-                        myRadarChart.update();
-                    }).catch((error) => {
-                        console.error('讀取雷達圖資料時發生錯誤: ', error);
-                    });
-                } else {
-                    console.error('用戶尚未登入');
-                    window.location.href = './signup.html';
-                }
-            });
-        }
-
-        // 顯示所有 godattrs 紀錄
-        function updateGodattrsList() {
-            auth.onAuthStateChanged((user) => {
-                if (user) {
-                    const godattrsList = document.getElementById('godattrsList');
-                    godattrsList.innerHTML = '';
-                    db.collection('users').doc(user.uid).collection('godattrs').orderBy('timestamp', 'desc').get().then((querySnapshot) => {
-                        querySnapshot.forEach((doc) => {
-                            const data = doc.data();
-                            const listItem = document.createElement('div');
-                            listItem.classList.add('card', 'mb-2');
-                            listItem.innerHTML = `
-                                <div class="card-body d-flex justify-content-between align-items-center">
-                                    <span>屬性：${data.attribute} | 故事：${data.story} | 時間：${data.timestamp?.toDate().toLocaleString() || '未知'}</span>
-                                </div>
-                            `;
-                            godattrsList.appendChild(listItem);
-                        });
-                    }).catch((error) => {
-                        console.error('讀取雷達圖資料時發生錯誤: ', error);
-                    });
-                } else {
-                    console.error('用戶尚未登入');
-                    window.location.href = './signup.html';
-                }
-            });
-        }
-
-        // 初始化更新圖表和屬性列表
-        updateChart();
-        updateGodattrsList();
     </script>
 </body>
 
