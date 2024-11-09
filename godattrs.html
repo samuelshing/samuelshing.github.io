@@ -64,15 +64,18 @@
         <div class="mt-3">
             <div v-for="(attr, index) in godattrs" :key="index" class="card mb-2">
                 <div class="card-body d-flex justify-content-between align-items-center">
-                    <span class="font-weight-bold text-primary">{{ attr.attribute }}</span> | {{ attr.timestamp?.toDate().toLocaleString() || '未知' }}
-                    <button class="btn btn-link" @click="toggleStory(index)">{{ attr.showStory ? '收起' : '故事' }}</button>
+                    <span class="font-weight-bold text-primary">{{ attr.attribute }}</span>{{ attr.timestamp?.toDate().toLocaleString() || '未知' }}
+                    <button class="btn btn-outline-primary btn-sm" @click="toggleStory(index)">{{ attr.showStory ? '收起' : '故事'}}</button>
                     <button class="btn btn-danger btn-sm" @click="deleteGodAttr(index, attr.id)">刪除</button>
                 </div>
                 <div v-if="attr.showStory" class="card-body">
-                    <p>{{ attr.story }}</p>
-                    <div class="form-group">
-                        <label for="editStory">編輯故事</label>
-                        <input type="text" v-model="attr.story" class="form-control" @blur="updateStory(index, attr.id)">
+                    <div v-if="!attr.isEditing">
+                        <p>{{ attr.story }}</p>
+                        <button class="btn btn-warning btn-sm" @click="editStory(index)">編輯</button>
+                    </div>
+                    <div v-else>
+                        <input type="text" v-model="attr.story" class="form-control mb-2">
+                        <button class="btn btn-success btn-sm" @click="saveStory(index, attr.id)">儲存</button>
                     </div>
                 </div>
             </div>
@@ -123,7 +126,7 @@
                         if (user) {
                             db.collection('users').doc(user.uid).collection('godattrs').orderBy('timestamp', 'desc').get().then((querySnapshot) => {
                                 this.godattrs = querySnapshot.docs.map(doc => {
-                                    return { ...doc.data(), showStory: false, id: doc.id };
+                                    return { ...doc.data(), showStory: false, isEditing: false, id: doc.id };
                                 });
                             }).catch((error) => {
                                 console.error('讀取 godattrs 紀錄時發生錯誤: ', error);
@@ -140,6 +143,34 @@
                         showStory: !this.godattrs[index].showStory
                     });
                 },
+                editStory(index) {
+                    this.$set(this.godattrs, index, {
+                        ...this.godattrs[index],
+                        isEditing: true
+                    });
+                },
+                saveStory(index, id) {
+                    auth.onAuthStateChanged((user) => {
+                        if (user) {
+                            const updatedStory = this.godattrs[index].story;
+                            db.collection('users').doc(user.uid).collection('godattrs').doc(id).update({
+                                story: updatedStory
+                            }).then(() => {
+                                alert('故事已更新！');
+                                this.$set(this.godattrs, index, {
+                                    ...this.godattrs[index],
+                                    isEditing: false
+                                });
+                                this.updateChart();
+                            }).catch((error) => {
+                                console.error('更新故事時發生錯誤: ', error);
+                            });
+                        } else {
+                            console.error('用戶尚未登入');
+                            window.location.href = './signup.html';
+                        }
+                    });
+                },
                 deleteGodAttr(index, id) {
                     auth.onAuthStateChanged((user) => {
                         if (user) {
@@ -149,24 +180,6 @@
                                 this.updateChart();
                             }).catch((error) => {
                                 console.error('刪除屬性時發生錯誤: ', error);
-                            });
-                        } else {
-                            console.error('用戶尚未登入');
-                            window.location.href = './signup.html';
-                        }
-                    });
-                },
-                updateStory(index, id) {
-                    auth.onAuthStateChanged((user) => {
-                        if (user) {
-                            const updatedStory = this.godattrs[index].story;
-                            db.collection('users').doc(user.uid).collection('godattrs').doc(id).update({
-                                story: updatedStory
-                            }).then(() => {
-                                alert('故事已更新！');
-                                this.updateChart();
-                            }).catch((error) => {
-                                console.error('更新故事時發生錯誤: ', error);
                             });
                         } else {
                             console.error('用戶尚未登入');
