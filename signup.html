@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Firebase Authentication</title>
 
@@ -28,6 +29,7 @@
         const db = firebase.firestore();
     </script>
 </head>
+
 <body>
     <div class="container mt-5">
         <div class="row">
@@ -58,6 +60,15 @@
         </div>
     </div>
     <script>
+        const defaultAttr = [
+            { attribute: "慈愛", story: "耶和華有憐憫，有恩典，不輕易發怒，且有豐盛的慈愛。（詩篇 103:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "公義", story: "耶和華是公義的；祂喜愛公義，正直人必得見祂的面。（詩篇 11:7）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "良善", story: "你們要嘗嘗主恩的滋味，便知道祂是美善的；投靠祂的人有福了！（詩篇 34:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "聖潔", story: "惟有那召你們的，是聖潔的，你們在一切所行的事上也要聖潔。（彼得前書 1:15）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "智慧", story: "深哉！神豐富的智慧和知識！祂的判斷何其難測！祂的蹤跡何其難尋！（羅馬書 11:33）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "榮耀", story: "因為萬有都是本於祂，依靠祂，歸於祂。願榮耀歸給祂，直到永遠。阿們！（羅馬書 11:36）", timestamp: firebase.firestore.FieldValue.serverTimestamp() }
+        ];
+
         // 處理用戶的認證 (登入/註冊)
         function handleAuth() {
             const email = document.getElementById('email').value;
@@ -83,15 +94,6 @@
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(() => {
                                 // 初始化 godattrs 集合中的六筆資料
-                                const defaultAttr = [
-                                    {attribute:"慈愛", story: "耶和華有憐憫，有恩典，不輕易發怒，且有豐盛的慈愛。（詩篇 103:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
-                                    {attribute:"公義", story: "耶和華是公義的；祂喜愛公義，正直人必得見祂的面。（詩篇 11:7）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
-                                    {attribute:"良善", story: "你們要嘗嘗主恩的滋味，便知道祂是美善的；投靠祂的人有福了！（詩篇 34:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
-                                    {attribute:"聖潔", story: "惟有那召你們的，是聖潔的，你們在一切所行的事上也要聖潔。（彼得前書 1:15）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
-                                    {attribute:"智慧", story: "深哉！神豐富的智慧和知識！祂的判斷何其難測！祂的蹤跡何其難尋！（羅馬書 11:33）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
-                                    {attribute:"榮耀", story: "因為萬有都是本於祂，依靠祂，歸於祂。願榮耀歸給祂，直到永遠。阿們！（羅馬書 11:36）", timestamp: firebase.firestore.FieldValue.serverTimestamp()}
-                                ];
-
                                 const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
                                 const batch = db.batch();
 
@@ -148,6 +150,17 @@
                     photoURL: user.photoURL,
                     role: "general",  // 預設角色為一般使用者
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    // 初始化 godattrs 集合中的六筆資料
+                    const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                    const batch = db.batch();
+
+                    defaultAttr.forEach((attr) => {
+                        const docRef = godattrsCollection.doc();
+                        batch.set(docRef, attr);
+                    });
+
+                    return batch.commit();
                 });
             }).then(() => {
                 console.log('User data stored in Firestore');
