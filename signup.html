@@ -50,7 +50,7 @@
 
                 <div class="card mt-4">
                     <div class="card-body text-center">
-                        <h2 class="card-title">Sign In with Google</h2>
+                        <h2 class="card-title">使用Google登入</h2>
                         <button class="btn btn-danger btn-block" onclick="signInWithGoogle()">使用Google登入</button>
                     </div>
                 </div>
@@ -81,9 +81,29 @@
                                 nickname: nickname,
                                 role: "general",  // 預設角色為一般使用者
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(() => {
+                                // 初始化 godattrs 集合中的六筆資料
+                                const defaultAttr = [
+                                    {attribute:"慈愛", story: "耶和華有憐憫，有恩典，不輕易發怒，且有豐盛的慈愛。（詩篇 103:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
+                                    {attribute:"公義", story: "耶和華是公義的；祂喜愛公義，正直人必得見祂的面。（詩篇 11:7）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
+                                    {attribute:"良善", story: "你們要嘗嘗主恩的滋味，便知道祂是美善的；投靠祂的人有福了！（詩篇 34:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
+                                    {attribute:"聖潔", story: "惟有那召你們的，是聖潔的，你們在一切所行的事上也要聖潔。（彼得前書 1:15）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
+                                    {attribute:"智慧", story: "深哉！神豐富的智慧和知識！祂的判斷何其難測！祂的蹤跡何其難尋！（羅馬書 11:33）", timestamp: firebase.firestore.FieldValue.serverTimestamp()},
+                                    {attribute:"榮耀", story: "因為萬有都是本於祂，依靠祂，歸於祂。願榮耀歸給祂，直到永遠。阿們！（羅馬書 11:36）", timestamp: firebase.firestore.FieldValue.serverTimestamp()}
+                                ];
+
+                                const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                                const batch = db.batch();
+
+                                defaultAttr.forEach((attr) => {
+                                    const docRef = godattrsCollection.doc();
+                                    batch.set(docRef, attr);
+                                });
+
+                                return batch.commit();
                             });
                         }).then(() => {
-                            console.log('User data stored in Firestore');
+                            console.log('User data and default godattrs stored in Firestore');
                             // 重導到首頁
                             window.location.href = 'godattrs.html';
                         }).catch((error) => {
