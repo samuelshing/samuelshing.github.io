@@ -2,7 +2,8 @@
 <html>
 
 <head>
-    <title>Firebase Authentication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>上帝面板</title>
 
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
@@ -28,12 +29,45 @@
         // 初始化 Firestore
         const db = firebase.firestore();
     </script>
+    <style>
+        body {
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 15px;
+        }
+
+        .card {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            font-size: 1rem;
+            padding: 10px;
+        }
+
+        @media (max-width: 576px) {
+            h2.card-title {
+                font-size: 1.25rem;
+            }
+
+            .form-control {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
 </head>
 
 <body>
     <div class="container mt-5">
-        <div class="row">
-            <div class="col-md-6 offset-md-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
                 <div class="card">
                     <div class="card-body">
                         <h2 class="card-title text-center">登入 / 註冊</h2>
@@ -46,14 +80,14 @@
                         <div class="form-group" id="nicknameDiv" style="display: none;">
                             <input type="text" id="nickname" class="form-control" placeholder="Nickname">
                         </div>
-                        <button class="btn btn-primary btn-block" onclick="handleAuth()">Submit</button>
+                        <button class="btn btn-primary btn-block" onclick="handleAuth()">提交</button>
                     </div>
                 </div>
 
                 <div class="card mt-4">
                     <div class="card-body text-center">
-                        <h2 class="card-title">使用Google登入</h2>
-                        <button class="btn btn-danger btn-block" onclick="signInWithGoogle()">使用Google登入</button>
+                        <h2 class="card-title">使用 Google 登入</h2>
+                        <button class="btn btn-danger btn-block" onclick="signInWithGoogle()">使用 Google 登入</button>
                     </div>
                 </div>
             </div>
