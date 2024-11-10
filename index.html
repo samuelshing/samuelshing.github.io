@@ -142,25 +142,32 @@
                 var user = result.user;
                 console.log('User signed in with Google:', user);
 
-                // 將用戶資料存入 Firestore
-                return db.collection('users').doc(user.uid).set({
-                    uid: user.uid,
-                    email: user.email,
-                    nickname: user.displayName,
-                    photoURL: user.photoURL,
-                    role: "general",  // 預設角色為一般使用者
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                }).then(() => {
-                    // 初始化 godattrs 集合中的六筆資料
-                    const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
-                    const batch = db.batch();
+                // 檢查是否為新用戶
+                return db.collection('users').doc(user.uid).get().then((doc) => {
+                    if (!doc.exists) {
+                        // 將新用戶資料存入 Firestore
+                        return db.collection('users').doc(user.uid).set({
+                            uid: user.uid,
+                            email: user.email,
+                            nickname: user.displayName,
+                            photoURL: user.photoURL,
+                            role: "general",  // 預設角色為一般使用者
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            // 初始化 godattrs 集合中的六筆資料
+                            const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                            const batch = db.batch();
 
-                    defaultAttr.forEach((attr) => {
-                        const docRef = godattrsCollection.doc();
-                        batch.set(docRef, attr);
-                    });
+                            defaultAttr.forEach((attr) => {
+                                const docRef = godattrsCollection.doc();
+                                batch.set(docRef, attr);
+                            });
 
-                    return batch.commit();
+                            return batch.commit();
+                        });
+                    } else {
+                        return Promise.resolve(); // 用戶已存在，不需要初始化資料
+                    }
                 });
             }).then(() => {
                 console.log('User data stored in Firestore');
