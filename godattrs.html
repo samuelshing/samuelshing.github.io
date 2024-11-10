@@ -2,9 +2,9 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>上帝面板</title>
 
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Firebase SDKs -->
@@ -78,7 +78,7 @@
                         <form @submit.prevent="addGodAttr">
                             <div class="form-group">
                                 <label for="attr">屬性</label>
-                                <input list="attributes" v-model="newAttr.attribute" class="form-control" id="attr" required>
+                                <input list="attributes" v-model="newAttr.attribute" class="form-control" id="attr" placeholder="選擇或輸入上帝屬性" required>
                                 <datalist id="attributes">
                                     <option value="慈愛">
                                     <option value="公義">
@@ -90,7 +90,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="story">故事</label>
-                                <input type="text" v-model="newAttr.story" class="form-control" id="story" placeholder="寫下與上帝的故事" required>
+                                <input type="text" v-model="newAttr.story" class="form-control" id="story" placeholder="寫下體會到上帝屬性的故事" required>
                             </div>
                             <button type="submit" class="btn btn-primary btn-block">新增屬性</button>
                         </form>
