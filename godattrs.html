@@ -107,8 +107,8 @@
                                         <span class="font-weight-bold text-primary mr-2" v-text="attr.attribute"></span>
                                         <span class="text-muted" v-text="attr.timestamp?.toDate().toLocaleString() || '未知'"></span>
                                     </div>
-                                    <div>
-                                        <button class="btn btn-outline-primary btn-sm mr-2" @click="toggleStory(index)" v-text="attr.showStory ? '收起' : '故事'"></button>
+                                    <div class="d-flex">
+                                        <button class="btn btn-outline-primary btn-sm mr-1" @click="toggleStory(index)" v-text="attr.showStory ? '收起' : '故事'"></button>
                                         <button class="btn btn-danger btn-sm" @click="deleteGodAttr(index, attr.id)">刪除</button>
                                     </div>
                                 </div>
