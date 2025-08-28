@@ -83,6 +83,11 @@
             <div id="advancedSettings" class="collapse">
                 <div class="card-body">
                     <div class="form-row">
+                        <div class="form-group col-md-2">
+                            <label>每小時費用 (元/人)</label>
+                            <input type="number" class="form-control" v-model.number="C_L" min="0" step="1">
+                            <small class="text-muted">預設 200</small>
+                        </div>
                         <div class="form-group col-md-3">
                             <label>組長組員配比（每幾位配置1組長）</label>
                             <input type="number" class="form-control" v-model.number="leaderRatio" min="1" step="1">
@@ -135,7 +140,9 @@
                                 <td>
                                     人員數 {{ staffCount }} 人（組長 {{ leaderCount }} + 額外人員 {{ extraStaff }}） × (活動 {{ duration }} 小時 + 車程 {{ travelHours.toFixed(2) }} 小時) × 每小時 {{ C_L }} 元
                                     <br>
-                                    <small class="text-muted">車程小時＝里程 {{ distance || 0 }} ÷ 平均時速 {{ V_speed }} km/h</small>
+                                    <small class="text-muted">
+                                        車程小時＝里程 {{ distance || 0 }} ÷ 平均時速 {{ V_speed }} km/h
+                                    </small>
                                 </td>
                                 <td class="text-right">{{ formatCurrency(costStaff) }}</td>
                             </tr>
@@ -153,7 +160,7 @@
                             </tr>
                             <tr>
                                 <td>額外費用</td>
-                                <td>飲食 / 場地 / 設備等</td>
+                                <td>其他雜支 / 場地費 / 設備等</td>
                                 <td class="text-right">{{ formatCurrency(extraCost) }}</td>
                             </tr>
                             <tr>
@@ -176,10 +183,10 @@
         <div class="mt-4">
             <h5>收費依據說明</h5>
             <ul class="mb-2">
-                <li>人員計費：<strong>每 {{ leaderRatio }} 位參加者配置 1 名組長</strong>（向上進位）。每名組長以<strong>每小時 {{ C_L }} 元</strong>計算，時數含活動時數與往返車程時間。</li>
-                <li>交通費用：車輛載送工作人員（組長＋額外人員），以<strong>每輛車最多 {{ carCapacity }} 人</strong>估算車數。</li>
+                <li>人員計費：<strong>每 {{ leaderRatio }} 位參加者配置 1 名組長</strong>（向上進位）。人員＝組長 + 額外人員；每位<strong>每小時 {{ C_L }} 元</strong>計算，時數含活動時數與往返車程時間。</li>
+                <li>交通費用：<strong>車輛僅載工作人員（組長＋額外人員）</strong>，以<strong>每輛車最多 {{ carCapacity }} 人</strong>估算車數。</li>
                 <li>油資假設：<strong>平均油耗 {{ E }} km/公升</strong>、<strong>油價 {{ C_F }} 元/公升</strong>，<strong>平均時速 {{ V_speed }} km/h</strong>（用於估算車程時間）。</li>
-                <li>折扣：對「組長費用 + 交通油費 + 額外費用」的小計套用折扣百分比。</li>
+                <li>折扣：對「人員費用 + 交通油費 + 額外費用」的小計套用折扣百分比。</li>
                 <li>報價：為便於對帳，合計以<strong>四捨五入至百元</strong>呈現。</li>
             </ul>
         </div>
@@ -203,7 +210,7 @@
                 discount: 0,
 
                 // 收費參數（可調整）
-                C_L: 200,      // 組長每小時費用 (TWD/hr) —— 若也想放進進階設定，可再加一格欄位
+                C_L: 200,      // 每小時費用 (TWD/人)
                 leaderRatio: 8,
                 carCapacity: 4,
                 C_F: 30,       // 油價 (TWD/L)
@@ -215,21 +222,22 @@
                     const ratio = Math.max(1, Math.floor(this.leaderRatio || 1));
                     return Math.ceil((this.participants || 0) / ratio);
                 },
+                staffCount() {
+                    return (this.leaderCount || 0) + (this.extraStaff || 0);
+                },
                 vehicleCount() {
                     // 僅載工作人員（組長 + 額外人員）
                     const cap = Math.max(1, Math.floor(this.carCapacity || 1));
-                    const totalStaff = (this.leaderCount || 0) + (this.extraStaff || 0);
-                    return Math.max(0, Math.ceil(totalStaff / cap));
+                    return Math.max(0, Math.ceil(this.staffCount / cap));
                 },
                 travelHours() {
                     const dist = Number(this.distance) || 0;
                     const speed = Math.max(1, Number(this.V_speed) || 1);
                     return dist > 0 ? (dist / speed) : 0;
                 },
-                costLeaders() {
-                    const leaders = this.leaderCount;
+                costStaff() {
                     const hours = (Number(this.duration) || 0) + this.travelHours;
-                    return Math.max(0, leaders * hours * (Number(this.C_L) || 0));
+                    return Math.max(0, this.staffCount * hours * (Number(this.C_L) || 0));
                 },
                 costFuel() {
                     const dist = Number(this.distance) || 0;
@@ -240,7 +248,7 @@
                     return Math.max(0, litersPerCar * price * this.vehicleCount);
                 },
                 subtotal() {
-                    return this.costLeaders + this.costFuel + (Number(this.extraCost) || 0);
+                    return this.costStaff + this.costFuel + (Number(this.extraCost) || 0);
                 },
                 discountAmount() {
                     const d = Math.min(Math.max(Number(this.discount) || 0, 0), 100);
@@ -258,6 +266,7 @@
                     return Math.round(n).toLocaleString('zh-Hant-TW');
                 },
                 resetAdvanced() {
+                    this.C_L = 200;
                     this.leaderRatio = 8;
                     this.carCapacity = 4;
                     this.C_F = 30;
