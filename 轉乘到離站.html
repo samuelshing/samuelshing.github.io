@@ -136,9 +136,9 @@
                 const lastUpdateTime = ref('尚未更新');
 
                 // --- TDX API Settings ---
-                const accessToken = ref('YOUR_ACCESS_TOKEN'); // *** Please replace with your actual Access Token ***
+                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjA3NzE4OTMsImlhdCI6MTc2MDY4NTQ5MywianRpIjoiYjIyZjcyYmItMGQ3OC00YzdiLTgzODgtYjVkNjY3OTFmNTcyIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.nmPhzqIZzTbeQtrh-FHMeXyVDOD1sBS1fxFSdNQeqqs2UECUtFzfRuKU2lZjTOc7FoVqMVE4x3CP716-_WAKxwuvzEJexPHAwVsjEovJVfMovpY8IroLYFopQqfJOfnOgQCPvQ_EAnCa9t07s56RdjsEA5t1rdQ6DPyG5EUhJjmBTRKMhDzz-lmzOM0KRzhA5dfkasmVvZqP7g0z20P6iWA-o-mExE7zW0eE3VyctXy9wWKLRcrk47qx0jf36l2O12747NQau1lSB-cu0kjhvQrPxf7iTr8e1u7QR0xDGPk7akyDdEu1JMlogDZc8XUDXQ5Nmw_WRCsZtkcF1fiQug'); // *** Please replace with your actual Access Token ***
                 const axiosInstance = axios.create({
-                    // headers: { 'Authorization': `Bearer ${accessToken.value}` }
+                    headers: { 'Authorization': `Bearer ${accessToken.value}` }
                 });
 
                 // --- UNIFIED API URLS ---
