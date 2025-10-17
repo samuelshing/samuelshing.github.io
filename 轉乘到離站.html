@@ -137,7 +137,9 @@
 
                 // --- TDX API Settings ---
                 const accessToken = ref('YOUR_ACCESS_TOKEN'); // *** Please replace with your actual Access Token ***
-                const axiosInstance = axios.create({ headers: { 'Authorization': `Bearer ${accessToken.value}` } });
+                const axiosInstance = axios.create({
+                    // headers: { 'Authorization': `Bearer ${accessToken.value}` }
+                });
 
                 // --- UNIFIED API URLS ---
                 const API_URLS = {
@@ -177,11 +179,12 @@
                 };
 
                 const fetchData = async () => {
-                    if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
-                        error.value = "請先在程式碼中填入您的 TDX API Access Token！";
-                        isLoading.value = false; return;
-                    }
-                    isLoading.value = true; error.value = null;
+                    // if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
+                    //     error.value = "請先在程式碼中填入您的 TDX API Access Token！";
+                    //     isLoading.value = false; return;
+                    // }
+                    isLoading.value = true;
+                    error.value = null;
 
                     try {
                         const [tymcRes, trtcRes] = await Promise.all([
