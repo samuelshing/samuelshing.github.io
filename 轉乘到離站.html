@@ -181,7 +181,7 @@
                 const formatEstimateTime = (time) => (time === 0 ? '進站中' : time);
                 onMounted(() => {
                     fetchData();
-                    setInterval(fetchData, 30000);
+                    // setInterval(fetchData, 30000);
                 });
                 return { metroData, isLoading, error, lastUpdateTime, formatEstimateTime };
             }
