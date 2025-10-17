@@ -164,7 +164,9 @@
                         error.value = "請先在程式碼中填入您的 TDX API Access Token！";
                         isLoading.value = false; return;
                     }
-                    isLoading.value = true; error.value = null;
+                    console.log('Request!');
+                    isLoading.value = true;
+                    error.value = null;
                     try {
                         const [tymcRes, trtcRes] = await Promise.all([axiosInstance.get(API_URLS.TYMC), axiosInstance.get(API_URLS.TRTC)]);
                         processMetroData(tymcRes.data, 'TYMC');
