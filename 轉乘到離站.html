@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>轉乘到離站</title>
+    <!-- Bootstrap 4 -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Vue 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <style>
+        body {
+            background-color: #f0f2f5;
+        }
+        .card-direction {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        .destination-station {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .arrival-time {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .arrival-time-unit {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #dc3545;
+            vertical-align: middle;
+        }
+        .arrival-status-arriving {
+            color: #198754;
+        }
+        .update-time {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body><div id="app" class="container py-4">
+        <header class="pb-3 mb-4 border-bottom">
+            <h1 class="d-flex align-items-center text-dark text-decoration-none">
+                <i class="bi bi-train-front me-3"></i>
+                即時列車到站資訊
+            </h1>
+            <h4 class="text-muted">{{ stationName }}</h4>
+        </header>
+
+        <div v-if="isLoading" class="d-flex justify-content-center my-5">
+            <div class="spinner-border" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <div v-if="error" class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ error }}
+        </div>
+
+        <div v-if="!isLoading && !error" class="row g-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-between p-4">
+                        <div v-if="upTrain">
+                            <div class="card-direction">上行 <i class="bi bi-arrow-up-circle"></i></div>
+                            <div class="destination-station">{{ upTrain.DestinationStationName.Zh_tw }}</div>
+                            <div class="my-4">
+                                <span class="arrival-time" :class="{ 'arrival-status-arriving': upTrain.EstimateTime === 0 }">
+                                    {{ formatEstimateTime(upTrain.EstimateTime) }}
+                                </span>
+                                <span v-if="upTrain.EstimateTime > 0" class="arrival-time-unit">分鐘</span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted py-5">無上行列車資訊</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                 <div class="card shadow-sm h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-between p-4">
+                        <div v-if="downTrain">
+                            <div class="card-direction">下行 <i class="bi bi-arrow-down-circle"></i></div>
+                            <div class="destination-station">{{ downTrain.DestinationStationName.Zh_tw }}</div>
+                            <div class="my-4">
+                                <span class="arrival-time" :class="{ 'arrival-status-arriving': downTrain.EstimateTime === 0 }">
+                                     {{ formatEstimateTime(downTrain.EstimateTime) }}
+                                </span>
+                                <span v-if="downTrain.EstimateTime > 0" class="arrival-time-unit">分鐘</span>
+                            </div>
+                        </div>
+                        <div v-else class="text-muted py-5">無下行列車資訊</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="pt-3 mt-4 text-muted border-top">
+            最後更新時間: {{ lastUpdateTime }}
+        </footer>
+
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // --- 響應式資料 ---
+                const stationName = ref('A3 新北產業園區站');
+                const upTrain = ref(null);
+                const downTrain = ref(null);
+                const isLoading = ref(true);
+                const error = ref(null);
+                const lastUpdateTime = ref('尚未更新');
+
+                // --- API URL ---
+                const API_UP_URL = "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27%20and%20DestinationStationID%20eq%20%27A1%27&$orderby=EstimateTime&$top=1&$format=JSON";
+                const API_DOWN_URL = "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27%20and%20DestinationStationID%20ne%20%27A1%27&$orderby=EstimateTime&$top=1&$format=JSON";
+                
+                // --- 方法 ---
+                const fetchData = async () => {
+                    isLoading.value = true;
+                    error.value = null;
+
+                    // *** 重要：此處為模擬 API 呼叫 ***
+                    // 實際應用中，您需要替換成真實的 fetch 請求，並加入 TDX API 的認證金鑰。
+                    try {
+                        // 使用 Promise.all 同時發送兩個請求
+                        const [upResponse, downResponse] = await Promise.all([
+                            fetchMockData('up'), // 替換為: fetch(API_UP_URL, { headers: getAuthorizationHeader() })
+                            fetchMockData('down') // 替換為: fetch(API_DOWN_URL, { headers: getAuthorizationHeader() })
+                        ]);
+
+                        const upData = await upResponse.json();
+                        const downData = await downResponse.json();
+
+                        upTrain.value = upData.length > 0 ? upData[0] : null;
+                        downTrain.value = downData.length > 0 ? downData[0] : null;
+                        
+                        lastUpdateTime.value = new Date().toLocaleTimeString();
+
+                    } catch (e) {
+                        console.error("資料抓取失敗:", e);
+                        error.value = "無法載入列車資訊，請稍後再試。";
+                    } finally {
+                        isLoading.value = false;
+                    }
+                };
+
+                const formatEstimateTime = (time) => {
+                    if (time === 0) return '進站中';
+                    return time;
+                };
+
+                // --- 模擬 Fetch 函式 ---
+                // 幫助您在沒有 API Key 的情況下也能看到頁面效果
+                const fetchMockData = (direction) => {
+                    return new Promise(resolve => {
+                        setTimeout(() => {
+                            let data = [];
+                            if (direction === 'up') {
+                                data = [{"LineNO":"A","StationID":"A3","StationName":{"Zh_tw":"新北產業園-區站"},"TripHeadSign":"往台北車站","DestinationStationID":"A1","DestinationStationName":{"Zh_tw":"台北車站"},"EstimateTime":Math.floor(Math.random() * 5)}];
+                            } else {
+                                data = [{"LineNO":"A","StationID":"A3","StationName":{"Zh_tw":"新北產業園-區站"},"TripHeadSign":"往老街溪站","DestinationStationID":"A22","DestinationStationName":{"Zh_tw":"老街溪站"},"EstimateTime":Math.floor(Math.random() * 10) + 1}];
+                            }
+                            resolve(new Response(JSON.stringify(data)));
+                        }, 800); // 模擬 0.8 秒延遲
+                    });
+                };
+                
+                // --- 生命週期鉤子 ---
+                onMounted(() => {
+                    fetchData(); // 頁面載入後立刻抓取一次資料
+                    setInterval(fetchData, 30000); // 每 30 秒自動更新
+                });
+
+                // --- 返回給模板使用的資料和方法 ---
+                return {
+                    stationName,
+                    upTrain,
+                    downTrain,
+                    isLoading,
+                    error,
+                    lastUpdateTime,
+                    formatEstimateTime
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
