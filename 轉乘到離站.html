@@ -65,85 +65,53 @@
         </div>
 
         <div v-if="!isLoading && !error">
-            <h3 class="mb-3">{{ tymcStationName }}</h3>
-            <div class="row g-4 mb-5">
-                <div class="col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-between p-4">
-                            <div v-if="upTrain">
-                                <div class="card-direction">上行 <i class="bi bi-arrow-up-circle"></i></div>
-                                <div class="destination-station">{{ upTrain.DestinationStationName.Zh_tw }}</div>
-                                <div class="my-4"><span class="arrival-time"
-                                        :class="{ 'arrival-status-arriving': upTrain.EstimateTime === 0 }">{{
-                                        formatEstimateTime(upTrain.EstimateTime) }}</span><span
-                                        v-if="upTrain.EstimateTime > 0" class="arrival-time-unit">分鐘</span></div>
+            <section v-for="(system, systemKey) in metroData" :key="systemKey" class="mb-5">
+                <h2 class="system-heading">{{ system.name }}</h2>
+                <div class="row g-4">
+                    <div v-for="station in system.stations" :key="station.StationID" class="col-md-6 col-lg-4">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-header fw-bold d-flex justify-content-between align-items-center">
+                                {{ station.StationName.Zh_tw }}
+                                <i class="bi bi-geo-alt-fill card-header-icon"></i>
                             </div>
-                            <div v-else class="text-muted py-5">無上行列車資訊</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-body text-center d-flex flex-column justify-content-between p-4">
-                            <div v-if="downTrain">
-                                <div class="card-direction">下行 <i class="bi bi-arrow-down-circle"></i></div>
-                                <div class="destination-station">{{ downTrain.DestinationStationName.Zh_tw }}</div>
-                                <div class="my-4"><span class="arrival-time"
-                                        :class="{ 'arrival-status-arriving': downTrain.EstimateTime === 0 }">{{
-                                        formatEstimateTime(downTrain.EstimateTime) }}</span><span
-                                        v-if="downTrain.EstimateTime > 0" class="arrival-time-unit">分鐘</span></div>
-                            </div>
-                            <div v-else class="text-muted py-5">無下行列車資訊</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                            <div class="card-body">
+                                <div v-if="station.direction0 && station.direction0.length > 0" class="mb-3">
+                                    <h6 class="direction-heading">往 {{ station.direction0[0].TripHeadSign }}</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li v-for="(train, index) in station.direction0" :key="index"
+                                            class="list-group-item d-flex justify-content-between align-items-center px-1">
+                                            <span>第 {{ index + 1 }} 班</span>
+                                            <span class="time-display" :class="{ arriving: train.EstimateTime === 0 }">
+                                                {{ formatEstimateTime(train.EstimateTime) }}
+                                                <span v-if="train.EstimateTime > 0" style="font-size: 0.8rem;">分</span>
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
 
-            <h3 class="mb-3">台北捷運</h3>
-            <div class="row g-4">
-                <div v-for="station in trtcStations" :key="station.StationID" class="col-md-6 col-lg-4">
-                    <div class="card shadow-sm h-100">
-                        <div class="card-header fw-bold d-flex justify-content-between align-items-center">
-                            {{ station.StationName.Zh_tw }}
-                            <i class="bi bi-geo-alt-fill card-header-icon"></i>
-                        </div>
-                        <div class="card-body">
-                            <div v-if="station.direction0 && station.direction0.length > 0" class="mb-3">
-                                <h6 class="direction-heading">往 {{ station.direction0[0].TripHeadSign }}</h6>
-                                <ul class="list-group list-group-flush">
-                                    <li v-for="(train, index) in station.direction0" :key="index"
-                                        class="list-group-item d-flex justify-content-between align-items-center px-1">
-                                        <span>第 {{ index + 1 }} 班</span>
-                                        <span class="time-display" :class="{ arriving: train.EstimateTime === 0 }">
-                                            {{ formatEstimateTime(train.EstimateTime) }}
-                                            <span v-if="train.EstimateTime > 0" style="font-size: 0.8rem;">分</span>
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
+                                <div v-if="station.direction1 && station.direction1.length > 0">
+                                    <h6 class="direction-heading">往 {{ station.direction1[0].TripHeadSign }}</h6>
+                                    <ul class="list-group list-group-flush">
+                                        <li v-for="(train, index) in station.direction1" :key="index"
+                                            class="list-group-item d-flex justify-content-between align-items-center px-1">
+                                            <span>第 {{ index + 1 }} 班</span>
+                                            <span class="time-display" :class="{ arriving: train.EstimateTime === 0 }">
+                                                {{ formatEstimateTime(train.EstimateTime) }}
+                                                <span v-if="train.EstimateTime > 0" style="font-size: 0.8rem;">分</span>
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
 
-                            <div v-if="station.direction1 && station.direction1.length > 0">
-                                <h6 class="direction-heading">往 {{ station.direction1[0].TripHeadSign }}</h6>
-                                <ul class="list-group list-group-flush">
-                                    <li v-for="(train, index) in station.direction1" :key="index"
-                                        class="list-group-item d-flex justify-content-between align-items-center px-1">
-                                        <span>第 {{ index + 1 }} 班</span>
-                                        <span class="time-display" :class="{ arriving: train.EstimateTime === 0 }">
-                                            {{ formatEstimateTime(train.EstimateTime) }}
-                                            <span v-if="train.EstimateTime > 0" style="font-size: 0.8rem;">分</span>
-                                        </span>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)"
-                                class="text-muted text-center pt-5">
-                                目前無列車資訊
+                                <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)"
+                                    class="text-muted text-center pt-5">
+                                    目前無列車資訊
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
         </div>
 
         <footer class="pt-3 mt-4 text-muted border-top">
@@ -158,93 +126,90 @@
 
         createApp({
             setup() {
-                // Reactive data (same as before)
-                const tymcStationName = ref('桃園機場捷運 - A3 新北產業園區站');
-                const upTrain = ref(null);
-                const downTrain = ref(null);
-                const trtcStations = ref({});
+                // --- UNIFIED DATA STRUCTURE ---
+                const metroData = ref({
+                    TYMC: { name: '桃園機場捷運', stations: {} },
+                    TRTC: { name: '台北捷運', stations: {} }
+                });
                 const isLoading = ref(true);
                 const error = ref(null);
                 const lastUpdateTime = ref('尚未更新');
 
-                // TDX API Settings (same as before)
+                // --- TDX API Settings ---
                 const accessToken = ref('YOUR_ACCESS_TOKEN'); // *** Please replace with your actual Access Token ***
-                const axiosInstance = axios.create({
-                    // headers: { 'Authorization': `Bearer ${accessToken.value}` }
-                });
-                const API_TYMC_UP_URL = "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27%20and%20DestinationStationID%20eq%20%27A1%27&$orderby=EstimateTime&$top=1&$format=JSON";
-                const API_TYMC_DOWN_URL = "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27%20and%20DestinationStationID%20ne%20%27A1%27&$orderby=EstimateTime&$top=1&$format=JSON";
-                const API_TRTC_URL = "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24filter=StationID%20eq%20%27G04%27%20or%20StationID%20eq%20%27O02%27%20or%20StationID%20eq%20%27O17%27%20or%20StationID%20eq%20%27BL07%27%20or%20StationID%20eq%20%27BL08%27%20or%20StationID%20eq%20%27R27%27&%24orderby=EstimateTime&%24format=JSON";
+                const axiosInstance = axios.create({ headers: { 'Authorization': `Bearer ${accessToken.value}` } });
+
+                // --- UNIFIED API URLS ---
+                const API_URLS = {
+                    TYMC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27&$orderby=EstimateTime&$top=10&$format=JSON",
+                    TRTC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24filter=StationID%20eq%20%27G04%27%20or%20StationID%20eq%20%27O02%27%20or%20StationID%20eq%20%27O17%27%20or%20StationID%20eq%20%27BL07%27%20or%20StationID%20eq%20%27BL08%27%20or%20StationID%20eq%20%27R27%27&%24orderby=EstimateTime&%24format=JSON"
+                };
+
+                // --- REUSABLE DATA PROCESSING FUNCTION ---
+                const processMetroData = (apiData, systemKey) => {
+                    const targetSystem = metroData.value[systemKey];
+                    targetSystem.stations = {}; // Clear previous data
+
+                    for (const train of apiData) {
+                        if (!targetSystem.stations[train.StationID]) {
+                            targetSystem.stations[train.StationID] = {
+                                StationID: train.StationID,
+                                StationName: train.StationName,
+                                direction0: [],
+                                direction1: []
+                            };
+                        }
+
+                        let direction;
+                        // Custom logic for TYMC direction mapping
+                        if (systemKey === 'TYMC') {
+                            direction = (train.DestinationStationID === 'A1') ? 0 : 1; // 0 for Taipei, 1 for Airport/Huanbei
+                        } else {
+                            direction = train.Direction; // Standard logic for TRTC
+                        }
+
+                        if (direction === 0) {
+                            targetSystem.stations[train.StationID].direction0.push(train);
+                        } else if (direction === 1) {
+                            targetSystem.stations[train.StationID].direction1.push(train);
+                        }
+                    }
+                };
 
                 const fetchData = async () => {
-                    // Auth check (same as before)
-                    // if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
-                    //     error.value = "請先在程式碼中填入您的 TDX API Access Token！";
-                    //     isLoading.value = false; return;
-                    // }
-                    isLoading.value = true;
-                    error.value = null;
+                    if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
+                        error.value = "請先在程式碼中填入您的 TDX API Access Token！";
+                        isLoading.value = false; return;
+                    }
+                    isLoading.value = true; error.value = null;
 
                     try {
-                        const [tymcUpRes, tymcDownRes, trtcRes] = await Promise.all([
-                            axiosInstance.get(API_TYMC_UP_URL),
-                            axiosInstance.get(API_TYMC_DOWN_URL),
-                            axiosInstance.get(API_TRTC_URL)
+                        const [tymcRes, trtcRes] = await Promise.all([
+                            axiosInstance.get(API_URLS.TYMC),
+                            axiosInstance.get(API_URLS.TRTC)
                         ]);
 
-                        // Handle Taoyuan Metro Data (same as before)
-                        upTrain.value = tymcUpRes.data.length > 0 ? tymcUpRes.data[0] : null;
-                        downTrain.value = tymcDownRes.data.length > 0 ? tymcDownRes.data[0] : null;
-
-                        // --- UPDATED LOGIC for Taipei Metro Data ---
-                        const groupedStations = {};
-                        for (const train of trtcRes.data) {
-                            if (!groupedStations[train.StationID]) {
-                                groupedStations[train.StationID] = {
-                                    StationID: train.StationID,
-                                    StationName: train.StationName,
-                                    direction0: [], // Array for direction 0
-                                    direction1: []  // Array for direction 1
-                                };
-                            }
-
-                            // Sort train into the correct direction array
-                            if (train.Direction === 0) {
-                                groupedStations[train.StationID].direction0.push(train);
-                            } else if (train.Direction === 1) {
-                                groupedStations[train.StationID].direction1.push(train);
-                            }
-                        }
-                        trtcStations.value = groupedStations;
+                        processMetroData(tymcRes.data, 'TYMC');
+                        processMetroData(trtcRes.data, 'TRTC');
 
                         lastUpdateTime.value = new Date().toLocaleTimeString();
-
                     } catch (e) {
-                        // Error handling (same as before)
                         console.error("資料抓取失敗:", e);
-                        if (e.response) {
-                            error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`;
-                        } else {
-                            error.value = "無法載入列車資訊，請檢查您的網路連線。";
-                        }
+                        if (e.response) { error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`; }
+                        else { error.value = "無法載入列車資訊，請檢查您的網路連線。"; }
                     } finally {
                         isLoading.value = false;
                     }
                 };
 
-                // Helper function (same as before)
-                const formatEstimateTime = (time) => {
-                    if (time === 0) return '進站中';
-                    return time;
-                };
+                const formatEstimateTime = (time) => (time === 0 ? '進站中' : time);
 
-                // Lifecycle hook (same as before)
                 onMounted(() => {
                     fetchData();
                     setInterval(fetchData, 30000);
                 });
 
-                return { tymcStationName, upTrain, downTrain, trtcStations, isLoading, error, lastUpdateTime, formatEstimateTime };
+                return { metroData, isLoading, error, lastUpdateTime, formatEstimateTime };
             }
         }).mount('#app');
     </script>
