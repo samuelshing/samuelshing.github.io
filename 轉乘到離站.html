@@ -26,7 +26,7 @@
         }
 
         .arrival-time {
-            font-size: 4rem;
+            font-size: 3rem;
             font-weight: bold;
             color: #dc3545;
         }
@@ -76,7 +76,7 @@
                             </div>
                             <div class="card-body d-flex flex-column justify-content-center text-center">
                                 <div v-if="station.direction0 && station.direction0.length > 0" class="mb-3">
-                                    <h6 class="direction-heading">往 {{ station.direction0[0].TripHeadSign }}</h6>
+                                    <h6 class="direction-heading">{{ station.direction0[0].TripHeadSign }}</h6>
                                     <div class="my-2">
                                         <span class="arrival-time"
                                             :class="{ 'arrival-status-arriving': station.direction0[0].EstimateTime === 0 }">
@@ -89,7 +89,7 @@
                                 </div>
                                 <hr v-if="station.direction0.length > 0 && station.direction1.length > 0">
                                 <div v-if="station.direction1 && station.direction1.length > 0">
-                                    <h6 class="direction-heading">往 {{ station.direction1[0].TripHeadSign }}</h6>
+                                    <h6 class="direction-heading">{{ station.direction1[0].TripHeadSign }}</h6>
                                     <div class="my-2">
                                         <span class="arrival-time"
                                             :class="{ 'arrival-status-arriving': station.direction1[0].EstimateTime === 0 }">
@@ -101,8 +101,7 @@
                                     </div>
                                 </div>
 
-                                <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)"
-                                    class="text-muted">
+                                <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)" class="text-muted">
                                     目前無列車資訊
                                 </div>
                             </div>
@@ -134,7 +133,7 @@
                 const lastUpdateTime = ref('尚未更新');
 
                 // --- TDX API Settings ---
-                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjA3NzE4OTMsImlhdCI6MTc2MDY4NTQ5MywianRpIjoiYjIyZjcyYmItMGQ3OC00YzdiLTgzODgtYjVkNjY3OTFmNTcyIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.nmPhzqIZzTbeQtrh-FHMeXyVDOD1sBS1fxFSdNQeqqs2UECUtFzfRuKU2lZjTOc7FoVqMVE4x3CP716-_WAKxwuvzEJexPHAwVsjEovJVfMovpY8IroLYFopQqfJOfnOgQCPvQ_EAnCa9t07s56RdjsEA5t1rdQ6DPyG5EUhJjmBTRKMhDzz-lmzOM0KRzhA5dfkasmVvZqP7g0z20P6iWA-o-mExE7zW0eE3VyctXy9wWKLRcrk47qx0jf36l2O12747NQau1lSB-cu0kjhvQrPxf7iTr8e1u7QR0xDGPk7akyDdEu1JMlogDZc8XUDXQ5Nmw_WRCsZtkcF1fiQug'); // *** Please replace with your actual Access Token ***
+                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjEwMDczNjMsImlhdCI6MTc2MDkyMDk2MywianRpIjoiYzQ5ZGYzMTQtMjlkOS00NjQ1LWFjZjMtOWM5ZDhkZWUwY2VjIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.SWYNJ04b-M40HverQlh26wm3wdSidoHqN8VQV73zXQ2lhMFcLZM9o47iNMg9qUM1UQlK_e3xlwfqYNQpz6v7yRDo46UB7uJa1ZWwIK2-1HffVHdYni-6ml926O_Zuj4trrkEbqvUT1N7WNpnfzOF0HShS8z9HWrBWIZ3JWpe0fuiqyGLg-vqmZqNnpgo4SLByuwG9jKnM0Yuuk3XRFelfto4sAX7h8ApvYW6PqL9EdbEDN6C8wcQyLmfHEVFLZjxxOwP7mJzSK478eMMbJLpRW82LOJdL-WWDRy7N8bPEnpe9BYZcA-MV0Dy_YFSYR1IdtEChOy9ksWm78YsDF5-mw'); // *** Please replace with your actual Access Token ***
                 const axiosInstance = axios.create({
                     headers: { 'Authorization': `Bearer ${accessToken.value}` }
                 });
@@ -184,6 +183,20 @@
                 onMounted(() => {
                     fetchData();
                     // setInterval(fetchData, 30000);
+                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24format=JSON', {
+                        headers: { 'Authorization': `Bearer ${accessToken.value}` }
+                    }).then(response => {
+                        console.log('及時到站：', response.data);
+                    }).catch(error => {
+                        console.error('發生錯誤：', error);
+                    });
+                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/S2STravelTime/TRTC?%24filter=RouteID%20eq%20%27BL-1%27%20or%20RouteID%20eq%20%27G-1%27%20or%20RouteID%20eq%20%27O-1%27%20or%20RouteID%20eq%20%27R-1%27&%24format=JSON', {
+                        headers: { 'Authorization': `Bearer ${accessToken.value}` }
+                    }).then(response => {
+                        console.log('站間時間：', response.data);
+                    }).catch(error => {
+                        console.error('發生錯誤：', error);
+                    });
                 });
                 return { metroData, isLoading, error, lastUpdateTime, formatEstimateTime };
             }
