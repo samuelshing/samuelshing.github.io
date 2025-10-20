@@ -153,8 +153,8 @@
                 
                 // 將所有需要呼叫的 API URL 統整在一個物件中，方便管理
                 const API_URLS = {
-                    TYMC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27&$orderby=EstimateTime&$top=10&$format=JSON",
-                    TRTC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24filter=StationID%20eq%20%27G04%27%20or%20StationID%20eq%20%27O02%27%20or%20StationID%20eq%20%27O17%27%20or%20StationID%20eq%20%27BL07%27%20or%20StationID%20eq%20%27BL08%27%20or%20StationID%20eq%20%27R27%27&%24orderby=EstimateTime&%24format=JSON"
+                    TYMC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20'A3'&$orderby=EstimateTime&$format=JSON",
+                    TRTC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?$filter=StationID%20eq%20'G04'%20or%20StationID%20eq%20'O02'%20or%20StationID%20eq%20'O17'%20or%20StationID%20eq%20'BL07'%20or%20StationID%20eq%20'BL08'%20or%20StationID%20eq%20'R27'&$f$derby=EstimateTime&$f$rmat=JSON"
                 };
 
                 // --- 核心邏輯：資料處理函式 ---
@@ -166,34 +166,48 @@
                  */
                 const processMetroData = (apiData, systemKey) => {
                     const targetSystem = metroData.value[systemKey];
-                    targetSystem.stations = {}; // 每次處理前，先清空舊的站點資料
+                    targetSystem.stations = {};
 
-                    // 遍歷 API 回傳的每一筆列車資料
                     for (const train of apiData) {
-                        // 如果這是我們第一次遇到這個車站，先為它建立一個基本的物件結構
-                        if (!targetSystem.stations[train.StationID]) {
-                            targetSystem.stations[train.StationID] = {
-                                StationID: train.StationID,
+                        const stationId = train.StationID;
+                        // Initialize station object if it's the first time we see it
+                        if (!targetSystem.stations[stationId]) {
+                            targetSystem.stations[stationId] = {
+                                StationID: stationId,
                                 StationName: train.StationName,
-                                direction0: [], // 用於存放方向 0 的列車
-                                direction1: []  // 用於存放方向 1 的列車
+                                direction0: [],
+                                direction1: [],
+                                dir0HeadSign: null,
+                                dir1HeadSign: null
                             };
                         }
                         
-                        let direction;
-                        if (systemKey === 'TYMC') {
-                            // 桃園捷運沒有 Direction 欄位，我們用終點站是否為 'A1' 來判斷
-                            direction = (train.DestinationStationID === 'A1') ? 0 : 1; // 0 代表往台北，1 代表往機場/環北
+                        const station = targetSystem.stations[stationId];
+                        if ('Direction' in train && train.Direction !== null) {
+                            // Case 1: 'Direction' field exists (for simple, linear lines)
+                            if (train.Direction === 0) {
+                                station.direction0.push(train);
+                            } else {
+                                station.direction1.push(train);
+                            }
                         } else {
-                            // 台北捷運則直接使用 API 提供的 Direction 欄位
-                            direction = train.Direction;
-                        }
-
-                        // 將列車資料放入對應方向的陣列中
-                        if (direction === 0) {
-                            targetSystem.stations[train.StationID].direction0.push(train);
-                        } else if (direction === 1) {
-                            targetSystem.stations[train.StationID].direction1.push(train);
+                            // Case 2: Fallback for complex lines (like Zhonghe-Xinlu) using TripHeadSign
+                            const headSign = train.TripHeadSign;
+                            if (station.dir0HeadSign === headSign || station.dir0HeadSign === null) {
+                                // If this train's destination matches dir0's destination, or if dir0 is not yet assigned
+                                station.direction0.push(train);
+                                // If dir0 was unassigned, assign this train's destination to it
+                                if (station.dir0HeadSign === null) {
+                                    station.dir0HeadSign = headSign;
+                                }
+                            } else if (station.dir1HeadSign === headSign || station.dir1HeadSign === null) {
+                                // Else, if it matches dir1's destination, or if dir1 is not yet assigned
+                                station.direction1.push(train);
+                                // If dir1 was unassigned, assign this train's destination to it
+                                if (station.dir1HeadSign === null) {
+                                    station.dir1HeadSign = headSign;
+                                }
+                            }
                         }
                     }
                 };
@@ -252,14 +266,14 @@
                 onMounted(() => {
                     fetchData(); // 立即執行一次，載入初始資料
                     // setInterval(fetchData, 30000); // 設定計時器，每 30000 毫秒 (30秒) 自動呼叫 fetchData 函式來刷新資料
-                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24format=JSON', {
+                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?$f$rmat=JSON', {
                         headers: { 'Authorization': `Bearer ${accessToken.value}` }
                     }).then(response => {
                         console.log('及時到站：', response.data);
                     }).catch(error => {
                         console.error('發生錯誤：', error);
                     });
-                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/S2STravelTime/TRTC?%24filter=RouteID%20eq%20%27BL-1%27%20or%20RouteID%20eq%20%27G-1%27%20or%20RouteID%20eq%20%27O-1%27%20or%20RouteID%20eq%20%27R-1%27&%24format=JSON', {
+                    axios.get("https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/S2STravelTime/TRTC?$f$lter=RouteID%20eq%20'BL-1'%20or%20RouteID%20eq%20'G-1'%20or%20RouteID%20eq%20'O-1'%20or%20RouteID%20eq%20'R-1'&$f$rmat=JSON", {
                         headers: { 'Authorization': `Bearer ${accessToken.value}` }
                     }).then(response => {
                         console.log('站間時間：', response.data);
