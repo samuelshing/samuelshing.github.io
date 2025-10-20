@@ -119,38 +119,77 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
+        // 從 Vue 的全域物件中解構出需要用到的函式
         const { createApp, ref, onMounted } = Vue;
 
+        // 建立 Vue 應用程式實例
         createApp({
+            // setup 是 Vue 3 Composition API 的進入點，所有響應式狀態和邏輯都在此定義
             setup() {
-                // --- UNIFIED DATA STRUCTURE ---
+                // --- 響應式狀態定義 (Reactive State) ---
+                // 使用 ref() 來創建響應式變數，當它們的值改變時，畫面會自動更新
+
+                // 統一的資料結構，用來存放所有捷運系統的資料，這樣的結構有利於未來擴充 (例如增加高雄捷運)
                 const metroData = ref({
                     TYMC: { name: '桃園機場捷運', stations: {} },
                     TRTC: { name: '台北捷運', stations: {} }
                 });
+
+                // UI 狀態：是否正在載入資料
                 const isLoading = ref(true);
+                // UI 狀態：是否發生錯誤，用來儲存錯誤訊息
                 const error = ref(null);
+                // UI 狀態：顯示最後一次成功更新資料的時間
                 const lastUpdateTime = ref('尚未更新');
-
-                // --- TDX API Settings ---
-                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjEwMDczNjMsImlhdCI6MTc2MDkyMDk2MywianRpIjoiYzQ5ZGYzMTQtMjlkOS00NjQ1LWFjZjMtOWM5ZDhkZWUwY2VjIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.SWYNJ04b-M40HverQlh26wm3wdSidoHqN8VQV73zXQ2lhMFcLZM9o47iNMg9qUM1UQlK_e3xlwfqYNQpz6v7yRDo46UB7uJa1ZWwIK2-1HffVHdYni-6ml926O_Zuj4trrkEbqvUT1N7WNpnfzOF0HShS8z9HWrBWIZ3JWpe0fuiqyGLg-vqmZqNnpgo4SLByuwG9jKnM0Yuuk3XRFelfto4sAX7h8ApvYW6PqL9EdbEDN6C8wcQyLmfHEVFLZjxxOwP7mJzSK478eMMbJLpRW82LOJdL-WWDRy7N8bPEnpe9BYZcA-MV0Dy_YFSYR1IdtEChOy9ksWm78YsDF5-mw'); // *** Please replace with your actual Access Token ***
-                const axiosInstance = axios.create({
-                    headers: { 'Authorization': `Bearer ${accessToken.value}` }
+                
+                // --- TDX API 相關設定 ---
+                
+                // 存放從 TDX 平台取得的 Access Token
+                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjEwMDczNjMsImlhdCI6MTc2MDkyMDk2MywianRpIjoiYzQ5ZGYzMTQtMjlkOS00NjQ1LWFjZjMtOWM5ZDhkZWUwY2VjIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.SWYNJ04b-M40HverQlh26wm3wdSidoHqN8VQV73zXQ2lhMFcLZM9o47iNMg9qUM1UQlK_e3xlwfqYNQpz6v7yRDo46UB7uJa1ZWwIK2-1HffVHdYni-6ml926O_Zuj4trrkEbqvUT1N7WNpnfzOF0HShS8z9HWrBWIZ3JWpe0fuiqyGLg-vqmZqNnpgo4SLByuwG9jKnM0Yuuk3XRFelfto4sAX7h8ApvYW6PqL9EdbEDN6C8wcQyLmfHEVFLZjxxOwP7mJzSK478eMMbJLpRW82LOJdL-WWDRy7N8bPEnpe9BYZcA-MV0Dy_YFSYR1IdtEChOy9ksWm78YsDF5-mw');
+                // 建立一個 axios 實例，並預先設定好所有請求都需要的 Authorization 標頭
+                const axiosInstance = axios.create({ 
+                    headers: { 'Authorization': `Bearer ${accessToken.value}` } 
                 });
-
-                // --- UNIFIED API URLS ---
+                
+                // 將所有需要呼叫的 API URL 統整在一個物件中，方便管理
                 const API_URLS = {
                     TYMC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20%27A3%27&$orderby=EstimateTime&$top=10&$format=JSON",
                     TRTC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24filter=StationID%20eq%20%27G04%27%20or%20StationID%20eq%20%27O02%27%20or%20StationID%20eq%20%27O17%27%20or%20StationID%20eq%20%27BL07%27%20or%20StationID%20eq%20%27BL08%27%20or%20StationID%20eq%20%27R27%27&%24orderby=EstimateTime&%24format=JSON"
                 };
+
+                // --- 核心邏輯：資料處理函式 ---
+
+                /**
+                 * @description 將從 API 取得的扁平陣列資料，轉換並分組為巢狀物件結構
+                 * @param {Array} apiData - 從 TDX API 回傳的列車資料陣列
+                 * @param {String} systemKey - 捷運系統的鍵名 (例如 'TYMC' 或 'TRTC')
+                 */
                 const processMetroData = (apiData, systemKey) => {
                     const targetSystem = metroData.value[systemKey];
-                    targetSystem.stations = {};
+                    targetSystem.stations = {}; // 每次處理前，先清空舊的站點資料
+
+                    // 遍歷 API 回傳的每一筆列車資料
                     for (const train of apiData) {
+                        // 如果這是我們第一次遇到這個車站，先為它建立一個基本的物件結構
                         if (!targetSystem.stations[train.StationID]) {
-                            targetSystem.stations[train.StationID] = { StationID: train.StationID, StationName: train.StationName, direction0: [], direction1: [] };
+                            targetSystem.stations[train.StationID] = {
+                                StationID: train.StationID,
+                                StationName: train.StationName,
+                                direction0: [], // 用於存放方向 0 的列車
+                                direction1: []  // 用於存放方向 1 的列車
+                            };
                         }
-                        let direction = (systemKey === 'TYMC') ? (train.DestinationStationID === 'A1' ? 0 : 1) : train.Direction;
+                        
+                        let direction;
+                        if (systemKey === 'TYMC') {
+                            // 桃園捷運沒有 Direction 欄位，我們用終點站是否為 'A1' 來判斷
+                            direction = (train.DestinationStationID === 'A1') ? 0 : 1; // 0 代表往台北，1 代表往機場/環北
+                        } else {
+                            // 台北捷運則直接使用 API 提供的 Direction 欄位
+                            direction = train.Direction;
+                        }
+
+                        // 將列車資料放入對應方向的陣列中
                         if (direction === 0) {
                             targetSystem.stations[train.StationID].direction0.push(train);
                         } else if (direction === 1) {
@@ -158,31 +197,61 @@
                         }
                     }
                 };
+                
+                /**
+                 * @description 主要的資料獲取函式，會呼叫所有需要的 API
+                 */
                 const fetchData = async () => {
+                    // 防呆機制：如果尚未填入 Token，則顯示錯誤訊息並停止執行
                     if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
                         error.value = "請先在程式碼中填入您的 TDX API Access Token！";
-                        isLoading.value = false; return;
+                        isLoading.value = false; 
+                        return; // 終止函式
                     }
-                    console.log('Request!');
-                    isLoading.value = true;
+                    
+                    // 每次抓取新資料前，重設 UI 狀態
+                    isLoading.value = true; 
                     error.value = null;
+
                     try {
+                        // 使用 Promise.all 可以「同時」發送多個非同步請求，效率比一個一個發送要高
                         const [tymcRes, trtcRes] = await Promise.all([axiosInstance.get(API_URLS.TYMC), axiosInstance.get(API_URLS.TRTC)]);
+                        // 當兩個請求都成功回來後，分別將它們的資料交給處理函式
                         processMetroData(tymcRes.data, 'TYMC');
                         processMetroData(trtcRes.data, 'TRTC');
+                        // 更新最後更新時間
                         lastUpdateTime.value = new Date().toLocaleTimeString();
                     } catch (e) {
+                        // 如果 try 區塊中的任何一個請求失敗，就會進入 catch 區塊
                         console.error("資料抓取失敗:", e);
-                        if (e.response) { error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`; }
-                        else { error.value = "無法載入列車資訊，請檢查您的網路連線。"; }
+                        if (e.response) { 
+                            // API 有回應，但狀態碼是錯誤的 (如 401 Unauthorized, 404 Not Found)
+                            error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`; 
+                        } else {
+                            // API 完全沒有回應，可能是網路問題
+                            error.value = "無法載入列車資訊，請檢查您的網路連線。"; 
+                        }
                     } finally {
+                        // 無論成功或失敗，finally 區塊的程式碼一定會執行，確保載入動畫會被關閉
                         isLoading.value = false;
                     }
                 };
+
+                // --- 輔助函式 (Helper Function) ---
+
+                /**
+                 * @description 格式化顯示的到站時間
+                 * @param {Number} time - 預估分鐘數
+                 * @returns {String} 格式化後的文字
+                 */
                 const formatEstimateTime = (time) => (time === 0 ? '進站中' : time);
+                
+                // --- Vue 生命週期鉤子 (Lifecycle Hook) ---
+
+                // onMounted 會在 Vue 元件被掛載到網頁上後執行一次
                 onMounted(() => {
-                    fetchData();
-                    // setInterval(fetchData, 30000);
+                    fetchData(); // 立即執行一次，載入初始資料
+                    // setInterval(fetchData, 30000); // 設定計時器，每 30000 毫秒 (30秒) 自動呼叫 fetchData 函式來刷新資料
                     axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?%24format=JSON', {
                         headers: { 'Authorization': `Bearer ${accessToken.value}` }
                     }).then(response => {
@@ -200,7 +269,7 @@
                 });
                 return { metroData, isLoading, error, lastUpdateTime, formatEstimateTime };
             }
-        }).mount('#app');
+        }).mount('#app'); // 將 Vue 應用程式掛載到 id 為 'app' 的 HTML 元素上
     </script>
 </body>
 
