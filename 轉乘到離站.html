@@ -101,7 +101,8 @@
                                     </div>
                                 </div>
 
-                                <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)" class="text-muted">
+                                <div v-if="(!station.direction0 || station.direction0.length === 0) && (!station.direction1 || station.direction1.length === 0)"
+                                    class="text-muted">
                                     目前無列車資訊
                                 </div>
                             </div>
@@ -141,16 +142,16 @@
                 const error = ref(null);
                 // UI 狀態：顯示最後一次成功更新資料的時間
                 const lastUpdateTime = ref('尚未更新');
-                
+
                 // --- TDX API 相關設定 ---
-                
+
                 // 存放從 TDX 平台取得的 Access Token
-                const accessToken = ref('eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjEwMDczNjMsImlhdCI6MTc2MDkyMDk2MywianRpIjoiYzQ5ZGYzMTQtMjlkOS00NjQ1LWFjZjMtOWM5ZDhkZWUwY2VjIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.SWYNJ04b-M40HverQlh26wm3wdSidoHqN8VQV73zXQ2lhMFcLZM9o47iNMg9qUM1UQlK_e3xlwfqYNQpz6v7yRDo46UB7uJa1ZWwIK2-1HffVHdYni-6ml926O_Zuj4trrkEbqvUT1N7WNpnfzOF0HShS8z9HWrBWIZ3JWpe0fuiqyGLg-vqmZqNnpgo4SLByuwG9jKnM0Yuuk3XRFelfto4sAX7h8ApvYW6PqL9EdbEDN6C8wcQyLmfHEVFLZjxxOwP7mJzSK478eMMbJLpRW82LOJdL-WWDRy7N8bPEnpe9BYZcA-MV0Dy_YFSYR1IdtEChOy9ksWm78YsDF5-mw');
+                const accessToken = ref("eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJER2lKNFE5bFg4WldFajlNNEE2amFVNm9JOGJVQ3RYWGV6OFdZVzh3ZkhrIn0.eyJleHAiOjE3NjEwOTU4MjIsImlhdCI6MTc2MTAwOTQyMiwianRpIjoiZWNmMzJmZGQtMGU4MC00Mzg0LTkwYTItY2Y3MWNiYTI5NjJjIiwiaXNzIjoiaHR0cHM6Ly90ZHgudHJhbnNwb3J0ZGF0YS50dy9hdXRoL3JlYWxtcy9URFhDb25uZWN0Iiwic3ViIjoiOTk4ZTE3OWQtMDJiNi00NTkwLTkyYjAtMGNlNTBjYTY4ZWU0IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoic2FtdWVsc2hpbmctYzg2N2Y3ZTktZGQ3Mi00NmE3IiwiYWNyIjoiMSIsInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJzdGF0aXN0aWMiLCJwcmVtaXVtIiwicGFya2luZ0ZlZSIsIm1hYXMiLCJhZHZhbmNlZCIsImdlb2luZm8iLCJ2YWxpZGF0b3IiLCJ0b3VyaXNtIiwiaGlzdG9yaWNhbCIsImN3YSIsImJhc2ljIl19LCJzY29wZSI6InByb2ZpbGUgZW1haWwiLCJ1c2VyIjoiOTVmN2FmZjIifQ.Oi3_x_yKtAd8x_ASOUjBblSTnPTkkptO2-jgVPI5mU2yrOXuUNlox6_f0lvQfHK6x82j_P6fJZfwGtgYdAdZCnAa_WDKTUDAEIgOyEU8mhJH5IJtepGg3_hQ43vEOHjG4jpRUuOklhXKCCevgwj0mf-dkbSE-3zmsWkTIDG5_8KUv9WFlzv72ZVE4oqo0AmnRlZmxKGlMzOgwzfiwqml_V_ZN9NC6QSDHJq7JDXjfVHlIuFZOu3G6bdYnbiUwpbm_SRipXk6rh2XxFT4jytkb_cS1SDK1keaHpmUs2BDRq0mUADIaf53lnLdW4qck_EK-3pFuRSc4oMcNNp3ATglWQ");
                 // 建立一個 axios 實例，並預先設定好所有請求都需要的 Authorization 標頭
-                const axiosInstance = axios.create({ 
-                    headers: { 'Authorization': `Bearer ${accessToken.value}` } 
+                const axiosInstance = axios.create({
+                    headers: { 'Authorization': `Bearer ${accessToken.value}` }
                 });
-                
+
                 // 將所有需要呼叫的 API URL 統整在一個物件中，方便管理
                 const API_URLS = {
                     TYMC: "https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TYMC?$filter=StationID%20eq%20'A3'&$orderby=EstimateTime&$format=JSON",
@@ -181,7 +182,7 @@
                                 dir1HeadSign: null
                             };
                         }
-                        
+
                         const station = targetSystem.stations[stationId];
                         if ('Direction' in train && train.Direction !== null) {
                             // Case 1: 'Direction' field exists (for simple, linear lines)
@@ -211,7 +212,7 @@
                         }
                     }
                 };
-                
+
                 /**
                  * @description 主要的資料獲取函式，會呼叫所有需要的 API
                  */
@@ -219,12 +220,12 @@
                     // 防呆機制：如果尚未填入 Token，則顯示錯誤訊息並停止執行
                     if (accessToken.value === 'YOUR_ACCESS_TOKEN') {
                         error.value = "請先在程式碼中填入您的 TDX API Access Token！";
-                        isLoading.value = false; 
+                        isLoading.value = false;
                         return; // 終止函式
                     }
-                    
+
                     // 每次抓取新資料前，重設 UI 狀態
-                    isLoading.value = true; 
+                    isLoading.value = true;
                     error.value = null;
 
                     try {
@@ -238,12 +239,12 @@
                     } catch (e) {
                         // 如果 try 區塊中的任何一個請求失敗，就會進入 catch 區塊
                         console.error("資料抓取失敗:", e);
-                        if (e.response) { 
+                        if (e.response) {
                             // API 有回應，但狀態碼是錯誤的 (如 401 Unauthorized, 404 Not Found)
-                            error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`; 
+                            error.value = `API 請求失敗: ${e.response.status} - ${e.response.data.message || '請檢查 Token 是否正確或過期。'}`;
                         } else {
                             // API 完全沒有回應，可能是網路問題
-                            error.value = "無法載入列車資訊，請檢查您的網路連線。"; 
+                            error.value = "無法載入列車資訊，請檢查您的網路連線。";
                         }
                     } finally {
                         // 無論成功或失敗，finally 區塊的程式碼一定會執行，確保載入動畫會被關閉
@@ -260,6 +261,18 @@
                  */
                 const formatEstimateTime = (time) => (time === 0 ? '進站中' : time);
                 
+                const getToken = async () => {
+                    const params = new URLSearchParams();
+                    params.append('grant_type', 'client_credentials');
+                    params.append('client_id', 'samuelshing-c867f7e9-dd72-46a7');
+                    params.append('client_secret', '7680725d-44c0-4367-bfd2-16405f6f3175');
+                    axios.post('https://tdx.transportdata.tw/auth/realms/TDXConnect/protocol/openid-connect/token', params).then(response => {
+                        console.log('成功取得 Token:', response.data);
+                    }).catch(error => {
+                        console.error('發生錯誤:', error.response ? error.response.data : error.message);
+                    });
+                }
+
                 // --- Vue 生命週期鉤子 (Lifecycle Hook) ---
 
                 // onMounted 會在 Vue 元件被掛載到網頁上後執行一次
