@@ -154,6 +154,7 @@
                         if (response.data.success !== "true") {
                             throw new Error('API 回應錯誤');
                         }
+                        console.log(response.data);
                         this.processData(response.data);
                         // 【*** 調整點 ***】 資料處理完後，等待 DOM 更新後再渲染所有圖表
                         this.$nextTick(() => {
