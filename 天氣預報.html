@@ -167,6 +167,7 @@
                         if (response.data.success !== "true") {
                             throw new Error('API 回應錯誤');
                         }
+                        console.log(response.data);
                         this.processData(response.data);
                         if (this.locations.length > 0) {
                             this.selectedLocation = this.locations[0].name; // 預設選擇第一個地區
