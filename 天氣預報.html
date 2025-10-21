@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>天氣預報</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        #app {
+            max-width: 960px;
+            margin: auto;
+            padding: 1rem;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 40vh;
+            min-height: 300px;
+        }
+
+        .weather-card {
+            transition: transform 0.2s;
+        }
+
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+            color: #0d6efd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app">
+        <header class="text-center my-4">
+            <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報</h1>
+            <p class="text-muted">板橋、中和、新店區未來3日之3小時降雨機率,溫度,天氣現象,體感溫度</p>
+        </header>
+
+        <div v-if="isLoading" class="text-center my-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">正在載入天氣資料...</p>
+        </div>
+
+        <div v-if="error" class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <strong>資料載入失敗：</strong> {{ error }}
+        </div>
+
+        <main v-if="!isLoading && !error">
+            <div class="mb-4">
+                <label for="locationSelector" class="form-label">選擇地區：</label>
+                <select id="locationSelector" class="form-select form-select-lg" v-model="selectedLocation">
+                    <option v-for="loc in locations" :key="loc.name" :value="loc.name">{{ loc.name }}</option>
+                </select>
+            </div>
+
+            <section class="chart-container mb-5">
+                <canvas id="weatherChart"></canvas>
+            </section>
+
+            <section>
+                <h3 class="mb-3"><i class="bi bi-card-list"></i> 詳細預報</h3>
+                <div class="row g-3">
+                    <div v-for="forecast in currentLocationData.forecasts" :key="forecast.startTime"
+                        class="col-12 col-md-6 col-lg-4">
+                        <div class="card h-100 weather-card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h5 class="card-title">{{ formatTime(forecast.startTime) }} - {{
+                                            formatTime(forecast.endTime) }}</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">{{ formatDate(forecast.startTime) }}
+                                        </h6>
+                                    </div>
+                                    <i :class="getWeatherIconClass(forecast.weatherCode)" class="weather-icon"></i>
+                                </div>
+                                <p class="card-text fs-5 my-2">{{ forecast.weather }}</p>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="bi bi-thermometer-half text-danger"></i> 溫度</span>
+                                        <strong>{{ forecast.temp }} °C</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="bi bi-person text-info"></i> 體感</span>
+                                        <strong>{{ forecast.apparentTemp }} °C</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span><i class="bi bi-cloud-drizzle-fill text-primary"></i> 降雨機率</span>
+                                        <strong>{{ forecast.pop }} %</strong>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center text-muted mt-5">
+            <p>資料來源：<a href="https://opendata.cwa.gov.tw/" target="_blank">交通部中央氣象署</a></p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    // 注意：API授權碼 (Authorization) 可能有時效性，若失效請至氣象署官網申請新的
+                    apiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=新店區,中和區,板橋區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
+                    isLoading: true,
+                    error: null,
+                    locations: [],
+                    selectedLocation: '',
+                    chartInstance: null
+                };
+            },
+            computed: {
+                currentLocationData() {
+                    return this.locations.find(loc => loc.name === this.selectedLocation) || { forecasts: [] };
+                }
+            },
+            watch: {
+                selectedLocation() {
+                    // 等待 Vue 將畫面更新完畢後，再執行渲染圖表的函式
+                    this.$nextTick(() => {
+                        this.renderChart();
+                    });
+                }
+            },
+            methods: {
+                async fetchWeatherData() {
+                    this.isLoading = true;
+                    this.error = null;
+                    try {
+                        // 使用 Axios 取得 API 資料
+                        const response = await axios.get(this.apiUrl);
+                        if (response.data.success !== "true") {
+                            throw new Error('API 回應錯誤');
+                        }
+                        this.processData(response.data);
+                        if (this.locations.length > 0) {
+                            this.selectedLocation = this.locations[0].name; // 預設選擇第一個地區
+                        }
+                    } catch (err) {
+                        console.error("API 請求失敗:", err);
+                        this.error = "無法從中央氣象署伺服器獲取資料，請稍後再試。";
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                processData(data) {
+                    const rawLocations = data.records.Locations[0].Location;
+                    const processedLocations = rawLocations.map(location => {
+                        // 取得各天氣元素的資料陣列
+                        const tempElement = location.WeatherElement.find(el => el.ElementName === '溫度').Time;
+                        const apparentTempElement = location.WeatherElement.find(el => el.ElementName === '體感溫度').Time;
+                        const popElement = location.WeatherElement.find(el => el.ElementName === '3小時降雨機率').Time;
+                        const weatherElement = location.WeatherElement.find(el => el.ElementName === '天氣現象').Time;
+
+                        // 以3小時降雨機率的時間區間為基準，合併所有資料
+                        const forecasts = popElement.map(popTime => {
+                            const startTime = popTime.StartTime;
+
+                            // 尋找對應時間點的溫度資料
+                            const currentTemp = tempElement.find(t => t.DataTime === startTime);
+                            const currentApparentTemp = apparentTempElement.find(t => t.DataTime === startTime);
+                            const currentWx = weatherElement.find(wx => wx.StartTime === startTime);
+
+                            return {
+                                startTime: startTime,
+                                endTime: popTime.EndTime,
+                                pop: popTime.ElementValue[0].ProbabilityOfPrecipitation,
+                                temp: currentTemp ? currentTemp.ElementValue[0].Temperature : 'N/A',
+                                apparentTemp: currentApparentTemp ? currentApparentTemp.ElementValue[0].ApparentTemperature : 'N/A',
+                                weather: currentWx ? currentWx.ElementValue[0].Weather : 'N/A',
+                                weatherCode: currentWx ? currentWx.ElementValue[0].WeatherCode : 'N/A'
+                            };
+                        });
+
+                        return { name: location.LocationName, forecasts };
+                    });
+                    this.locations = processedLocations;
+                },
+                renderChart() {
+                    if (this.chartInstance) {
+                        this.chartInstance.destroy(); // 銷毀舊圖表
+                    }
+
+                    const ctx = document.getElementById('weatherChart').getContext('2d');
+                    if (!ctx || !this.currentLocationData.forecasts.length) return;
+
+                    const forecasts = this.currentLocationData.forecasts;
+
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: forecasts.map(f => this.formatTime(f.startTime)),
+                            datasets: [
+                                {
+                                    type: 'line',
+                                    label: '溫度 (°C)',
+                                    data: forecasts.map(f => f.temp),
+                                    borderColor: 'rgba(255, 99, 132, 1)',
+                                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                    yAxisID: 'y-temp',
+                                    tension: 0.3,
+                                },
+                                {
+                                    type: 'line',
+                                    label: '體感溫度 (°C)',
+                                    data: forecasts.map(f => f.apparentTemp),
+                                    borderColor: 'rgba(255, 159, 64, 1)',
+                                    backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                                    yAxisID: 'y-temp',
+                                    tension: 0.3,
+                                    borderDash: [5, 5],
+                                },
+                                {
+                                    type: 'bar',
+                                    label: '降雨機率 (%)',
+                                    data: forecasts.map(f => f.pop),
+                                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    yAxisID: 'y-pop',
+                                },
+                            ]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            interaction: {
+                                mode: 'index',
+                                intersect: false,
+                            },
+                            scales: {
+                                'y-temp': {
+                                    type: 'linear',
+                                    position: 'left',
+                                    title: {
+                                        display: true,
+                                        text: '溫度 (°C)'
+                                    }
+                                },
+                                'y-pop': {
+                                    type: 'linear',
+                                    position: 'right',
+                                    min: 0,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: '降雨機率 (%)'
+                                    },
+                                    grid: {
+                                        drawOnChartArea: false, // 避免格線重疊
+                                    }
+                                }
+                            }
+                        }
+                    });
+                },
+                // 輔助函式：格式化時間
+                formatTime(dateTimeStr) {
+                    const date = new Date(dateTimeStr);
+                    return date.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+                },
+                formatDate(dateTimeStr) {
+                    const date = new Date(dateTimeStr);
+                    return date.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+                },
+                // 輔助函式：根據天氣代碼回傳 Bootstrap Icon class
+                getWeatherIconClass(code) {
+                    const codeNum = parseInt(code);
+                    if ([15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 41].includes(codeNum)) {
+                        return 'bi bi-cloud-lightning-rain-fill'; // 雷雨
+                    }
+                    if ([8, 9, 10, 11, 12, 13, 14, 19, 20, 29, 30, 31, 32, 38, 39].includes(codeNum)) {
+                        return 'bi bi-cloud-drizzle-fill'; // 雨
+                    }
+                    if ([24, 25, 26, 27, 28].includes(codeNum)) {
+                        return 'bi bi-cloud-fog2-fill'; // 霧
+                    }
+                    if ([4, 5, 6, 7].includes(codeNum)) {
+                        return 'bi bi-clouds-fill'; // 多雲
+                    }
+                    if (codeNum === 1) {
+                        return 'bi bi-brightness-high-fill'; // 晴
+                    }
+                    if ([2, 3].includes(codeNum)) {
+                        return 'bi bi-cloud-sun-fill'; // 晴時多雲
+                    }
+                    return 'bi bi-cloud-fill'; // 預設：陰
+                }
+            },
+            mounted() {
+                // Vue 實例掛載後，自動獲取資料
+                this.fetchWeatherData();
+            }
+        }).mount('#app');
+
+    </script>
+
+</body>
+
+</html>
