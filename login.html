@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>上帝面板</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script>
+        // Firebase 配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmeGum4RaD7Z8Hu0TuIC2_196taGGlxHU",
+            authDomain: "kanghua-a3016.firebaseapp.com",
+            projectId: "kanghua-a3016",
+            storageBucket: "kanghua-a3016.appspot.com",
+            messagingSenderId: "579590905256",
+            appId: "1:579590905256:web:4083c95c7ed718307ad19d",
+            measurementId: "G-YGP9YJM7HB"
+        };
+
+        // 初始化 Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // 初始化 Firestore
+        const db = firebase.firestore();
+    </script>
+    <style>
+        body {
+            font-size: 1rem;
+            line-height: 1.5;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 100%;
+            padding: 15px;
+        }
+
+        .card {
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            font-size: 1rem;
+            padding: 10px;
+        }
+
+        @media (max-width: 576px) {
+            h2.card-title {
+                font-size: 1.25rem;
+            }
+
+            .form-control {
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="./index.html">
+                <i class="bi bi-code-slash"></i>
+                功能入口
+            </a>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-sm-10 col-md-8 col-lg-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h2 class="card-title text-center">登入 / 註冊</h2>
+                        <div class="form-group">
+                            <input type="email" id="email" class="form-control" placeholder="Email">
+                        </div>
+                        <div class="form-group">
+                            <input type="password" id="password" class="form-control" placeholder="Password">
+                        </div>
+                        <div class="form-group" id="nicknameDiv" style="display: none;">
+                            <input type="text" id="nickname" class="form-control" placeholder="Nickname">
+                        </div>
+                        <button class="btn btn-primary btn-block" onclick="handleAuth()">登入 / 註冊</button>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-body text-center">
+                        <h2 class="card-title">使用 Google 登入</h2>
+                        <button class="btn btn-danger btn-block" onclick="signInWithGoogle()">使用 Google 登入</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const defaultAttr = [
+            { attribute: "慈愛", story: "耶和華有憐憫，有恩典，不輕易發怒，且有豐盛的慈愛。（詩篇 103:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "公義", story: "耶和華是公義的；祂喜愛公義，正直人必得見祂的面。（詩篇 11:7）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "良善", story: "你們要嘗嘗主恩的滋味，便知道祂是美善的；投靠祂的人有福了！（詩篇 34:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "聖潔", story: "惟有那召你們的，是聖潔的，你們在一切所行的事上也要聖潔。（彼得前書 1:15）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "智慧", story: "深哉！神豐富的智慧和知識！祂的判斷何其難測！祂的蹤跡何其難尋！（羅馬書 11:33）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
+            { attribute: "榮耀", story: "因為萬有都是本於祂，依靠祂，歸於祂。願榮耀歸給祂，直到永遠。阿們！（羅馬書 11:36）", timestamp: firebase.firestore.FieldValue.serverTimestamp() }
+        ];
+
+        // 處理用戶的認證 (登入/註冊)
+        function handleAuth() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const nickname = document.getElementById('nickname').value;
+
+            firebase.auth().fetchSignInMethodsForEmail(email).then((signInMethods) => {
+                if (signInMethods.length === 0) {
+                    // 沒有記錄的帳戶 -> 註冊
+                    document.getElementById('nicknameDiv').style.display = 'block';
+                    if (nickname) {
+                        // 如果已輸入暱稱則進行註冊
+                        firebase.auth().createUserWithEmailAndPassword(email, password).then((userCredential) => {
+                            // 註冊成功
+                            var user = userCredential.user;
+                            console.log('User registered:', user);
+                            // 將用戶資料存入 Firestore
+                            return db.collection('users').doc(user.uid).set({
+                                uid: user.uid,
+                                email: email,
+                                nickname: nickname,
+                                role: "general",  // 預設角色為一般使用者
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            }).then(() => {
+                                // 初始化 godattrs 集合中的六筆資料
+                                const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                                const batch = db.batch();
+
+                                defaultAttr.forEach((attr) => {
+                                    const docRef = godattrsCollection.doc();
+                                    batch.set(docRef, attr);
+                                });
+
+                                return batch.commit();
+                            });
+                        }).then(() => {
+                            console.log('User data and default godattrs stored in Firestore');
+                            // 重導到首頁
+                            window.location.href = 'godattrs.html';
+                        }).catch((error) => {
+                            var errorCode = error.code;
+                            var errorMessage = error.message;
+                            console.error('Error registering or storing data:', errorCode, errorMessage);
+                        });
+                    }
+                } else {
+                    // 已有記錄的帳戶 -> 登入
+                    firebase.auth().signInWithEmailAndPassword(email, password).then((userCredential) => {
+                        // 登錄成功
+                        var user = userCredential.user;
+                        console.log('User signed in:', user);
+                        // 重導到首頁
+                        window.location.href = 'godattrs.html';
+                    }).catch((error) => {
+                        var errorCode = error.code;
+                        var errorMessage = error.message;
+                        console.error('Error signing in:', errorCode, errorMessage);
+                    });
+                }
+            }).catch((error) => {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.error('Error fetching sign-in methods:', errorCode, errorMessage);
+            });
+        }
+
+        // 使用 Google 登錄
+        function signInWithGoogle() {
+            var provider = new firebase.auth.GoogleAuthProvider();
+            firebase.auth().signInWithPopup(provider).then((result) => {
+                var user = result.user;
+                console.log('User signed in with Google:', user);
+
+                // 檢查是否為新用戶
+                return db.collection('users').doc(user.uid).get().then((doc) => {
+                    if (!doc.exists) {
+                        // 將新用戶資料存入 Firestore
+                        return db.collection('users').doc(user.uid).set({
+                            uid: user.uid,
+                            email: user.email,
+                            nickname: user.displayName,
+                            photoURL: user.photoURL,
+                            role: "general",  // 預設角色為一般使用者
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(() => {
+                            // 初始化 godattrs 集合中的六筆資料
+                            const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                            const batch = db.batch();
+
+                            defaultAttr.forEach((attr) => {
+                                const docRef = godattrsCollection.doc();
+                                batch.set(docRef, attr);
+                            });
+
+                            return batch.commit();
+                        });
+                    } else {
+                        return Promise.resolve(); // 用戶已存在，不需要初始化資料
+                    }
+                });
+            }).then(() => {
+                console.log('User data stored in Firestore');
+                // 重導到首頁
+                window.location.href = 'godattrs.html';
+            }).catch((error) => {
+                var errorCode = error.code;
+                var errorMessage = error.message;
+                console.error('Error signing in with Google:', errorCode, errorMessage);
+            });
+        }
+    </script>
+</body>
+
+</html>
