@@ -63,7 +63,7 @@
     <div id="app">
         <header class="text-center my-4">
             <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報</h1>
-            <p class="text-muted">板橋、中和、新店區未來3日之3小時降雨機率、溫度、天氣現象、體感溫度</p>
+            <p class="text-muted">板橋、中和、新店未來24小時內，每3小時之綜合天氣趨勢與降雨趨勢</p>
         </header>
 
         <div v-if="isLoading" class="text-center my-5">
@@ -184,13 +184,17 @@
                     }
                 },
                 processData(data) {
+                    // 建立目前時間與24小時後的時間點，用於過濾資料
+                    const currentTime = new Date();
+                    const twentyFourHoursLater = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
                     const rawLocations = data.records.Locations[0].Location;
                     this.locations = rawLocations.map(location => {
                         const tempElement = location.WeatherElement.find(el => el.ElementName === '溫度').Time;
                         const apparentTempElement = location.WeatherElement.find(el => el.ElementName === '體感溫度').Time;
                         const popElement = location.WeatherElement.find(el => el.ElementName === '3小時降雨機率').Time;
                         const weatherElement = location.WeatherElement.find(el => el.ElementName === '天氣現象').Time;
-                        const forecasts = popElement.map(popTime => {
+                        // 先組合出所有時段的預報資料
+                        const allForecasts = popElement.map(popTime => {
                             const startTime = popTime.StartTime;
                             const currentTemp = tempElement.find(t => t.DataTime === startTime);
                             const currentApparentTemp = apparentTempElement.find(t => t.DataTime === startTime);
@@ -203,8 +207,13 @@
                                 apparentTemp: currentApparentTemp ? currentApparentTemp.ElementValue[0].ApparentTemperature : 'N/A',
                                 weather: currentWx ? currentWx.ElementValue[0].Weather : 'N/A',
                                 weatherCode: weatherCode,
-                                rainLevel: this.getRainLevel(weatherCode) // 新增：計算降雨等級
+                                rainLevel: this.getRainLevel(weatherCode)
                             };
+                        });
+                        // 過濾出開始時間在 "現在" 到 "24小時後" 之間的資料
+                        const forecasts = allForecasts.filter(forecast => {
+                            const forecastTime = new Date(forecast.startTime);
+                            return forecastTime >= currentTime && forecastTime < twentyFourHoursLater;
                         });
                         return { name: location.LocationName, forecasts };
                     });
@@ -250,7 +259,7 @@
                         }
                     });
                 },
-                // 【*** 新增方法 ***】 根據天氣代碼回傳雨量等級
+                // 根據天氣代碼回傳雨量等級
                 getRainLevel(weatherCode) {
                     const code = parseInt(weatherCode);
                     if ([41].includes(code)) return 4;// 暴雨
@@ -259,21 +268,18 @@
                     if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1;// 小雨 (短暫、零星的雨)
                     return 0;// 無雨
                 },
-                // 【*** 新增方法 ***】 渲染降雨趨勢圖
+                // 渲染降雨趨勢圖
                 renderRainChart(location) {
                     const canvasId = 'rain-chart-' + location.name;
                     const ctx = document.getElementById(canvasId);
                     if (!ctx) return;
-
                     if (this.rainChartInstances[location.name]) this.rainChartInstances[location.name].destroy();
-
-                    const rainForecasts = location.forecasts.slice(0, 4); // 只取未來12小時 (4個時段)
+                    const rainForecasts = location.forecasts.slice(0, 8); // 只取未來24小時 (8個時段)
                     const rainLevels = ['無雨', '小雨', '中雨', '大雨', '暴雨'];
-
                     this.rainChartInstances[location.name] = new Chart(ctx.getContext('2d'), {
                         type: 'line',
                         data: {
-                            labels: rainForecasts.map(f => this.formatTime(f.startTime)),
+                            labels: rainForecasts.map(f => this.formatDate(f.startTime) + ' ' + this.formatTime(f.startTime)),
                             datasets: [{
                                 label: '降雨等級',
                                 data: rainForecasts.map(f => f.rainLevel),
@@ -319,7 +325,7 @@
             mounted() {
                 this.fetchWeatherData();
             },
-            // 【*** 新增生命週期鉤子 ***】 在元件卸載前，銷毀所有圖表以避免記憶體洩漏
+            // 在元件卸載前，銷毀所有圖表以避免記憶體洩漏
             beforeUnmount() {
                 for (const key in this.chartInstances) {
                     this.chartInstances[key].destroy();
