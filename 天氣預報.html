@@ -81,44 +81,56 @@
         <main v-if="!isLoading && !error" class="d-flex flex-column gap-5">
             <section v-for="location in locations" :key="location.name" class="location-section">
                 <h2 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h2>
-
-                <div class="chart-container mb-5">
-                    <canvas :id="'chart-' + location.name"></canvas>
-                </div>
-
-                <!-- <div>
-                <h3 class="mb-3"><i class="bi bi-card-list"></i> 詳細預報</h3>
-                <div class="row g-3">
-                    <div v-for="forecast in location.forecasts" :key="forecast.startTime" class="col-12 col-md-6 col-lg-4">
-                        <div class="card h-100 weather-card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <h5 class="card-title">{{ formatTime(forecast.startTime) }} - {{ formatTime(forecast.endTime) }}</h5>
-                                        <h6 class="card-subtitle mb-2 text-muted">{{ formatDate(forecast.startTime) }}</h6>
-                                    </div>
-                                    <i :class="getWeatherIconClass(forecast.weatherCode)" class="weather-icon"></i>
-                                </div>
-                                <p class="card-text fs-5 my-2">{{ forecast.weather }}</p>
-                                <ul class="list-group list-group-flush">
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span><i class="bi bi-thermometer-half text-danger"></i> 溫度</span>
-                                        <strong>{{ forecast.temp }} °C</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span><i class="bi bi-person text-info"></i> 體感</span>
-                                        <strong>{{ forecast.apparentTemp }} °C</strong>
-                                    </li>
-                                    <li class="list-group-item d-flex justify-content-between">
-                                        <span><i class="bi bi-cloud-drizzle-fill text-primary"></i> 降雨機率</span>
-                                        <strong>{{ forecast.pop }} %</strong>
-                                    </li>
-                                </ul>
-                            </div>
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h3 class="h5 text-muted">綜合天氣趨勢</h3>
+                        <div class="chart-container mb-5">
+                            <canvas :id="'chart-' + location.name"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <h3 class="h5 text-muted">未來12小時降雨趨勢</h3>
+                        <div class="rain-chart-container mb-5">
+                            <canvas :id="'rain-chart-' + location.name"></canvas>
                         </div>
                     </div>
                 </div>
-            </div> -->
+                <!-- <div>
+                    <h3 class="mb-3"><i class="bi bi-card-list"></i> 詳細預報</h3>
+                    <div class="row g-3">
+                        <div v-for="forecast in location.forecasts" :key="forecast.startTime"
+                            class="col-12 col-md-6 col-lg-4">
+                            <div class="card h-100 weather-card">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="card-title">{{ formatTime(forecast.startTime) }} - {{
+                                                formatTime(forecast.endTime) }}</h5>
+                                            <h6 class="card-subtitle mb-2 text-muted">{{ formatDate(forecast.startTime)
+                                                }}</h6>
+                                        </div>
+                                        <i :class="getWeatherIconClass(forecast.weatherCode)" class="weather-icon"></i>
+                                    </div>
+                                    <p class="card-text fs-5 my-2">{{ forecast.weather }}</p>
+                                    <ul class="list-group list-group-flush">
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span><i class="bi bi-thermometer-half text-danger"></i> 溫度</span>
+                                            <strong>{{ forecast.temp }} °C</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span><i class="bi bi-person text-info"></i> 體感</span>
+                                            <strong>{{ forecast.apparentTemp }} °C</strong>
+                                        </li>
+                                        <li class="list-group-item d-flex justify-content-between">
+                                            <span><i class="bi bi-cloud-drizzle-fill text-primary"></i> 降雨機率</span>
+                                            <strong>{{ forecast.pop }} %</strong>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
             </section>
         </main>
 
@@ -144,8 +156,8 @@
                     isLoading: true,
                     error: null,
                     locations: [],
-                    // 【*** 調整點 ***】 用一個物件來儲存多個圖表實例
-                    chartInstances: {}
+                    chartInstances: {},// 儲存圖表實例
+                    rainChartInstances: {} // 新增：儲存降雨圖表的實例
                 };
             },
             methods: {
@@ -159,7 +171,6 @@
                         }
                         console.log(response.data);
                         this.processData(response.data);
-                        // 【*** 調整點 ***】 資料處理完後，等待 DOM 更新後再渲染所有圖表
                         this.$nextTick(() => {
                             this.$nextTick(() => {
                                 this.renderAllCharts();
@@ -174,40 +185,39 @@
                 },
                 processData(data) {
                     const rawLocations = data.records.Locations[0].Location;
-                    const processedLocations = rawLocations.map(location => {
+                    this.locations = rawLocations.map(location => {
                         const tempElement = location.WeatherElement.find(el => el.ElementName === '溫度').Time;
                         const apparentTempElement = location.WeatherElement.find(el => el.ElementName === '體感溫度').Time;
                         const popElement = location.WeatherElement.find(el => el.ElementName === '3小時降雨機率').Time;
                         const weatherElement = location.WeatherElement.find(el => el.ElementName === '天氣現象').Time;
-
                         const forecasts = popElement.map(popTime => {
                             const startTime = popTime.StartTime;
                             const currentTemp = tempElement.find(t => t.DataTime === startTime);
                             const currentApparentTemp = apparentTempElement.find(t => t.DataTime === startTime);
                             const currentWx = weatherElement.find(wx => wx.StartTime === startTime);
-
+                            const weatherCode = currentWx ? currentWx.ElementValue[0].WeatherCode : '0';
                             return {
                                 startTime: startTime, endTime: popTime.EndTime,
                                 pop: popTime.ElementValue[0].ProbabilityOfPrecipitation,
                                 temp: currentTemp ? currentTemp.ElementValue[0].Temperature : 'N/A',
                                 apparentTemp: currentApparentTemp ? currentApparentTemp.ElementValue[0].ApparentTemperature : 'N/A',
                                 weather: currentWx ? currentWx.ElementValue[0].Weather : 'N/A',
-                                weatherCode: currentWx ? currentWx.ElementValue[0].WeatherCode : 'N/A'
+                                weatherCode: weatherCode,
+                                rainLevel: this.getRainLevel(weatherCode) // 新增：計算降雨等級
                             };
                         });
-
                         return { name: location.LocationName, forecasts };
                     });
-                    this.locations = processedLocations;
                 },
-                // 【*** 新增方法 ***】 迴圈呼叫，渲染所有地區的圖表
+                // 迴圈呼叫，渲染所有地區的圖表
                 renderAllCharts() {
                     this.locations.forEach(location => {
-                        this.renderChart(location);
+                        this.renderWeatherChart(location);
+                        this.renderRainChart(location); // 新增：渲染降雨圖表
                     });
                 },
-                // 【*** 調整點 ***】 renderChart 現在接收一個 location 物件作為參數
-                renderChart(location) {
+                // 接收一個 location 物件作為參數
+                renderWeatherChart(location) {
                     const canvasId = 'chart-' + location.name;
                     const ctx = document.getElementById(canvasId);
                     if (!ctx) return; // 如果找不到 canvas 就直接返回
@@ -236,6 +246,55 @@
                             scales: {
                                 'y-temp': { type: 'linear', position: 'left', title: { display: true, text: '溫度 (°C)' } },
                                 'y-pop': { type: 'linear', position: 'right', min: 0, max: 100, title: { display: true, text: '降雨機率 (%)' }, grid: { drawOnChartArea: false } }
+                            }
+                        }
+                    });
+                },
+                // 【*** 新增方法 ***】 根據天氣代碼回傳雨量等級
+                getRainLevel(weatherCode) {
+                    const code = parseInt(weatherCode);
+                    if ([41].includes(code)) return 4;// 暴雨
+                    if ([33, 34, 35, 36, 39, 42].includes(code)) return 3;// 大雨 (有冰雹或普遍性大雨)
+                    if ([13, 14, 15, 16, 17, 18, 21, 22].includes(code)) return 2;// 中雨 (雷雨或較持續的雨)
+                    if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1;// 小雨 (短暫、零星的雨)
+                    return 0;// 無雨
+                },
+                // 【*** 新增方法 ***】 渲染降雨趨勢圖
+                renderRainChart(location) {
+                    const canvasId = 'rain-chart-' + location.name;
+                    const ctx = document.getElementById(canvasId);
+                    if (!ctx) return;
+
+                    if (this.rainChartInstances[location.name]) this.rainChartInstances[location.name].destroy();
+
+                    const rainForecasts = location.forecasts.slice(0, 4); // 只取未來12小時 (4個時段)
+                    const rainLevels = ['無雨', '小雨', '中雨', '大雨', '暴雨'];
+
+                    this.rainChartInstances[location.name] = new Chart(ctx.getContext('2d'), {
+                        type: 'line',
+                        data: {
+                            labels: rainForecasts.map(f => this.formatTime(f.startTime)),
+                            datasets: [{
+                                label: '降雨等級',
+                                data: rainForecasts.map(f => f.rainLevel),
+                                borderColor: 'rgba(75, 192, 192, 1)',
+                                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                                stepped: true, // 使用階梯線圖
+                                fill: true,
+                            }]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: {
+                                    min: 0,
+                                    max: 4,
+                                    ticks: {
+                                        stepSize: 1,
+                                        callback: (value, index, ticks) => rainLevels[value] // Y軸顯示文字
+                                    }
+                                }
                             }
                         }
                     });
