@@ -51,14 +51,14 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <!-- <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="./index.html">
                 <i class="bi bi-code-slash"></i>
                 功能入口
             </a>
         </div>
-    </nav>
+    </nav> -->
 
     <div id="app">
         <header class="text-center my-4">
@@ -124,6 +124,9 @@
 
         <footer class="text-center text-muted mt-5">
             <p>資料來源：<a href="https://opendata.cwa.gov.tw/" target="_blank">交通部中央氣象署</a></p>
+            <p>資料來源：<a
+                    href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E9%A0%90%E5%A0%B1/get_v1_rest_datastore_F_D0047_069"
+                    target="_blank">資料API</a></p>
         </footer>
     </div>
 
@@ -220,7 +223,7 @@
                     this.chartInstances[location.name] = new Chart(ctx.getContext('2d'), {
                         type: 'bar',
                         data: {
-                            labels: forecasts.map(f => this.formatTime(f.startTime)),
+                            labels: forecasts.map(f => this.formatDate(f.startTime) + ' ' + this.formatTime(f.startTime)),
                             datasets: [
                                 { type: 'line', label: '溫度 (°C)', data: forecasts.map(f => f.temp), borderColor: 'rgba(255, 99, 132, 1)', yAxisID: 'y-temp', tension: 0.3 },
                                 { type: 'line', label: '體感溫度 (°C)', data: forecasts.map(f => f.apparentTemp), borderColor: 'rgba(255, 159, 64, 1)', yAxisID: 'y-temp', tension: 0.3, borderDash: [5, 5] },
@@ -244,14 +247,14 @@
                     return new Date(dateTimeStr).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
                 },
                 getWeatherIconClass(code) {
-                    const codeNum = parseInt(code);
-                    if ([15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 41].includes(codeNum)) return 'bi bi-cloud-lightning-rain-fill';
-                    if ([8, 9, 10, 11, 12, 13, 14, 19, 20, 29, 30, 31, 32, 38, 39].includes(codeNum)) return 'bi bi-cloud-drizzle-fill';
-                    if ([24, 25, 26, 27, 28].includes(codeNum)) return 'bi bi-cloud-fog2-fill';
-                    if ([4, 5, 6, 7].includes(codeNum)) return 'bi bi-clouds-fill';
-                    if (codeNum === 1) return 'bi bi-brightness-high-fill';
-                    if ([2, 3].includes(codeNum)) return 'bi bi-cloud-sun-fill';
-                    return 'bi bi-cloud-fill';
+                    const codeNum = parseInt(code); // 1. 字串轉數字
+                    if ([15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 41].includes(codeNum)) return 'bi bi-cloud-lightning-rain-fill'; // 「雷雨」相關代碼回傳「閃電下雨」圖示
+                    if ([8, 9, 10, 11, 12, 13, 14, 19, 20, 29, 30, 31, 32, 38, 39].includes(codeNum)) return 'bi bi-cloud-drizzle-fill'; // 「雨」相關代碼回傳「下雨」圖示
+                    if ([24, 25, 26, 27, 28].includes(codeNum)) return 'bi bi-cloud-fog2-fill'; // 「霧」相關代碼回傳「霧」圖示
+                    if ([4, 5, 6, 7].includes(codeNum)) return 'bi bi-clouds-fill'; // 「多雲」相關代碼回傳「多雲」圖示
+                    if (codeNum === 1) return 'bi bi-brightness-high-fill'; // 「晴天」代碼回傳「太陽」圖示
+                    if ([2, 3].includes(codeNum)) return 'bi bi-cloud-sun-fill'; // 「晴時多雲」相關代碼回傳「雲遮太陽」圖示
+                    return 'bi bi-cloud-fill'; // 如果以上皆非，預設回傳「陰天」圖示
                 }
             },
             mounted() {
