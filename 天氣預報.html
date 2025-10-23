@@ -34,7 +34,7 @@
             min-height: 300px;
         }
 
-        /* 補上先前遺漏的降雨圖表樣式 */
+        /* 【*** 新增 ***】 補上先前遺漏的降雨圖表樣式 */
         .rain-chart-container {
             position: relative;
             height: 40vh;
@@ -76,7 +76,7 @@
                 <i class="bi bi-arrow-clockwise"></i>
                 將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
             </p>
-            <!-- 調整UI排版，縮短input寬度 -->
+            <!-- 【*** 修正點 ***】 調整UI排版，縮短input寬度 -->
             <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
                 每
                 <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
@@ -180,12 +180,12 @@
                     countdown: 300, // 5分鐘 = 300秒
                     dataInterval: null, // 儲存資料更新的 interval ID
                     countdownInterval: null, // 儲存倒數計時的 interval ID
-                    // 用於input的V-model
+                    // 【*** 新增 ***】 用於input的V-model
                     newCountdownValue: 300, // 綁定到 input 欄位的值
                     activeCountdownSetting: 300 // 目前生效的倒數設定
                 };
             },
-            // 計算屬性
+            // 【*** 新增 ***】 計算屬性
             computed: {
                 countdownMinutes() {
                     return Math.floor(this.countdown / 60);
@@ -311,28 +311,35 @@
                     this.error = null; // 清除先前的錯誤訊息
                     // 1. 驗證輸入值 (最小改為 1 秒)
                     if (!this.newCountdownValue || this.newCountdownValue < 1) {
-                        this.error = "請輸入一個大於或等於 1 秒的數字。";
-                        this.newCountdownValue = this.activeCountdownSetting; // 將輸入欄位重置為上一個有效值
-                        return;
+                        // this.error = "輸入秒數無效，已重設為預設值 300 秒。";
+                        // 1. 設定為預設的300秒
+                        this.activeCountdownSetting = 300;
+                        this.newCountdownValue = 300; 
+                        // 2. 清除舊的資料更新計時器
+                        clearInterval(this.dataInterval);
+                        // 3. 根據新時間(300秒)建立新的資料更新計時器
+                        this.dataInterval = setInterval(() => {
+                            this.fetchWeatherData();
+                        }, this.activeCountdownSetting * 1000);
+                        // 4. 立刻重置目前的倒數計時
+                        this.countdown = this.activeCountdownSetting;
+                        // 5. 並立即 request
+                        this.fetchWeatherData(); 
+                        return; // 結束此方法
                     }
-
-                    // 2. 套用新設定
+                    // 2. (如果驗證通過) 套用新設定
                     this.activeCountdownSetting = this.newCountdownValue;
-
                     // 3. 立刻重置目前的倒數計時
                     this.countdown = this.activeCountdownSetting;
-
                     // 4. 清除舊的資料更新計時器
                     clearInterval(this.dataInterval);
-
                     // 5. 根據新時間建立新的資料更新計時器
                     this.dataInterval = setInterval(() => {
                         this.fetchWeatherData();
                     }, this.activeCountdownSetting * 1000);
-
                     console.log(`自動更新間隔已設定為 ${this.activeCountdownSetting} 秒。`);
                 },
-                // 啟動倒數計時器的獨立方法
+                // 【*** 新增 ***】 啟動倒數計時器的獨立方法
                 startCountdownTicker() {
                     // 確保不會重複啟動
                     if (this.countdownInterval) {
@@ -414,7 +421,7 @@
                 for (const key in this.rainChartInstances) {
                     this.rainChartInstances[key].destroy();
                 }
-                // 清除所有計時器
+                // 【*** 新增 ***】 清除所有計時器
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
             }
@@ -424,4 +431,5 @@
 </body>
 
 </html>
+
 
