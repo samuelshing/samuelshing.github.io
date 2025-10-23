@@ -198,9 +198,9 @@
             methods: {
                 async fetchWeatherData() {
                     this.isLoading = true;
-                    // 【*** 修正 ***】 當錯誤發生時，不要重置倒數計時器
+                    // 當錯誤發生時，不要重置倒數計時器
                     // this.error = null; // 改到 applyNewCountdown 中去清除
-                    // 【*** 修正 ***】 重置倒數計時器為目前生效的值
+                    // 重置倒數計時器為目前生效的值
                     this.countdown = this.activeCountdownSetting;
                     try {
                         const response = await axios.get(this.apiUrl);
@@ -306,7 +306,7 @@
                     if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1;// 小雨 (短暫、零星的雨)
                     return 0;// 無雨
                 },
-                // 【*** 修正 ***】 套用新倒數時間的方法
+                // 套用新倒數時間的方法
                 applyNewCountdown() {
                     this.error = null; // 清除先前的錯誤訊息
                     // 1. 驗證輸入值 (最小改為 1 秒)
@@ -408,7 +408,7 @@
             mounted() {
                 this.fetchWeatherData(); // 1. 立即載入
                 this.startCountdownTicker(); // 2. 啟動UI倒數計時器
-                // 【*** 修正 ***】 3. 啟動自動更新資料的計時器 (使用變數)
+                // 3. 啟動自動更新資料的計時器 (使用變數)
                 this.dataInterval = setInterval(() => {
                     this.fetchWeatherData();
                 }, this.activeCountdownSetting * 1000); // 使用(預設)設定值
