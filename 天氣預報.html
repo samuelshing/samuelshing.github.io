@@ -8,6 +8,9 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <!-- 引入 Tone.js 用於播放音效 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
 
     <style>
         body {
@@ -16,7 +19,6 @@
 
         #app {
             max-width: 1200px;
-            /* 稍微加寬以容納更多內容 */
             margin: auto;
             padding: 1rem;
         }
@@ -28,13 +30,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
         }
 
-        .chart-container {
-            position: relative;
-            height: 40vh;
-            min-height: 300px;
-        }
-
-        /* 【*** 新增 ***】 補上先前遺漏的降雨圖表樣式 */
+        .chart-container,
         .rain-chart-container {
             position: relative;
             height: 40vh;
@@ -71,17 +67,34 @@
         <header class="text-center my-4">
             <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報</h1>
             <p class="text-muted">板橋、中和、新店未來24小時內，每3小時之綜合天氣趨勢與降雨趨勢</p>
-            <!-- 倒數計時器UI改為顯示分和秒 -->
+
+            <!-- 倒數計時器 -->
             <p class="text-success fw-bold" v-if="!isLoading && !error">
                 <i class="bi bi-arrow-clockwise"></i>
                 將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
             </p>
-            <!-- 【*** 修正點 ***】 調整UI排版，縮短input寬度 -->
+
+            <!-- 更新時間設定 -->
             <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
                 每
                 <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
                 秒更新資訊
                 <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
+                
+                <!-- 啟用音訊按鈕 -->
+                <button class="btn btn-info btn-sm" @click="enableAudio" v-if="!isAudioEnabled">
+                    <i class="bi bi-bell-fill"></i> 啟用聲音警示
+                </button>
+                <span v-if="isAudioEnabled" class="text-success small">
+                    <i class="bi bi-check-circle-fill"></i> 聲音已啟用
+                </span>
+            </div>
+            
+            <!-- 警示訊息框 -->
+            <div v-if="alertMessage" class="alert alert-warning alert-dismissible fade show mt-3" role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>降雨警示：</strong> {{ alertMessage }}
+                <button type="button" class="btn-close" @click="alertMessage = null"></button>
             </div>
         </header>
 
@@ -168,24 +181,25 @@
     <script>
         const { createApp } = Vue;
 
-        createApp({
+        window.app = createApp({
             data() {
                 return {
                     apiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=新店區,中和區,板橋區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
                     isLoading: true,
                     error: null,
                     locations: [],
-                    chartInstances: {},// 儲存圖表實例
-                    rainChartInstances: {}, // 新增：儲存降雨圖表的實例
-                    countdown: 300, // 5分鐘 = 300秒
-                    dataInterval: null, // 儲存資料更新的 interval ID
-                    countdownInterval: null, // 儲存倒數計時的 interval ID
-                    // 【*** 新增 ***】 用於input的V-model
-                    newCountdownValue: 300, // 綁定到 input 欄位的值
-                    activeCountdownSetting: 300 // 目前生效的倒數設定
+                    chartInstances: {},
+                    rainChartInstances: {},
+                    countdown: 300,
+                    dataInterval: null,
+                    countdownInterval: null,
+                    newCountdownValue: 300,
+                    activeCountdownSetting: 300,
+                    isAudioEnabled: false, // 音訊啟用狀態
+                    alertMessage: null,   // 警示訊息
+                    rainLevelsText: ['無雨', '小雨', '中雨', '大雨', '暴雨'], // 雨量等級文字
                 };
             },
-            // 【*** 新增 ***】 計算屬性
             computed: {
                 countdownMinutes() {
                     return Math.floor(this.countdown / 60);
@@ -198,17 +212,19 @@
             methods: {
                 async fetchWeatherData() {
                     this.isLoading = true;
-                    // 當錯誤發生時，不要重置倒數計時器
-                    // this.error = null; // 改到 applyNewCountdown 中去清除
-                    // 重置倒數計時器為目前生效的值
                     this.countdown = this.activeCountdownSetting;
                     try {
                         const response = await axios.get(this.apiUrl);
                         if (response.data.success !== "true") {
                             throw new Error('API 回應錯誤');
                         }
-                        console.log(response.data);
                         this.processData(response.data);
+                        // 處理完資料後，檢查是否需要發出警示
+                        this.checkRainAlert(this.locations);
+                        
+                        // 我們需要等待兩次 DOM 更新
+                        // 第一次: v-if="!isLoading" 生效
+                        // 第二次: v-for="location in locations" 生效
                         this.$nextTick(() => {
                             this.$nextTick(() => {
                                 this.renderAllCharts();
@@ -256,27 +272,18 @@
                         return { name: location.LocationName, forecasts };
                     });
                 },
-                // 迴圈呼叫，渲染所有地區的圖表
                 renderAllCharts() {
                     this.locations.forEach(location => {
                         this.renderWeatherChart(location);
-                        this.renderRainChart(location); // 新增：渲染降雨圖表
+                        this.renderRainChart(location);
                     });
                 },
-                // 接收一個 location 物件作為參數
                 renderWeatherChart(location) {
                     const canvasId = 'chart-' + location.name;
                     const ctx = document.getElementById(canvasId);
-                    if (!ctx) return; // 如果找不到 canvas 就直接返回
-
-                    // 如果這個地區的圖表已存在，先銷毀它
-                    if (this.chartInstances[location.name]) {
-                        this.chartInstances[location.name].destroy();
-                    }
-
+                    if (!ctx) return;
+                    if (this.chartInstances[location.name]) this.chartInstances[location.name].destroy();
                     const forecasts = location.forecasts;
-
-                    // 創建新的圖表實例並儲存起來
                     this.chartInstances[location.name] = new Chart(ctx.getContext('2d'), {
                         type: 'bar',
                         data: {
@@ -297,7 +304,6 @@
                         }
                     });
                 },
-                // 根據天氣代碼回傳雨量等級
                 getRainLevel(weatherCode) {
                     const code = parseInt(weatherCode);
                     if ([41].includes(code)) return 4;// 暴雨
@@ -306,59 +312,38 @@
                     if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1;// 小雨 (短暫、零星的雨)
                     return 0;// 無雨
                 },
-                // 套用新倒數時間的方法
                 applyNewCountdown() {
-                    this.error = null; // 清除先前的錯誤訊息
-                    // 1. 驗證輸入值 (最小改為 1 秒)
+                    this.error = null;
                     if (!this.newCountdownValue || this.newCountdownValue < 1) {
-                        // this.error = "輸入秒數無效，已重設為預設值 300 秒。";
-                        // 1. 設定為預設的300秒
+                        this.error = "輸入秒數無效，已重設為預設值 300 秒。";
                         this.activeCountdownSetting = 300;
-                        this.newCountdownValue = 300; 
-                        // 2. 清除舊的資料更新計時器
-                        clearInterval(this.dataInterval);
-                        // 3. 根據新時間(300秒)建立新的資料更新計時器
-                        this.dataInterval = setInterval(() => {
-                            this.fetchWeatherData();
-                        }, this.activeCountdownSetting * 1000);
-                        // 4. 立刻重置目前的倒數計時
-                        this.countdown = this.activeCountdownSetting;
-                        // 5. 並立即 request
-                        this.fetchWeatherData(); 
-                        return; // 結束此方法
+                        this.newCountdownValue = 300;
+                        this.fetchWeatherData(); // 立即 request
+                    } else {
+                        this.activeCountdownSetting = this.newCountdownValue;
                     }
-                    // 2. (如果驗證通過) 套用新設定
-                    this.activeCountdownSetting = this.newCountdownValue;
-                    // 3. 立刻重置目前的倒數計時
+                    
+                    // 嘗試啟用音訊
+                    Tone.start();
+
                     this.countdown = this.activeCountdownSetting;
-                    // 4. 清除舊的資料更新計時器
                     clearInterval(this.dataInterval);
-                    // 5. 根據新時間建立新的資料更新計時器
                     this.dataInterval = setInterval(() => {
                         this.fetchWeatherData();
                     }, this.activeCountdownSetting * 1000);
-                    console.log(`自動更新間隔已設定為 ${this.activeCountdownSetting} 秒。`);
                 },
-                // 【*** 新增 ***】 啟動倒數計時器的獨立方法
                 startCountdownTicker() {
-                    // 確保不會重複啟動
-                    if (this.countdownInterval) {
-                        clearInterval(this.countdownInterval);
-                    }
+                    if (this.countdownInterval) clearInterval(this.countdownInterval);
                     this.countdownInterval = setInterval(() => {
-                        if (this.countdown > 0) {
-                            this.countdown--;
-                        }
-                    }, 1000); // 每秒執行一次
+                        if (this.countdown > 0) this.countdown--;
+                    }, 1000);
                 },
-                // 渲染降雨趨勢圖
                 renderRainChart(location) {
                     const canvasId = 'rain-chart-' + location.name;
                     const ctx = document.getElementById(canvasId);
                     if (!ctx) return;
                     if (this.rainChartInstances[location.name]) this.rainChartInstances[location.name].destroy();
                     const rainForecasts = location.forecasts.slice(0, 8); // 只取未來24小時 (8個時段)
-                    const rainLevels = ['無雨', '小雨', '中雨', '大雨', '暴雨'];
                     this.rainChartInstances[location.name] = new Chart(ctx.getContext('2d'), {
                         type: 'line',
                         data: {
@@ -381,12 +366,97 @@
                                     max: 4,
                                     ticks: {
                                         stepSize: 1,
-                                        callback: (value, index, ticks) => rainLevels[value] // Y軸顯示文字
+                                        callback: (value, index, ticks) => this.rainLevelsText[value] // Y軸顯示文字
                                     }
                                 }
                             }
                         }
                     });
+                },// 啟用音訊的方法
+                async enableAudio() {
+                    try {
+                        await Tone.start();
+                        this.isAudioEnabled = true;
+                        this.playAlertSound(); // 播放測試音
+                        console.log("音訊已由使用者啟用。");
+                        // 確保 Tone.Transport (主節拍器) 啟動
+                        // 這樣 schedule, Loop, Sequence 才能運作
+                        if (Tone.Transport.state !== "started") {
+                            Tone.Transport.start();
+                        }
+                    } catch (e) {
+                        console.error("啟用音訊失敗:", e);
+                        this.error = "瀏覽器限制，無法啟用音訊。";
+                    }
+                },
+                // 播放連續警示音
+                playAlertSound() {
+                    if (!this.isAudioEnabled) return; // 未啟用則不播放
+                    try {
+                        // 1. 建立一個合成器
+                        const synth = new Tone.Synth().toDestination();
+                        // 2. 獲取當前音訊時間
+                        const now = Tone.now();
+                        // 3. 建立一個迴圈 (Tone.Loop)
+                        //    "4n" = 每秒播放 4 次
+                        //    每次迴圈觸發一個 "16n" (十六分音符) 長度的 "C5" 音調
+                        const loop = new Tone.Loop(time => {
+                            // time 是 Tone.js 傳入的精確排程時間
+                            synth.triggerAttackRelease("C5", "16n", time);
+                        }, "4n"); // 您可以調整 "4n" (4次/秒) 或 "8n" (8次/秒) 來改變頻率
+                        // 4. 讓迴圈從 "現在" (now) 開始
+                        loop.start(now);
+                        // 5. 讓迴圈在 "5秒後" (now + 5) 自動停止
+                        loop.stop(now + 5);
+                        // 6. 確保 Tone.Transport (主節拍器) 正在運行
+                        //    (enableAudio 應該已經啟動了它，但這是個保險)
+                        if (Tone.Transport.state !== "started") {
+                            Tone.Transport.start();
+                        }
+                    } catch (e) {
+                        console.error("播放聲音失敗:", e);
+                    }
+                },
+                // 顯示警示訊息
+                showRainAlert(message) {
+                    this.alertMessage = message;
+                    // 60 秒後自動清除訊息
+                    setTimeout(() => {
+                        this.alertMessage = null;
+                    }, 60000);
+                },
+                // 檢查降雨警示
+                checkRainAlert(locations) {
+                    // 如果未啟用音訊，或者已有警示訊息正在顯示，則不執行
+                    if (!this.isAudioEnabled || this.alertMessage) return;
+
+                    let alertReason = null;
+                    const rainLevels = this.rainLevelsText;
+
+                    for (const location of locations) {
+                        // 確保至少有兩個時段的資料可供比較
+                        if (!location.forecasts || location.forecasts.length < 2) continue;
+
+                        const currentRainLevel = location.forecasts[0].rainLevel;
+                        const nextRainLevel = location.forecasts[1].rainLevel;
+                        const nextStartTime = this.formatTime(location.forecasts[1].startTime);
+
+                        // 情況1：從無雨變有雨
+                        if (currentRainLevel === 0 && nextRainLevel > 0) {
+                            alertReason = `${location.name} 預計在 ${nextStartTime} 左右將從 ${rainLevels[currentRainLevel]} 轉為 ${rainLevels[nextRainLevel]}。`;
+                        }
+                        // 情況2：雨勢增強 (例如 小雨->中雨 或 中雨->大雨)
+                        else if (nextRainLevel > currentRainLevel && currentRainLevel > 0) {
+                             alertReason = `${location.name} 預計在 ${nextStartTime} 左右雨勢將從 ${rainLevels[currentRainLevel]} 增強為 ${rainLevels[nextRainLevel]}。`;
+                        }
+
+                        // 如果找到警示理由，就立即觸發並跳出迴圈 (一次只顯示一個警示)
+                        if (alertReason) {
+                            this.playAlertSound();
+                            this.showRainAlert(alertReason);
+                            break; 
+                        }
+                    }
                 },
                 formatTime(dateTimeStr) {
                     return new Date(dateTimeStr).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -395,33 +465,26 @@
                     return new Date(dateTimeStr).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
                 },
                 getWeatherIconClass(code) {
-                    const codeNum = parseInt(code); // 1. 字串轉數字
-                    if ([15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 41].includes(codeNum)) return 'bi bi-cloud-lightning-rain-fill'; // 「雷雨」相關代碼回傳「閃電下雨」圖示
-                    if ([8, 9, 10, 11, 12, 13, 14, 19, 20, 29, 30, 31, 32, 38, 39].includes(codeNum)) return 'bi bi-cloud-drizzle-fill'; // 「雨」相關代碼回傳「下雨」圖示
-                    if ([24, 25, 26, 27, 28].includes(codeNum)) return 'bi bi-cloud-fog2-fill'; // 「霧」相關代碼回傳「霧」圖示
-                    if ([4, 5, 6, 7].includes(codeNum)) return 'bi bi-clouds-fill'; // 「多雲」相關代碼回傳「多雲」圖示
-                    if (codeNum === 1) return 'bi bi-brightness-high-fill'; // 「晴天」代碼回傳「太陽」圖示
-                    if ([2, 3].includes(codeNum)) return 'bi bi-cloud-sun-fill'; // 「晴時多雲」相關代碼回傳「雲遮太陽」圖示
-                    return 'bi bi-cloud-fill'; // 如果以上皆非，預設回傳「陰天」圖示
+                    const codeNum = parseInt(code);
+                    if ([15, 16, 17, 18, 21, 22, 33, 34, 35, 36, 41].includes(codeNum)) return 'bi bi-cloud-lightning-rain-fill';
+                    if ([8, 9, 10, 11, 12, 13, 14, 19, 20, 29, 30, 31, 32, 38, 39].includes(codeNum)) return 'bi bi-cloud-drizzle-fill';
+                    if ([24, 25, 26, 27, 28].includes(codeNum)) return 'bi bi-cloud-fog2-fill';
+                    if ([4, 5, 6, 7].includes(codeNum)) return 'bi bi-clouds-fill';
+                    if (codeNum === 1) return 'bi bi-brightness-high-fill';
+                    if ([2, 3].includes(codeNum)) return 'bi bi-cloud-sun-fill';
+                    return 'bi bi-cloud-fill';
                 }
             },
             mounted() {
-                this.fetchWeatherData(); // 1. 立即載入
-                this.startCountdownTicker(); // 2. 啟動UI倒數計時器
-                // 3. 啟動自動更新資料的計時器 (使用變數)
+                this.fetchWeatherData();
+                this.startCountdownTicker();
                 this.dataInterval = setInterval(() => {
                     this.fetchWeatherData();
-                }, this.activeCountdownSetting * 1000); // 使用(預設)設定值
+                }, this.activeCountdownSetting * 1000);
             },
-            // 在元件卸載前，銷毀所有圖表以避免記憶體洩漏
             beforeUnmount() {
-                for (const key in this.chartInstances) {
-                    this.chartInstances[key].destroy();
-                }
-                for (const key in this.rainChartInstances) {
-                    this.rainChartInstances[key].destroy();
-                }
-                // 【*** 新增 ***】 清除所有計時器
+                for (const key in this.chartInstances) this.chartInstances[key].destroy();
+                for (const key in this.rainChartInstances) this.rainChartInstances[key].destroy();
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
             }
@@ -431,5 +494,4 @@
 </body>
 
 </html>
-
 
