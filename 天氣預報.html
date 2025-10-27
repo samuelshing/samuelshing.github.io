@@ -195,9 +195,11 @@
                     countdownInterval: null,
                     newCountdownValue: 300,
                     activeCountdownSetting: 300,
-                    isAudioEnabled: false, // 音訊啟用狀態
-                    alertMessage: null,   // 警示訊息
-                    rainLevelsText: ['無雨', '小雨', '中雨', '大雨', '暴雨'], // 雨量等級文字
+                    isAudioEnabled: false,
+                    alertMessage: null,
+                    rainLevelsText: ['無雨', '小雨', '中雨', '大雨', '暴雨'],
+                    speechVoices: [],   // 儲存語音包
+                    selectedVoice: null // 儲存選定的中文語音
                 };
             },
             computed: {
@@ -322,10 +324,8 @@
                     } else {
                         this.activeCountdownSetting = this.newCountdownValue;
                     }
-                    
                     // 嘗試啟用音訊
                     Tone.start();
-
                     this.countdown = this.activeCountdownSetting;
                     clearInterval(this.dataInterval);
                     this.dataInterval = setInterval(() => {
@@ -372,21 +372,55 @@
                             }
                         }
                     });
-                },// 啟用音訊的方法
+                },
+                // 啟用音訊時，同時載入語音包
                 async enableAudio() {
                     try {
                         await Tone.start();
                         this.isAudioEnabled = true;
                         this.playAlertSound(); // 播放測試音
                         console.log("音訊已由使用者啟用。");
-                        // 確保 Tone.Transport (主節拍器) 啟動
-                        // 這樣 schedule, Loop, Sequence 才能運作
                         if (Tone.Transport.state !== "started") {
                             Tone.Transport.start();
                         }
+                        // 載入語音包
+                        this.loadSpeechVoices();
                     } catch (e) {
                         console.error("啟用音訊失敗:", e);
                         this.error = "瀏覽器限制，無法啟用音訊。";
+                    }
+                },
+                // 載入並篩選語音包
+                loadSpeechVoices() {
+                    // 瀏覽器載入語音包需要一點時間，使用 onvoiceschanged 事件監聽
+                    window.speechSynthesis.onvoiceschanged = () => {
+                        this.speechVoices = window.speechSynthesis.getVoices();
+                        // 1. 優先尋找 "Google 國語（臺灣）"
+                        this.selectedVoice = this.speechVoices.find(
+                            voice => voice.name === 'Google 國語（臺灣）'
+                        );
+                        // 2. 如果找不到，尋找 'zh-TW' (臺灣中文)
+                        if (!this.selectedVoice) {
+                            this.selectedVoice = this.speechVoices.find(
+                                voice => voice.lang === 'zh-TW'
+                            );
+                        }
+                        // 3. 如果再找不到，尋找 'zh' 開頭的 (任何中文)
+                        if (!this.selectedVoice) {
+                            this.selectedVoice = this.speechVoices.find(
+                                voice => voice.lang.startsWith('zh')
+                            );
+                        }
+                        if (this.selectedVoice) {
+                            console.log('已選用語音:', this.selectedVoice.name);
+                        } else {
+                            console.warn('找不到可用的中文語音包。');
+                        }
+                    };
+                    // 立即觸發一次（針對已快取的瀏覽器）
+                    this.speechVoices = window.speechSynthesis.getVoices();
+                    if (this.speechVoices.length > 0) {
+                        window.speechSynthesis.onvoiceschanged(); // 手動觸發
                     }
                 },
                 // 播放連續警示音
@@ -417,6 +451,24 @@
                         console.error("播放聲音失敗:", e);
                     }
                 },
+                // 播放語音警示
+                speakAlert(message) {
+                    if (!this.isAudioEnabled || !this.selectedVoice) {
+                        console.warn('語音未啟用或找不到語音包，無法播放語音。');
+                        return;
+                    }
+                    try {
+                        // 清除可能殘留的佇列
+                        window.speechSynthesis.cancel();
+                        const utterance = new SpeechSynthesisUtterance(message);
+                        utterance.voice = this.selectedVoice; // 指定語音包
+                        utterance.lang = this.selectedVoice.lang;
+                        utterance.rate = 1.0; // 語速
+                        window.speechSynthesis.speak(utterance);
+                    } catch (e) {
+                        console.error("播放語音失敗:", e);
+                    }
+                },
                 // 顯示警示訊息
                 showRainAlert(message) {
                     this.alertMessage = message;
@@ -425,9 +477,8 @@
                         this.alertMessage = null;
                     }, 60000);
                 },
-                // 檢查降雨警示
+                // 觸發聲音和語音
                 checkRainAlert(locations) {
-                    // 如果未啟用音訊，或者已有警示訊息正在顯示，則不執行
                     if (!this.isAudioEnabled || this.alertMessage) return;
 
                     let alertReason = null;
@@ -441,20 +492,24 @@
                         const nextRainLevel = location.forecasts[1].rainLevel;
                         const nextStartTime = this.formatTime(location.forecasts[1].startTime);
 
-                        // 情況1：從無雨變有雨
                         if (currentRainLevel === 0 && nextRainLevel > 0) {
+                            // 情況1：從無雨變有雨
                             alertReason = `${location.name} 預計在 ${nextStartTime} 左右將從 ${rainLevels[currentRainLevel]} 轉為 ${rainLevels[nextRainLevel]}。`;
-                        }
-                        // 情況2：雨勢增強 (例如 小雨->中雨 或 中雨->大雨)
-                        else if (nextRainLevel > currentRainLevel && currentRainLevel > 0) {
-                             alertReason = `${location.name} 預計在 ${nextStartTime} 左右雨勢將從 ${rainLevels[currentRainLevel]} 增強為 ${rainLevels[nextRainLevel]}。`;
+                        } else if (nextRainLevel > currentRainLevel && currentRainLevel > 0) {
+                            // 情況2：雨勢增強 (例如 小雨->中雨 或 中雨->大雨)
+                            alertReason = `${location.name} 預計在 ${nextStartTime} 左右雨勢將從 ${rainLevels[currentRainLevel]} 增強為 ${rainLevels[nextRainLevel]}。`;
                         }
 
-                        // 如果找到警示理由，就立即觸發並跳出迴圈 (一次只顯示一個警示)
                         if (alertReason) {
+                            // 1. 播放聲音
                             this.playAlertSound();
+                            // 2. 顯示文字
                             this.showRainAlert(alertReason);
-                            break; 
+                            // 3. 等待 5 秒鐘 (讓嗶嗶聲播完)，然後播放語音
+                            setTimeout(() => {
+                                this.speakAlert(alertReason);
+                            }, 5000);
+                            break;
                         }
                     }
                 },
@@ -487,6 +542,7 @@
                 for (const key in this.rainChartInstances) this.rainChartInstances[key].destroy();
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
+                window.speechSynthesis.cancel(); // 離開頁面時停止所有語音
             }
         }).mount('#app');
     </script>
@@ -494,4 +550,3 @@
 </body>
 
 </html>
-
