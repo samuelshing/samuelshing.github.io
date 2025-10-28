@@ -64,7 +64,7 @@
     <div id="app">
         <header class="text-center my-4">
             <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報與即時雨量</h1>
-            <p class="text-muted">（新店區、中和區、板橋區預報｜新北新店觀測站即時資料）</p>
+            <p class="text-muted">（新店區、中和區、板橋區天氣預報｜新北、中和、板橋觀測站即時資料）</p>
 
             <!-- 警示訊息框 -->
             <div v-if="alertMessage" :class="alertType === 'immediate' ? 'alert-danger' : 'alert-warning'"
@@ -92,29 +92,32 @@
         <main v-if="!isLoading && !error" class="d-flex flex-column gap-4">
             <!-- 即時雨量觀測區塊 -->
             <section>
-                <h2 class="text-center mb-3">💧 即時雨量觀測 新北新店觀測站</h2>
-                <!-- 【*** 新增 ***】 即時雨量倒數計時 -->
-                <p class="text-center text-primary fw-bold" v-if="rainObservation.StationName">
+                <h2 class="text-center mb-3">💧 即時雨量觀測</h2>
+                <p class="text-center text-primary fw-bold" v-if="rainObservation.length > 0">
                     <i class="bi bi-arrow-clockwise"></i>
-                    將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後自動更新即時資料...
+                    API資料每10分鐘更新，將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後更新即時資料...
                 </p>
-
-                <div v-if="rainObservation.StationName" class="p-4 realtime-rain-card">
-                    <div class="row text-center g-3">
-                        <div class="col-md-3">
-                            <div class="display-6">{{ rainObservation.Past10Min }} <span class="h5">mm</span></div>
-                            <div class="text-muted">10分鐘雨量</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="display-6">{{ rainObservation.Past1hr }} <span class="h5">mm</span></div>
-                            <div class="text-muted">1小時雨量</div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="display-6">{{ rainObservation.Past24hr }} <span class="h5">mm</span></div>
-                            <div class="text-muted">24小時雨量</div>
-                        </div>
-                        <div class="col-md-3">
-                            <small class="text-muted">觀測時間：<br>{{ formatFullDateTime(rainObservation.ObsTime) }}</small>
+                <div v-if="rainObservation.length > 0" class="row g-4">
+                    <div v-for="station in rainObservation" :key="station.StationId" class="col-md-4">
+                        <div class="p-3 realtime-rain-card h-100 d-flex flex-column">
+                            <h5 class="mb-3">{{ station.TownName }}</h5>
+                            <ul class="list-group list-group-flush flex-grow-1">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    10分鐘雨量
+                                    <span class="badge bg-primary rounded-pill fs-6">{{ station.Past10Min }} mm</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    1小時雨量
+                                    <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past1hr }} mm</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    24小時雨量
+                                    <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past24hr }} mm</span>
+                                </li>
+                            </ul>
+                            <small class="text-muted mt-3 d-block text-center">
+                                觀測時間: {{ formatFullDateTime(station.ObsTime) }}
+                            </small>
                         </div>
                     </div>
                 </div>
@@ -127,8 +130,6 @@
             <!-- 天氣預報區塊 -->
             <section class="border-top pt-4">
                 <h2 class="text-center mb-3">🌦️ 未來24小時天氣預報</h2>
-
-                <!-- 【*** 修改 ***】 預報控制區塊移至此處 -->
                 <div class="forecast-controls text-center mb-4">
                     <p class="text-success fw-bold mb-2" v-if="!isLoading && !error">
                         <i class="bi bi-arrow-clockwise"></i>
@@ -189,9 +190,9 @@
             data() {
                 return {
                     // 預報 API (F-D0047-069)
-                    forecastApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=新店區,中和區,板橋區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
+                    forecastApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=板橋區,中和區,新店區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
                     // 即時雨量 API (O-A0002-001)
-                    rainApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=466881',
+                    rainApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=C0AJ80,C0AG80,466881',
 
                     isLoading: true,
                     error: null,
@@ -202,13 +203,11 @@
                     rainChartInstances: {},
 
                     // 即時雨量資料
-                    rainObservation: {},
+                    rainObservation: [],
                     rainInterval: null,
-                    rainCountdown: 600, // 【*** 新增 ***】 即時雨量倒數 (秒)
-                    rainCountdownInterval: null, // 【*** 新增 ***】 即時雨量計時器
-
-                    // 【*** 新增 ***】 儲存前一次的10分鐘雨量
-                    previousRain10Min: 0.0,
+                    rainCountdown: 600,
+                    rainCountdownInterval: null,
+                    previousRain10Min: {},
 
                     // 計時器
                     countdown: 300,
@@ -245,7 +244,7 @@
             methods: {
                 // --- 主要資料獲取 ---
                 async fetchWeatherData() {
-                    // 【*** 修改 ***】 只重設預報倒數
+                    // 只重設預報倒數
                     this.countdown = this.activeCountdownSetting;
 
                     // 第一次載入時才顯示全局 loading
@@ -289,24 +288,31 @@
                 async fetchRainObservation() {
                     this.rainCountdown = 600;
                     try {
-                        // 【*** 新增 ***】 儲存前一次的雨量值
-                        // 檢查 this.rainObservation 是否有 Past10Min 屬性
-                        if (this.rainObservation && typeof this.rainObservation.Past10Min !== 'undefined') {
-                            this.previousRain10Min = parseFloat(this.rainObservation.Past10Min);
+                        // Store previous values by StationId
+                        if (this.rainObservation.length > 0) {
+                            this.rainObservation.forEach(station => {
+                                // Store the previous value using the station's ID as the key
+                                this.previousRain10Min[station.StationId] = parseFloat(station.Past10Min);
+                            });
                         }
-
                         const response = await axios.get(this.rainApiUrl);
-                        if (response.data.success !== "true" || !response.data.records.Station[0]) {
+                        // Check for the Station array itself
+                        if (response.data.success !== "true" || !response.data.records.Station) {
                             throw new Error('即時雨量 API 回應錯誤');
                         }
-                        const station = response.data.records.Station[0];
-                        this.rainObservation = {
-                            StationName: station.StationName,
-                            ObsTime: station.ObsTime.DateTime,
-                            Past10Min: station.RainfallElement.Past10Min.Precipitation,
-                            Past1hr: station.RainfallElement.Past1hr.Precipitation,
-                            Past24hr: station.RainfallElement.Past24hr.Precipitation,
-                        };
+                        // Process the array of stations
+                        this.rainObservation = response.data.records.Station.map(station => {
+                            return {
+                                StationName: station.StationName,
+                                StationId: station.StationId, // Keep ID for keys and logic
+                                TownName: station.GeoInfo.TownName, // Add TownName for display
+                                ObsTime: station.ObsTime.DateTime,
+                                Past10Min: station.RainfallElement.Past10Min.Precipitation,
+                                Past1hr: station.RainfallElement.Past1hr.Precipitation,
+                                Past24hr: station.RainfallElement.Past24hr.Precipitation,
+                            };
+                        });
+                        // Pass the new array to the alert checker
                         this.checkImmediateRainAlert(this.rainObservation);
                     } catch (err) {
                         console.error("即時雨量 API 請求失敗:", err);
@@ -523,22 +529,32 @@
                         }
                     }, 60000);
                 },
-                checkImmediateRainAlert(observation) {
+                checkImmediateRainAlert(observations) {
                     if (!this.isAudioEnabled) return;
-                    const rain10Min = parseFloat(observation.Past10Min);
-                    const previousRain10Min = this.previousRain10Min; // 取得前一次的值
                     const alertThreshold = 0.5;
-                    const message = `即時警示：新店觀測站 10 分鐘內降雨量為 ${rain10Min} 毫米，已達 ${alertThreshold} 毫米警示標準。`;
-                    // 【*** 修改 ***】 檢查是否 *跨越* 門檻：前一次 < 0.5 且 這一次 >= 0.5
-                    if (rain10Min >= alertThreshold && previousRain10Min < alertThreshold) {
-                        // 只有當 *剛開始下雨* 且 *目前沒有* 即時警示時才觸發，(this.alertType !== 'immediate' 是為了防止60秒內重複觸發)
+                    let alertMessages = []; // Collect all alert messages
+                    // Loop through all stations provided
+                    for (const station of observations) {
+                        const rain10Min = parseFloat(station.Past10Min);
+                        // Get the previous rain value for this *specific* station, default to 0
+                        const previousRain10Min = this.previousRain10Min[station.StationId] || 0.0;
+                        // Check if *this station* crossed the threshold
+                        if (rain10Min >= alertThreshold && previousRain10Min < alertThreshold) {
+                            const message = `${station.StationName} (${station.TownName}) 觀測站 10 分鐘內降雨量為 ${rain10Min} 毫米，已達警示標準。`;
+                            alertMessages.push(message);
+                        }
+                    }
+                    // If any station triggered an alert, fire one combined alert
+                    if (alertMessages.length > 0) {
+                        const fullAlertMessage = "即時警示：" + alertMessages.join(' ');
+                        // Only trigger if a new immediate alert isn't already showing
                         if (this.alertType !== 'immediate') {
                             this.playAlertSound();
-                            this.showRainAlert(message, 'immediate');
-                            setTimeout(() => this.speakAlert(message), 5000);
+                            this.showRainAlert(fullAlertMessage, 'immediate');
+                            setTimeout(() => this.speakAlert(fullAlertMessage), 5000);
                         }
-                    } else if (rain10Min < alertThreshold) {
-                        // 如果雨停了 (小於 0.5)，且 *目前是* 即時警示，則解除
+                    } else {
+                        // If no stations are alerting *now*, and the previous alert was immediate, clear it.
                         if (this.alertType === 'immediate') {
                             this.alertMessage = null;
                             this.alertType = null;
@@ -574,7 +590,6 @@
                         }
                     }
                 },
-                // --- 格式化工具 ---
                 formatTime(dateTimeStr) {
                     return new Date(dateTimeStr).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
                 },
@@ -606,7 +621,7 @@
                 this.fetchRainObservation();
                 // 3. 啟動預報的倒數計時器
                 this.startCountdownTicker();
-                // 4. 【*** 新增 ***】 啟動即時雨量倒數計時器
+                // 4. 啟動即時雨量倒數計時器
                 this.startRainCountdownTicker();
                 // 5. 設定預報的自動更新 (預設 300 秒)
                 this.dataInterval = setInterval(() => {
@@ -623,7 +638,7 @@
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
                 clearInterval(this.rainInterval);
-                clearInterval(this.rainCountdownInterval); // 【*** 新增 ***】 清除雨量倒數計時器
+                clearInterval(this.rainCountdownInterval); // 清除雨量倒數計時器
                 window.speechSynthesis.cancel();
             }
         }).mount('#app');
