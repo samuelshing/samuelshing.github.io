@@ -75,6 +75,13 @@
         <header class="text-center my-4">
             <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報與即時雨量</h1>
             <p class="text-muted">（新店區、中和區、板橋區預報｜新北、中和、板橋觀測站即時資料）</p>
+            <!-- 啟用音訊按鈕 -->
+            <button class="btn btn-info" @click="enableAudio" v-if="!isAudioEnabled">
+                <i class="bi bi-bell-fill"></i> 啟用聲音警示
+            </button>
+            <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
+            <!-- 聲音說明 -->
+            <small v-if="!isAudioEnabled" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
         </header>
 
         <div v-if="isLoading" class="text-center my-5">
@@ -160,14 +167,7 @@
                     <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
                     秒更新資訊
                     <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
-                    <!-- 啟用音訊按鈕 -->
-                    <button class="btn btn-info btn-sm" @click="enableAudio" v-if="!isAudioEnabled">
-                        <i class="bi bi-bell-fill"></i> 啟用聲音警示
-                    </button>
-                    <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
                 </div>
-                <!-- 聲音說明 -->
-                <small v-if="!isAudioEnabled" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
                 <!-- 預報圖表 (v-for) -->
                 <div v-for="location in locations" :key="location.name" class="mt-5">
                     <h3 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h3>
