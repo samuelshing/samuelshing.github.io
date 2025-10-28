@@ -37,16 +37,26 @@
             min-height: 300px;
         }
 
-        .realtime-rain-card {
-            background-color: #fff;
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        .weather-card {
+            transition: transform 0.2s;
         }
 
-        .forecast-controls {
-            background-color: #f1f3f5;
-            padding: 1rem;
-            border-radius: 0.5rem;
+        .weather-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .weather-icon {
+            font-size: 3rem;
+            color: #0d6efd;
+        }
+
+        /* 即時雨量卡片樣式 */
+        .realtime-rain-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
     </style>
 </head>
@@ -64,17 +74,7 @@
     <div id="app">
         <header class="text-center my-4">
             <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報與即時雨量</h1>
-            <p class="text-muted">（新店區、中和區、板橋區天氣預報｜新北、中和、板橋觀測站即時資料）</p>
-
-            <!-- 警示訊息框 -->
-            <div v-if="alertMessage" :class="alertType === 'immediate' ? 'alert-danger' : 'alert-warning'"
-                 class="alert alert-dismissible fade show mt-3" role="alert"
-                 style="max-width: 800px; margin-left: auto; margin-right: auto;">
-                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>{{ alertType === 'immediate' ? '即時降雨警示' : '降雨預報警示' }}：</strong>
-                {{ alertMessage }}
-                <button type="button" class="btn-close" @click="alertMessage = null; alertType = null;"></button>
-            </div>
+            <p class="text-muted">（新店區、中和區、板橋區預報｜新北、中和、板橋觀測站即時資料）</p>
         </header>
 
         <div v-if="isLoading" class="text-center my-5">
@@ -93,6 +93,15 @@
             <!-- 即時雨量觀測區塊 -->
             <section>
                 <h2 class="text-center mb-3">💧 即時雨量觀測</h2>
+
+                <!-- 即時降雨警示 -->
+                <div v-if="immediateAlertMessage" class="alert alert-danger alert-dismissible fade show mt-3"
+                     role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>即時降雨警示：</strong> {{ immediateAlertMessage }}
+                    <button type="button" class="btn-close" @click="clearImmediateAlert"></button>
+                </div>
+
                 <p class="text-center text-primary fw-bold" v-if="rainObservation.length > 0">
                     <i class="bi bi-arrow-clockwise"></i>
                     API資料每10分鐘更新，將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後更新即時資料...
@@ -128,53 +137,62 @@
             </section>
 
             <!-- 天氣預報區塊 -->
-            <section class="border-top pt-4">
+            <section class="location-section">
                 <h2 class="text-center mb-3">🌦️ 未來24小時天氣預報</h2>
-                <div class="forecast-controls text-center mb-4">
-                    <p class="text-success fw-bold mb-2" v-if="!isLoading && !error">
-                        <i class="bi bi-arrow-clockwise"></i>
-                        預報將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
-                    </p>
-                    <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
-                        每
-                        <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
-                        秒更新預報
-                        <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
-                        <button class="btn btn-info btn-sm" @click="enableAudio" v-if="!isAudioEnabled">
-                            <i class="bi bi-bell-fill"></i> 啟用聲音警示
-                        </button>
-                        <small v-if="!isAudioEnabled" class="text-muted ms-1">(需手動啟用)</small>
-                        <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
-                    </div>
+
+                <!-- 降雨預報警示 -->
+                <div v-if="forecastAlertMessage" class="alert alert-warning alert-dismissible fade show mt-3"
+                     role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                    <i class="bi bi-clock-fill me-2"></i>
+                    <strong>降雨預報警示：</strong> {{ forecastAlertMessage }}
+                    <button type="button" class="btn-close" @click="clearForecastAlert"></button>
                 </div>
 
-                <div class="d-flex flex-column gap-5">
-                    <section v-for="location in locations" :key="location.name" class="location-section">
-                        <h2 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h2>
-                        <div class="row">
-                            <div class="col-lg-4">
-                                <h3 class="h5 text-muted">降雨趨勢</h3>
-                                <div class="rain-chart-container mb-5">
-                                    <canvas :id="'rain-chart-' + location.name"></canvas>
-                                </div>
-                            </div>
-                            <div class="col-lg-8">
-                                <h3 class="h5 text-muted">綜合天氣趨勢</h3>
-                                <div class="chart-container mb-5">
-                                    <canvas :id="'chart-' + location.name"></canvas>
-                                </div>
+                <!-- 倒數計時器 -->
+                <p class="text-center text-success fw-bold" v-if="!isLoading && !error">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    預報將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
+                </p>
+
+                <!-- 更新時間設定 -->
+                <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
+                    每
+                    <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
+                    秒更新資訊
+                    <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
+                    <!-- 啟用音訊按鈕 -->
+                    <button class="btn btn-info btn-sm" @click="enableAudio" v-if="!isAudioEnabled">
+                        <i class="bi bi-bell-fill"></i> 啟用聲音警示
+                    </button>
+                    <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
+                </div>
+                <!-- 聲音說明 -->
+                <small v-if="!isAudioEnabled" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
+                <!-- 預報圖表 (v-for) -->
+                <div v-for="location in locations" :key="location.name" class="mt-5">
+                    <h3 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h3>
+                    <div class="row">
+                        <div class="col-lg-4">
+                            <h4 class="h5 text-muted">降雨趨勢</h4>
+                            <div class="rain-chart-container mb-5">
+                                <canvas :id="'rain-chart-' + location.name"></canvas>
                             </div>
                         </div>
-                    </section>
+                        <div class="col-lg-8">
+                            <h4 class="h5 text-muted">綜合天氣趨勢</h4>
+                            <div class="chart-container mb-5">
+                                <canvas :id="'chart-' + location.name"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
-
         <footer class="text-center text-muted mt-5">
             <p>資料來源：<a href="https://opendata.cwa.gov.tw/" target="_blank">交通部中央氣象署</a></p>
-            <p>使用API：
-                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E9%A0%90%E5%A0%B1/get_v1_rest_datastore_F_D0047_069" target="_blank">鄉鎮天氣預報</a> |
-                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E8%A7%80%E6%B8%AC/get_v1_rest_datastore_O_A0002_001" target="_blank">自動雨量站資料</a>
+            <p>資料API：
+                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E9%A0%90%E5%A0%B1/get_v1_rest_datastore_F_D0047_069" target="_blank">天氣預報</a> |
+                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E8%A7%80%E6%B8%AC/get_v1_rest_datastore_O_A0002_001" target="_blank">雨量觀測</a>
             </p>
         </footer>
     </div>
@@ -190,9 +208,9 @@
             data() {
                 return {
                     // 預報 API (F-D0047-069)
-                    forecastApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=板橋區,中和區,新店區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
+                    forecastApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=新店區,中和區,板橋區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
                     // 即時雨量 API (O-A0002-001)
-                    rainApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=C0AJ80,C0AG80,466881',
+                    rainApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=466881,C0AG80,C0AJ80',
 
                     isLoading: true,
                     error: null,
@@ -203,37 +221,41 @@
                     rainChartInstances: {},
 
                     // 即時雨量資料
-                    rainObservation: [],
+                    rainObservation: [], // 儲存多個觀測站
                     rainInterval: null,
-                    rainCountdown: 600,
-                    rainCountdownInterval: null,
-                    previousRain10Min: {},
+                    rainCountdown: 600, // 10 分鐘
+                    rainCountdownInterval: null, // 即時雨量計時器
 
-                    // 計時器
-                    countdown: 300,
+                    previousRain10Min: {}, // 儲存 { 'StationId': 0.0 }
+
+                    // 預報計時器
+                    countdown: 3600,
                     dataInterval: null,
                     countdownInterval: null,
-                    newCountdownValue: 300,
-                    activeCountdownSetting: 300,
+                    newCountdownValue: 3600,
+                    activeCountdownSetting: 3600,
 
                     // 警示系統
                     isAudioEnabled: false,
-                    alertMessage: null,
-                    alertType: null, // 'forecast' 或 'immediate'
-                    rainLevelsText: ['無雨', '小雨', '中雨', '大雨', '暴雨'],
+                    // 【*** 修改 ***】 拆分警示訊息
+                    immediateAlertMessage: null, // 即時警示
+                    forecastAlertMessage: null, // 預報警示
+                    immediateAlertTimer: null, // 即時警示的計時器
+                    forecastAlertTimer: null, // 預報警示的計時器
+
+                    // 語音系統
                     speechVoices: [],
-                    selectedVoice: null
+                    selectedVoice: null,
+                    rainLevelsText: ['無雨', '小雨', '中雨', '大雨', '暴雨'],
                 };
             },
             computed: {
-                // 預報倒數
                 countdownMinutes() {
                     return Math.floor(this.countdown / 60);
                 },
                 countdownSeconds() {
                     return (this.countdown % 60).toString().padStart(2, '0');
                 },
-                // 【*** 新增 ***】 即時雨量倒數
                 rainCountdownMinutes() {
                     return Math.floor(this.rainCountdown / 60);
                 },
@@ -244,81 +266,64 @@
             methods: {
                 // --- 主要資料獲取 ---
                 async fetchWeatherData() {
-                    // 只重設預報倒數
+                    // 預報倒數重設
                     this.countdown = this.activeCountdownSetting;
+                    try {
+                        const response = await axios.get(this.forecastApiUrl);
+                        if (response.data.success !== "true") {
+                            throw new Error('API 回應錯誤');
+                        }
+                        this.processData(response.data);
 
-                    // 第一次載入時才顯示全局 loading
-                    if (this.isLoading) {
-                        try {
-                            const response = await axios.get(this.forecastApiUrl);
-                            if (response.data.success !== "true") {
-                                throw new Error('天氣預報 API 回應錯誤');
-                            }
-                            this.processData(response.data);
-                            // 處理完資料後，檢查是否需要發出警示
-                            this.checkRainAlert(this.locations);
-                            // 我們需要等待兩次 DOM 更新
-                            // 第一次: v-if="!isLoading" 生效
-                            // 第二次: v-for="location in locations" 生效
+                        // 檢查降雨預報
+                        this.checkRainAlert(this.locations);
+
+                        // 確保 DOM 渲染完畢
+                        this.$nextTick(() => {
                             this.$nextTick(() => {
-                                this.$nextTick(() => {
-                                    this.renderAllCharts();
-                                });
+                                this.renderAllCharts();
                             });
-                        } catch (err) {
-                            console.error("預報 API 請求失敗:", err);
-                            this.error = "無法從中央氣象署獲取天氣預報資料，請稍後再試。";
-                        } finally {
-                            // 僅在 *第一次* 載入完成後設為 false
-                            this.isLoading = false;
-                        }
-                    } else {
-                        // 後續的背景更新
-                        try {
-                            const response = await axios.get(this.forecastApiUrl);
-                            if (response.data.success !== "true") throw new Error('天氣預報 API 回應錯誤');
-                            this.processData(response.data);
-                            this.checkRainAlert(this.locations);
-                            this.$nextTick(() => this.renderAllCharts());
-                        } catch (err) {
-                            console.error("預報 API 背景更新失敗:", err);
-                        }
+                        });
+                    } catch (err) {
+                        console.error("API 請求失敗:", err);
+                        this.error = "無法從中央氣象署伺服器獲取資料，請稍後再試。";
+                    } finally {
+                        this.isLoading = false;
                     }
                 },
                 async fetchRainObservation() {
+                    // 即時雨量倒數重設
                     this.rainCountdown = 600;
                     try {
-                        // Store previous values by StationId
+                        // 儲存前一次的雨量值
                         if (this.rainObservation.length > 0) {
                             this.rainObservation.forEach(station => {
-                                // Store the previous value using the station's ID as the key
                                 this.previousRain10Min[station.StationId] = parseFloat(station.Past10Min);
                             });
                         }
                         const response = await axios.get(this.rainApiUrl);
-                        // Check for the Station array itself
                         if (response.data.success !== "true" || !response.data.records.Station) {
                             throw new Error('即時雨量 API 回應錯誤');
                         }
-                        // Process the array of stations
+
                         this.rainObservation = response.data.records.Station.map(station => {
                             return {
                                 StationName: station.StationName,
-                                StationId: station.StationId, // Keep ID for keys and logic
-                                TownName: station.GeoInfo.TownName, // Add TownName for display
+                                StationId: station.StationId,
+                                TownName: station.GeoInfo.TownName,
                                 ObsTime: station.ObsTime.DateTime,
                                 Past10Min: station.RainfallElement.Past10Min.Precipitation,
                                 Past1hr: station.RainfallElement.Past1hr.Precipitation,
                                 Past24hr: station.RainfallElement.Past24hr.Precipitation,
                             };
                         });
-                        // Pass the new array to the alert checker
+                        // 檢查即時雨量警示
                         this.checkImmediateRainAlert(this.rainObservation);
                     } catch (err) {
                         console.error("即時雨量 API 請求失敗:", err);
                     }
                 },
-                // --- 資料處理 ---
+                // --- 資料處理與圖表 ---
                 processData(data) {
                     const currentTime = new Date();
                     const twentyFourHoursLater = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
@@ -330,14 +335,12 @@
                         const weatherElement = location.WeatherElement.find(el => el.ElementName === '天氣現象').Time;
                         const allForecasts = popElement.map(popTime => {
                             const startTime = popTime.StartTime;
-                            const startTimeObj = new Date(startTime);
-                            const currentTemp = tempElement.find(t => new Date(t.DataTime).getTime() === startTimeObj.getTime());
-                            const currentApparentTemp = apparentTempElement.find(t => new Date(t.DataTime).getTime() === startTimeObj.getTime());
-                            const currentWx = weatherElement.find(wx => new Date(wx.StartTime).getTime() === startTimeObj.getTime());
+                            const currentTemp = tempElement.find(t => t.DataTime === startTime);
+                            const currentApparentTemp = apparentTempElement.find(t => t.DataTime === startTime);
+                            const currentWx = weatherElement.find(wx => wx.StartTime === startTime);
                             const weatherCode = currentWx ? currentWx.ElementValue[0].WeatherCode : '0';
                             return {
-                                startTime: startTime,
-                                endTime: popTime.EndTime,
+                                startTime: startTime, endTime: popTime.EndTime,
                                 pop: popTime.ElementValue[0].ProbabilityOfPrecipitation,
                                 temp: currentTemp ? currentTemp.ElementValue[0].Temperature : 'N/A',
                                 apparentTemp: currentApparentTemp ? currentApparentTemp.ElementValue[0].ApparentTemperature : 'N/A',
@@ -346,16 +349,14 @@
                                 rainLevel: this.getRainLevel(weatherCode)
                             };
                         });
-                        // 過濾出開始時間在 "現在" 到 "24小時後" 之間的資料
                         const forecasts = allForecasts.filter(forecast => {
                             const forecastTime = new Date(forecast.startTime);
                             return forecastTime >= currentTime && forecastTime < twentyFourHoursLater;
                         });
-                        return {name: location.LocationName, forecasts};
+                        return { name: location.LocationName, forecasts };
                     });
                 },
                 renderAllCharts() {
-                    // --- 圖表渲染 ---
                     this.locations.forEach(location => {
                         this.renderWeatherChart(location);
                         this.renderRainChart(location);
@@ -379,10 +380,10 @@
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
-                            interaction: {mode: 'index', intersect: false},
+                            interaction: { mode: 'index', intersect: false },
                             scales: {
-                                'y-temp': {type: 'linear', position: 'left', title: {display: true, text: '溫度 (°C)'}},
-                                'y-pop': {type: 'linear', position: 'right', min: 0, max: 100, title: {display: true, text: '降雨機率 (%)'}, grid: {drawOnChartArea: false}}
+                                'y-temp': { type: 'linear', position: 'left', title: { display: true, text: '溫度 (°C)' } },
+                                'y-pop': { type: 'linear', position: 'right', min: 0, max: 100, title: { display: true, text: '降雨機率 (%)' }, grid: { drawOnChartArea: false } }
                             }
                         }
                     });
@@ -392,7 +393,7 @@
                     const ctx = document.getElementById(canvasId);
                     if (!ctx) return;
                     if (this.rainChartInstances[location.name]) this.rainChartInstances[location.name].destroy();
-                    const rainForecasts = location.forecasts.slice(0, 8); // 只取未來24小時 (8個時段)
+                    const rainForecasts = location.forecasts.slice(0, 8);
                     this.rainChartInstances[location.name] = new Chart(ctx.getContext('2d'), {
                         type: 'line',
                         data: {
@@ -408,36 +409,27 @@
                         },
                         options: {
                             responsive: true, maintainAspectRatio: false,
-                            plugins: {legend: {display: false}},
+                            plugins: { legend: { display: false } },
                             scales: {
                                 y: {
-                                    min: 0,
-                                    max: 4,
+                                    min: 0, max: 4,
                                     ticks: {
                                         stepSize: 1,
-                                        callback: (value, index, ticks) => this.rainLevelsText[value]
+                                        callback: (value) => this.rainLevelsText[value]
                                     }
                                 }
                             }
                         }
                     });
                 },
-                getRainLevel(weatherCode) {
-                    const code = parseInt(weatherCode);
-                    if ([41].includes(code)) return 4;// 暴雨
-                    if ([33, 34, 35, 36, 39, 42].includes(code)) return 3;// 大雨 (有冰雹或普遍性大雨)
-                    if ([13, 14, 15, 16, 17, 18, 21, 22].includes(code)) return 2;// 中雨 (雷雨或較持續的雨)
-                    if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1;// 小雨 (短暫、零星的雨)
-                    return 0;// 無雨
-                },
                 // --- 計時器與設定 ---
                 applyNewCountdown() {
                     this.error = null;
                     if (!this.newCountdownValue || this.newCountdownValue < 1) {
-                        this.error = "輸入秒數無效，已重設為預設值 300 秒。";
-                        this.activeCountdownSetting = 300;
-                        this.newCountdownValue = 300;
-                        this.fetchWeatherData();
+                        this.error = "輸入秒數無效，已重設為預設值 3600 秒。";
+                        this.activeCountdownSetting = 3600;
+                        this.newCountdownValue = 3600;
+                        this.fetchWeatherData(); // 立即 request
                     } else {
                         this.activeCountdownSetting = this.newCountdownValue;
                     }
@@ -454,7 +446,6 @@
                         if (this.countdown > 0) this.countdown--;
                     }, 1000);
                 },
-                // 【*** 新增 ***】 即時雨量倒數
                 startRainCountdownTicker() {
                     if (this.rainCountdownInterval) clearInterval(this.rainCountdownInterval);
                     this.rainCountdownInterval = setInterval(() => {
@@ -466,106 +457,130 @@
                     try {
                         await Tone.start();
                         this.isAudioEnabled = true;
-                        this.playAlertSound();
+                        this.loadSpeechVoices(); // 載入語音包
+                        this.playAlertSound(); // 播放測試音
                         console.log("音訊已由使用者啟用。");
                         if (Tone.Transport.state !== "started") {
                             Tone.Transport.start();
                         }
-                        this.loadSpeechVoices();
                     } catch (e) {
                         console.error("啟用音訊失敗:", e);
                         this.error = "瀏覽器限制，無法啟用音訊。";
                     }
                 },
                 loadSpeechVoices() {
-                    window.speechSynthesis.onvoiceschanged = () => {
-                        this.speechVoices = window.speechSynthesis.getVoices();
-                        this.selectedVoice = this.speechVoices.find(v => v.name === 'Google 中文 (臺灣)')
-                            || this.speechVoices.find(v => v.lang === 'zh-TW')
-                            || this.speechVoices.find(v => v.lang.startsWith('zh'));
-                        if (this.selectedVoice) console.log('已選用語音:', this.selectedVoice.name);
-                        else console.warn('找不到可用的中文語音包。');
+                    // 非同步載入語音
+                    speechSynthesis.onvoiceschanged = () => {
+                        this.speechVoices = speechSynthesis.getVoices();
+                        // 優先 (1): Google 中文 (臺灣)
+                        this.selectedVoice = this.speechVoices.find(voice => voice.name === 'Google 中文 (臺灣)');
+                        // 其次 (2): 任何臺灣中文
+                        if (!this.selectedVoice) {
+                            this.selectedVoice = this.speechVoices.find(voice => voice.lang === 'zh-TW');
+                        }
+                        // 最後 (3): 任何中文
+                        if (!this.selectedVoice) {
+                            this.selectedVoice = this.speechVoices.find(voice => voice.lang.startsWith('zh'));
+                        }
+                        console.log("選定的語音:", this.selectedVoice ? this.selectedVoice.name : '未找到中文語音');
                     };
-                    this.speechVoices = window.speechSynthesis.getVoices();
-                    if (this.speechVoices.length > 0) window.speechSynthesis.onvoiceschanged();
+                    // 立即觸發一次載入 (針對某些瀏覽器)
+                    this.speechVoices = speechSynthesis.getVoices();
+                    if (this.speechVoices.length > 0) {
+                        speechSynthesis.onvoiceschanged(); // 手動觸發
+                    }
                 },
                 playAlertSound() {
                     if (!this.isAudioEnabled) return;
                     try {
                         const synth = new Tone.Synth().toDestination();
                         const now = Tone.now();
-                        const loop = new Tone.Loop(time => {
-                            synth.triggerAttackRelease("C5", "16n", time);
-                        }, "4n");
-                        loop.start(now);
-                        loop.stop(now + 5);
-                        if (Tone.Transport.state !== "started") Tone.Transport.start();
+                        // 0.5 秒內播放 3 次 C5
+                        synth.triggerAttackRelease("C5", "16n", now);
+                        synth.triggerAttackRelease("C5", "16n", now + 0.15);
+                        synth.triggerAttackRelease("C5", "16n", now + 0.3);
+                        // 確保 Tone.Transport 正在運行
+                        if (Tone.Transport.state !== "started") {
+                            Tone.Transport.start();
+                        }
                     } catch (e) {
                         console.error("播放聲音失敗:", e);
                     }
                 },
                 speakAlert(message) {
                     if (!this.isAudioEnabled || !this.selectedVoice) {
-                        console.warn('語音未啟用或找不到語音包，無法播放語音。');
+                        console.log("語音未啟用或未找到語音包，取消播放。");
                         return;
                     }
-                    try {
-                        // 清除可能殘留的佇列
-                        window.speechSynthesis.cancel();
-                        const utterance = new SpeechSynthesisUtterance(message);
-                        utterance.voice = this.selectedVoice;
-                        utterance.lang = this.selectedVoice.lang;
-                        utterance.rate = 1.0;
-                        window.speechSynthesis.speak(utterance);
-                    } catch(e) { console.error("播放語音失敗:", e); }
+                    // 先停止目前可能正在播放的語音
+                    window.speechSynthesis.cancel();
+                    const utterance = new SpeechSynthesisUtterance(message);
+                    utterance.voice = this.selectedVoice;
+                    utterance.lang = this.selectedVoice.lang;
+                    utterance.rate = 1.0;
+                    window.speechSynthesis.speak(utterance);
                 },
-                showRainAlert(message, type) {
-                    this.alertMessage = message;
-                    this.alertType = type;
-                    setTimeout(() => {
-                        if (this.alertMessage === message) {
-                            this.alertMessage = null;
-                            this.alertType = null;
-                        }
+                showImmediateAlert(message) {
+                    this.immediateAlertMessage = message;
+                    // 清除舊的計時器
+                    if (this.immediateAlertTimer) clearTimeout(this.immediateAlertTimer);
+                    // 60 秒後自動清除
+                    this.immediateAlertTimer = setTimeout(() => {
+                        this.immediateAlertMessage = null;
                     }, 60000);
                 },
+                showForecastAlert(message) {
+                    this.forecastAlertMessage = message;
+                    if (this.forecastAlertTimer) clearTimeout(this.forecastAlertTimer);
+                    // 60 秒後自動清除
+                    this.forecastAlertTimer = setTimeout(() => {
+                        this.forecastAlertMessage = null;
+                    }, 60000);
+                },
+                // 清除警示的方法 (給 X 按鈕用)
+                clearImmediateAlert() {
+                    this.immediateAlertMessage = null;
+                    if (this.immediateAlertTimer) clearTimeout(this.immediateAlertTimer);
+                    window.speechSynthesis.cancel();
+                },
+                clearForecastAlert() {
+                    this.forecastAlertMessage = null;
+                    if (this.forecastAlertTimer) clearTimeout(this.forecastAlertTimer);
+                    window.speechSynthesis.cancel();
+                },
+                // 即時警示邏輯
                 checkImmediateRainAlert(observations) {
                     if (!this.isAudioEnabled) return;
                     const alertThreshold = 0.5;
-                    let alertMessages = []; // Collect all alert messages
-                    // Loop through all stations provided
+                    let alertMessages = [];
                     for (const station of observations) {
                         const rain10Min = parseFloat(station.Past10Min);
-                        // Get the previous rain value for this *specific* station, default to 0
                         const previousRain10Min = this.previousRain10Min[station.StationId] || 0.0;
-                        // Check if *this station* crossed the threshold
+
                         if (rain10Min >= alertThreshold && previousRain10Min < alertThreshold) {
-                            const message = `${station.StationName} (${station.TownName}) 觀測站 10 分鐘內降雨量為 ${rain10Min} 毫米，已達警示標準。`;
+                            const message = `${station.StationName} (${station.TownName}) 10分鐘雨量 ${rain10Min} 毫米。`;
                             alertMessages.push(message);
                         }
                     }
-                    // If any station triggered an alert, fire one combined alert
                     if (alertMessages.length > 0) {
-                        const fullAlertMessage = "即時警示：" + alertMessages.join(' ');
-                        // Only trigger if a new immediate alert isn't already showing
-                        if (this.alertType !== 'immediate') {
+                        // 僅在 *目前沒有* 即時警示時才觸發聲音和語音
+                        if (!this.immediateAlertMessage) {
+                            const fullAlertMessage = alertMessages.join(' ');
                             this.playAlertSound();
-                            this.showRainAlert(fullAlertMessage, 'immediate');
-                            setTimeout(() => this.speakAlert(fullAlertMessage), 5000);
+                            setTimeout(() => this.speakAlert("即時警示：" + fullAlertMessage), 500); // 聲音後 0.5 秒
                         }
+                        // 無論如何都更新警示文字
+                        this.showImmediateAlert(alertMessages.join(' '));
                     } else {
-                        // If no stations are alerting *now*, and the previous alert was immediate, clear it.
-                        if (this.alertType === 'immediate') {
-                            this.alertMessage = null;
-                            this.alertType = null;
-                            window.speechSynthesis.cancel();
-                        }
+                        // 如果所有觀測站的雨都停了 (< 0.5)，則清除即時警示
+                        this.clearImmediateAlert();
                     }
-                    // 如果是 (rain10Min >= 0.5 && previousRain10Min >= 0.5) (持續下雨)
-                    // 則不做任何事，警示訊息會照常在 60 秒後消失，且不會再次觸發
                 },
+                // 預報警示邏輯
                 checkRainAlert(locations) {
-                    if (!this.isAudioEnabled || this.alertType === 'immediate') return;
+                    if (!this.isAudioEnabled) return;
+                    // 如果「即時警示」正在顯示，則暫停「預報警示」，避免重複
+                    if (this.immediateAlertMessage) return;
                     let alertMessages = [];
                     const rainLevels = this.rainLevelsText;
                     for (const location of locations) {
@@ -573,35 +588,58 @@
                         const currentRainLevel = location.forecasts[0].rainLevel;
                         const nextRainLevel = location.forecasts[1].rainLevel;
                         const nextStartTime = this.formatTime(location.forecasts[1].startTime);
-                        let alertReason = null;
+                        let reason = null;
                         if (currentRainLevel === 0 && nextRainLevel > 0) {
-                            alertReason = `${location.name} 預計在 ${nextStartTime} 左右將從 ${rainLevels[currentRainLevel]} 轉為 ${rainLevels[nextRainLevel]}。`;
-                        } else if (nextRainLevel > currentRainLevel && currentRainLevel > 0) {
-                            alertReason = `${location.name} 預計在 ${nextStartTime} 左右雨勢將從 ${rainLevels[currentRainLevel]} 增強為 ${rainLevels[nextRainLevel]}。`;
+                            reason = `${location.name} 預計 ${nextStartTime} 將轉為 ${rainLevels[nextRainLevel]}。`;
                         }
-                        if (alertReason) alertMessages.push(alertReason);
+                        else if (nextRainLevel > currentRainLevel && currentRainLevel > 0) {
+                            reason = `${location.name} 預計 ${nextStartTime} 雨勢將增強為 ${rainLevels[nextRainLevel]}。`;
+                        }
+                        if (reason) {
+                            alertMessages.push(reason);
+                        }
                     }
                     if (alertMessages.length > 0) {
-                        const fullAlertMessage = "預報警示：" + alertMessages.join(' ');
-                        if (this.alertType !== 'forecast') {
+                        // 僅在 *目前沒有* 預報警示時才觸發聲音和語音
+                        if (!this.forecastAlertMessage) {
+                            const fullAlertMessage = alertMessages.join(' ');
                             this.playAlertSound();
-                            this.showRainAlert(fullAlertMessage, 'forecast');
-                            setTimeout(() => this.speakAlert(fullAlertMessage), 5000);
+                            // 預報警示的聲音延遲久一點
+                            setTimeout(() => this.speakAlert("預報警 ..." + fullAlertMessage), 5000);
                         }
+                        // 無論如何都更新文字
+                        this.showForecastAlert(alertMessages.join(' '));
+                    } else {
+                        // 如果沒有預報了，清除舊的預報
+                        this.clearForecastAlert();
                     }
                 },
+                // --- 格式化工具 ---
+                getRainLevel(weatherCode) {
+                    const code = parseInt(weatherCode);
+                    // 根據氣象局定義：
+                    // 41 (大雷雨)
+                    if ([41].includes(code)) return 4; // 暴雨
+                    // 33, 34, 35, 36 (雷雨/陣雨/冰雹), 39(大雨), 42(豪雨)
+                    if ([33, 34, 35, 36, 39, 42].includes(code)) return 3; // 大雨
+                    // 13, 14, 15, 16, 17, 18, 21, 22 (雷/陣雨)
+                    if ([13, 14, 15, 16, 17, 18, 21, 22].includes(code)) return 2; // 中雨
+                    // 8-12 (小雨/陣雨), 19,20(雨), 29-32(雨)
+                    if ([8, 9, 10, 11, 12, 19, 20, 29, 30, 31, 32].includes(code)) return 1; // 小雨
+                    return 0; // 無雨 (1-7, 24-28 等)
+                },
+
                 formatTime(dateTimeStr) {
                     return new Date(dateTimeStr).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
                 },
                 formatDate(dateTimeStr) {
-                    return new Date(dateTimeStr).toLocaleDateString('zh-TW', {month: '2-digit', day: '2-digit'});
+                    return new Date(dateTimeStr).toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
                 },
                 formatFullDateTime(dateTimeStr) {
-                    if (!dateTimeStr) return 'N/A';
-                    return new Date(dateTimeStr).toLocaleString('zh-TW', {
-                        year: 'numeric', month: '2-digit', day: '2-digit',
-                        hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-                    });
+                    const d = new Date(dateTimeStr);
+                    const date = d.toLocaleDateString('zh-TW', { month: '2-digit', day: '2-digit' });
+                    const time = d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit', hour12: false });
+                    return `${date} ${time}`;
                 },
                 getWeatherIconClass(code) {
                     const codeNum = parseInt(code);
@@ -615,30 +653,33 @@
                 }
             },
             mounted() {
-                // 1. 立即獲取天氣預報
+                // 立即載入所有資料
                 this.fetchWeatherData();
-                // 2. 立即獲取即時雨量
                 this.fetchRainObservation();
-                // 3. 啟動預報的倒數計時器
+                // 啟動所有計時器
                 this.startCountdownTicker();
-                // 4. 啟動即時雨量倒數計時器
                 this.startRainCountdownTicker();
-                // 5. 設定預報的自動更新 (預設 300 秒)
+                // 設定自動更新
                 this.dataInterval = setInterval(() => {
                     this.fetchWeatherData();
                 }, this.activeCountdownSetting * 1000);
-                // 6. 設定即時雨量的自動更新 (固定 10 分鐘)
                 this.rainInterval = setInterval(() => {
                     this.fetchRainObservation();
-                }, 600000); // 10 分鐘
+                }, 600 * 1000); // 600 秒 (10分鐘)
             },
             beforeUnmount() {
+                // 清除所有圖表
                 for (const key in this.chartInstances) this.chartInstances[key].destroy();
                 for (const key in this.rainChartInstances) this.rainChartInstances[key].destroy();
+                // 清除所有計時器
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
                 clearInterval(this.rainInterval);
-                clearInterval(this.rainCountdownInterval); // 清除雨量倒數計時器
+                clearInterval(this.rainCountdownInterval);
+                // 清除警示計時器
+                if (this.immediateAlertTimer) clearTimeout(this.immediateAlertTimer);
+                if (this.forecastAlertTimer) clearTimeout(this.forecastAlertTimer);
+                // 停止語音
                 window.speechSynthesis.cancel();
             }
         }).mount('#app');
