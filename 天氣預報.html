@@ -92,7 +92,7 @@
         <main v-if="!isLoading && !error" class="d-flex flex-column gap-4">
             <!-- 即時雨量觀測區塊 -->
             <section>
-                <h2 class="text-center mb-3">💧 即時雨量觀測 新北新店站觀測站</h2>
+                <h2 class="text-center mb-3">💧 即時雨量觀測 新北新店觀測站</h2>
                 <!-- 【*** 新增 ***】 即時雨量倒數計時 -->
                 <p class="text-center text-primary fw-bold" v-if="rainObservation.StationName">
                     <i class="bi bi-arrow-clockwise"></i>
@@ -207,6 +207,9 @@
                     rainCountdown: 600, // 【*** 新增 ***】 即時雨量倒數 (秒)
                     rainCountdownInterval: null, // 【*** 新增 ***】 即時雨量計時器
 
+                    // 【*** 新增 ***】 儲存前一次的10分鐘雨量
+                    previousRain10Min: 0.0,
+
                     // 計時器
                     countdown: 300,
                     dataInterval: null,
@@ -284,9 +287,14 @@
                     }
                 },
                 async fetchRainObservation() {
-                    // 【*** 修改 ***】 重設即時雨量倒數
                     this.rainCountdown = 600;
                     try {
+                        // 【*** 新增 ***】 儲存前一次的雨量值
+                        // 檢查 this.rainObservation 是否有 Past10Min 屬性
+                        if (this.rainObservation && typeof this.rainObservation.Past10Min !== 'undefined') {
+                            this.previousRain10Min = parseFloat(this.rainObservation.Past10Min);
+                        }
+
                         const response = await axios.get(this.rainApiUrl);
                         if (response.data.success !== "true" || !response.data.records.Station[0]) {
                             throw new Error('即時雨量 API 回應錯誤');
@@ -518,21 +526,27 @@
                 checkImmediateRainAlert(observation) {
                     if (!this.isAudioEnabled) return;
                     const rain10Min = parseFloat(observation.Past10Min);
+                    const previousRain10Min = this.previousRain10Min; // 取得前一次的值
                     const alertThreshold = 0.5;
                     const message = `即時警示：新店觀測站 10 分鐘內降雨量為 ${rain10Min} 毫米，已達 ${alertThreshold} 毫米警示標準。`;
-                    if (rain10Min >= alertThreshold) {
+                    // 【*** 修改 ***】 檢查是否 *跨越* 門檻：前一次 < 0.5 且 這一次 >= 0.5
+                    if (rain10Min >= alertThreshold && previousRain10Min < alertThreshold) {
+                        // 只有當 *剛開始下雨* 且 *目前沒有* 即時警示時才觸發，(this.alertType !== 'immediate' 是為了防止60秒內重複觸發)
                         if (this.alertType !== 'immediate') {
                             this.playAlertSound();
                             this.showRainAlert(message, 'immediate');
                             setTimeout(() => this.speakAlert(message), 5000);
                         }
-                    } else {
+                    } else if (rain10Min < alertThreshold) {
+                        // 如果雨停了 (小於 0.5)，且 *目前是* 即時警示，則解除
                         if (this.alertType === 'immediate') {
                             this.alertMessage = null;
                             this.alertType = null;
                             window.speechSynthesis.cancel();
                         }
                     }
+                    // 如果是 (rain10Min >= 0.5 && previousRain10Min >= 0.5) (持續下雨)
+                    // 則不做任何事，警示訊息會照常在 60 秒後消失，且不會再次觸發
                 },
                 checkRainAlert(locations) {
                     if (!this.isAudioEnabled || this.alertType === 'immediate') return;
