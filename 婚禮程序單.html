@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>忻聖瑀 蘇慧珂 結婚感恩禮拜</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Noto+Serif+TC:wght@300;400;700&display=swap"
+        rel="stylesheet">
+
+    <meta name="description" content="忻聖瑀 & 蘇慧珂 結婚感恩禮拜 — 程序單 (RWD)">
+    <style>
+        :root {
+            --bg: #f4ebde;
+            /* 卡其背景 */
+            --paper: #fffaf4;
+            /* 內文紙張色 */
+            --accent: #29452f;
+            /* 墨綠 */
+            --accent-2: #b77b87;
+            /* 粉紅點綴 */
+            --sep: #d1bfa3;
+            /* 分隔線 / 邊框淡色 */
+            --text: #2f3e35;
+            --radius: 14px;
+            --maxw: 920px;
+        }
+
+        /* Global reset */
+        * {
+            box-sizing: border-box
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: "Noto Serif TC", serif;
+            background: linear-gradient(180deg, rgba(41, 69, 47, 0.02), rgba(183, 123, 135, 0.01)), var(--bg);
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding: 28px 18px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Page container with vine border (using SVG as CSS background) */
+        .page {
+            width: 100%;
+            max-width: var(--maxw);
+            background: var(--paper);
+            border-radius: 18px;
+            position: relative;
+            padding: 28px;
+            box-shadow: 0 18px 40px rgba(16, 24, 18, 0.12);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+        }
+
+        /* Decorative vine border: left & right */
+        .page::before,
+        .page::after {
+            content: "";
+            position: absolute;
+            top: -40px;
+            bottom: -40px;
+            width: 84px;
+            background-repeat: no-repeat;
+            background-size: contain;
+            opacity: 0.92;
+            pointer-events: none;
+        }
+
+        /* left vine */
+        .page::before {
+            left: -28px;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='1200' viewBox='0 0 200 1200'><defs><linearGradient id='g' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='%232f4a3a' stop-opacity='0.95'/><stop offset='1' stop-color='%23394f3b' stop-opacity='0.6'/></linearGradient></defs><g fill='none' stroke='url(%23g)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M160 60C120 120 60 180 45 240C30 300 70 360 90 410C110 460 70 520 62 580C55 640 100 700 120 760C140 820 100 880 72 940C44 1000 68 1060 110 1120'/><g fill='%23394f3b'><circle cx='60' cy='210' r='8'/><circle cx='120' cy='360' r='7'/><circle cx='80' cy='470' r='7'/><circle cx='40' cy='620' r='6'/><circle cx='115' cy='820' r='7'/></g></g></svg>");
+            transform: scaleX(-1) rotate(-6deg);
+        }
+
+        /* right vine */
+        .page::after {
+            right: -28px;
+            background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='1200' viewBox='0 0 200 1200'><defs><linearGradient id='g2' x1='0' x2='0' y1='0' y2='1'><stop offset='0' stop-color='%232f4a3a' stop-opacity='0.95'/><stop offset='1' stop-color='%23394f3b' stop-opacity='0.6'/></linearGradient></defs><g fill='none' stroke='url(%23g2)' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><path d='M40 80C80 140 140 200 155 260C170 320 130 380 110 430C90 480 130 540 138 600C145 660 100 720 80 780C60 840 100 900 128 960C156 1020 132 1080 90 1140'/><g fill='%23394f3b'><circle cx='140' cy='220' r='8'/><circle cx='80' cy='360' r='7'/><circle cx='120' cy='470' r='7'/><circle cx='160' cy='620' r='6'/><circle cx='85' cy='820' r='7'/></g></g></svg>");
+            transform: rotate(6deg);
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+        }
+
+        .title-main {
+            font-family: "Cormorant Garamond", serif;
+            font-size: 2.2rem;
+            color: var(--accent);
+            letter-spacing: 0.06em;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .title-sub {
+            font-family: "Cormorant Garamond", serif;
+            font-size: 1.1rem;
+            color: var(--accent-2);
+            margin-top: 6px;
+        }
+
+        .meta {
+            margin-top: 10px;
+            color: var(--text);
+            font-size: 0.95rem;
+        }
+
+        .meta p {
+            margin: 6px 0
+        }
+
+        /* vine divider for chapters */
+        .vine-divider {
+            width: 100%;
+            height: 36px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 14px 0 18px;
+        }
+
+        .vine-divider svg {
+            height: 28px;
+            width: 70%;
+            max-width: 420px;
+            opacity: 0.95
+        }
+
+        main {
+            display: block;
+        }
+
+        /* Section card */
+        .chapter {
+            background: linear-gradient(180deg, rgba(255, 255, 250, 0.98), rgba(255, 255, 250, 0.995));
+            border-radius: 12px;
+            padding: 18px;
+            margin: 16px 0;
+            border: 1px solid rgba(41, 69, 47, 0.06);
+            box-shadow: 0 8px 24px rgba(16, 24, 18, 0.06);
+            transform-origin: center;
+            overflow: hidden;
+        }
+
+        .chapter h2 {
+            font-family: "Cormorant Garamond", serif;
+            color: var(--accent);
+            font-size: 1.25rem;
+            text-align: center;
+            margin: 0;
+            letter-spacing: 0.02em;
+        }
+
+        .chapter .subtitle {
+            text-align: center;
+            color: #6b4238;
+            margin-top: 0.35rem;
+            font-size: 0.95rem;
+        }
+
+        /* content layout */
+        .content-block {
+            margin-top: 12px;
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        /* Song block style */
+        .song {
+            background: linear-gradient(180deg, rgba(245, 240, 236, 0.7), rgba(250, 247, 245, 0.7));
+            border-left: 6px solid rgba(176, 138, 118, 0.9);
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .song .title {
+            font-weight: 700;
+            color: var(--accent);
+            margin-bottom: 8px;
+        }
+
+        .verse {
+            margin: 6px 0;
+            padding-left: 6px;
+        }
+
+        /* scripture style */
+        .scripture {
+            background: rgba(41, 69, 47, 0.03);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 10px 0;
+            border-left: 4px solid rgba(41, 69, 47, 0.12);
+            color: #2b3a33;
+            font-size: 0.98rem;
+            white-space: pre-wrap;
+        }
+
+        /* footer */
+        footer {
+            margin-top: 26px;
+            padding-top: 18px;
+            border-top: 1px dashed var(--sep);
+            text-align: center;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        footer .thanks {
+            font-family: "Cormorant Garamond", serif;
+            font-size: 1.05rem;
+            color: var(--accent);
+            margin-bottom: 6px;
+        }
+
+        /* fade-in animation (gentle) */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 700ms ease-out, transform 700ms ease-out;
+            will-change: transform, opacity;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* small screens adjustments */
+        @media (max-width:720px) {
+            :root {
+                --maxw: 720px
+            }
+
+            .page {
+                padding: 18px;
+                border-radius: 12px
+            }
+
+            .title-main {
+                font-size: 1.6rem
+            }
+
+            .vine-divider svg {
+                width: 92%
+            }
+
+            .page::before,
+            .page::after {
+                width: 56px;
+                opacity: 0.75;
+                top: -20px;
+                bottom: -20px
+            }
+        }
+
+        @media (max-width:420px) {
+            .title-main {
+                font-size: 1.25rem
+            }
+
+            .title-sub {
+                font-size: 0.95rem
+            }
+
+            .chapter {
+                padding: 14px
+            }
+
+            .song {
+                padding: 10px
+            }
+        }
+
+        /* print friendly: simplified */
+        @media print {
+            body {
+                background: white
+            }
+
+            .page {
+                box-shadow: none;
+                border: none
+            }
+
+            .page::before,
+            .page::after {
+                display: none
+            }
+
+            .fade-in {
+                opacity: 1;
+                transform: none
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page" role="document" aria-label="婚禮程序單">
+
+        <header>
+            <div class="title-main">忻聖瑀　 蘇慧珂</div>
+            <div class="title-sub">結婚感恩禮拜</div>
+            <div class="meta" aria-hidden="false">
+                <p>日期：2026/1/3　｜　時間：15:00</p>
+                <p>地點：浸信會仁愛堂（臺北市中正區八德路一段11號）</p>
+                <p>男方主婚人：忻宏安先生、林燕琴女士　｜　女方主婚人：蘇慕寰先生、高素琴女士</p>
+            </div>
+        </header>
+
+        <main>
+
+            <!-- vine divider function as chapter separator -->
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="藤蔓分隔">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                    <g transform="translate(360,12)">
+                        <path d="M0 25 C10 0 40 0 50 25 C40 20 20 28 0 25" fill="#3a593f" />
+                    </g>
+                </svg>
+            </div>
+
+            <!-- Sequence:  序樂 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>序樂</h2>
+                <div class="subtitle">司琴</div>
+                <div class="content-block">
+                    <p>（會堂序樂由司琴演奏）</p>
+                </div>
+            </section>
+
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="藤蔓分隔">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- 進場 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>進場</h2>
+                <div class="subtitle">伴郎、新郎、伴娘、新娘</div>
+                <div class="content-block">
+                    <p>請全體會眾起立，歡迎新人進場。</p>
+                </div>
+            </section>
+
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- 第一章 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>第一章　愛的源頭</h2>
+                <div class="subtitle">創造、救贖、審判，都因為祢的愛。</div>
+
+                <div class="content-block">
+                    <div class="song" aria-label="頌讚 天父世界">
+                        <div class="title">頌讚 — 《天父世界》</div>
+                        <div class="verse"><strong>V1</strong>
+                            這是天父世界 當我側耳傾聽
+                            宇宙歌唱 萬物響應 星辰同聲讚美
+                            這是天父世界 我心滿有平安
+                            樹木花草 藍天碧海 述說天父全能
+                        </div>
+                        <div class="verse"><strong>V2</strong>
+                            這是天父世界 小鳥歡唱啼鳴
+                            清晨明亮 百花美麗 宣揚創造大能
+                            這是天父世界 祂愛充滿世間
+                            風吹草動 將祂表現 萬物傳祂恩言
+                        </div>
+                        <div class="verse"><strong>V3</strong>
+                            這是天父世界 求主叫我不忘
+                            黑暗勢力雖然猖狂 天父卻仍做王
+                            這是天父世界 我心不必憂傷
+                            上帝是王 宇宙歡唱 主恩統治萬方
+                        </div>
+                    </div>
+
+                    <div class="song" aria-label="頌讚 神是愛">
+                        <div class="title">頌讚 — 《神是愛》</div>
+                        <div class="verse"><strong>V1</strong>
+                            神是愛，打開你的心高聲揚，神是愛，把它告訴各地方。
+                            祂創造天空和那深海洋，祂創造飛鳥和那蜜蜂忙，
+                            祂造一切為你和我，因神是愛。
+                        </div>
+                        <div class="verse"><strong>V2</strong>
+                            神是愛，打開你的心盡聲揚，神是愛，祂願世人知道它。
+                            祂創造玫瑰和那蔓藤長，祂創造樹木和那星閃亮，
+                            祂造一切為你和我，因神是愛。
+                        </div>
+                        <div class="verse"><strong>V3</strong>
+                            神是愛，天地和萬物都宣揚，神是愛，祂願世人分享它。
+                            祂為失喪人預備生命路，用祂大能的手來拯救他，
+                            祂造一切為你和我，因神是愛。
+                        </div>
+                        <div class="verse"><strong>C</strong>
+                            神是愛，空氣中我能體會，恩典中我能體會，
+                            隨時我都能體會，從最深的海洋，
+                            到那最高高的山，萬物都告訴我神是愛。
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- 第二章 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>第二章　愛的傳承</h2>
+                <div class="subtitle">供應、保護、忍耐，都因為你們的愛。</div>
+
+                <div class="content-block">
+                    <p><strong>謝親恩</strong> — 新郎新娘</p>
+                    <p>（新郎、新娘向雙方父母獻上感謝與敬意，並表達感恩之情）</p>
+                </div>
+            </section>
+
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- 第三章 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>第三章　愛的約定</h2>
+                <div class="subtitle">委身、包容、相信，是我們的決定。</div>
+
+                <div class="content-block">
+                    <p><strong>讀經</strong> — 簡瑞麟、陳麗恩 宣教士</p>
+
+                    <div class="scripture" aria-label="經文：婚姻相關">
+                        合：婚姻，人人都當尊重。(來13:4)
+                        合：耶和華神說：「那人獨居不好，我要為他造一個配偶幫助他。」因此，人要離開父母，與妻子連合，二人成為一體。(創2:18、24)
+                        合：既然如此，夫妻不再是兩個人，而是一體的了。所以，神配合的，人不可分開。(太19:6)
+                        男：才德的女子很多，唯獨你超過一切。(箴31:29)這是我骨中的骨、肉中的肉！(創2:23)
+                        女：我的良人哪，你甚俊美可愛！(歌1:16)我屬我的良人，我的良人屬我。(歌6:3)
+                        男：願你的心只向我敞開；
+                        女：願你的手臂只擁抱我。
+                        合：愛情跟死一樣堅強；戀情跟陰間一樣牢固。(歌8:6)
+                        合：它爆出火焰，像烈火一樣燃燒。水不能息滅愛情，洪水也無法淹沒。(歌8:7)
+                        合：相愛，不要只在言語和舌頭上，總要在行為和誠實上。(約壹3:18)
+                        合：要存敬畏基督的心彼此順服。(弗5:21)
+                        女：作妻子的，你們要順服自己的丈夫，如同順服主。因為丈夫是妻子的頭，如同基督是教會的頭。(弗5:22-23)
+                        男：作丈夫的，你們要愛自己的妻子，正如基督愛教會，為教會捨己。(弗5:25)
+                        合：你要盡心、盡性、盡意愛主－你的神。其次也相倣，就是要愛人如己。(太22:37、39)
+                        合：愛是恆久忍耐，又有恩慈；愛是不嫉妒，愛是不自誇，不張狂，不作害羞的事，不求自己的益處，不輕易發怒，不計算人的惡，不喜歡不義，只喜歡真理；凡事包容，凡事相信，凡事盼望，凡事忍耐。愛是永不止息。(林前13:4-8)
+                    </div>
+
+                    <p><strong>證道</strong> — 王聖斐傳道</p>
+                    <p><strong>證婚</strong> — 林彥圭長老</p>
+                </div>
+            </section>
+
+            <div class="vine-divider" aria-hidden="true">
+                <svg viewBox="0 0 800 80" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 50 C150 30 250 10 350 20 C450 30 550 60 680 40" fill="none" stroke="#3a593f"
+                        stroke-width="3" stroke-linecap="round" />
+                </svg>
+            </div>
+
+            <!-- 第四章 -->
+            <section class="chapter fade-in" tabindex="0">
+                <h2>第四章　愛的祝福</h2>
+                <div class="subtitle">恩惠、慈愛、平安，是我們的祝福。</div>
+
+                <div class="content-block">
+                    <p><strong>詩歌</strong> — 全體會眾</p>
+                    <p><strong>祝禱</strong> — 某長老</p>
+                    <p><strong>殿樂</strong> — 司琴</p>
+                    <p><strong>報告</strong> — 司會</p>
+                </div>
+            </section>
+
+        </main>
+
+        <footer role="contentinfo" aria-label="結尾感謝">
+            <div class="thanks">感謝您的祝福與蒞臨 💕</div>
+            <div class="small">（請將手機調成靜音或震動；教會內如有拍攝，請依司儀指示）</div>
+        </footer>
+
+    </div>
+
+    <script>
+        // IntersectionObserver for gentle fade-in
+        (function () {
+            const els = document.querySelectorAll('.fade-in');
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver((entries) => {
+                    entries.forEach(ent => {
+                        if (ent.isIntersecting) {
+                            ent.target.classList.add('visible');
+                            // keep it visible (no unobserve if want one-time)
+                            io.unobserve(ent.target);
+                        }
+                    });
+                }, { threshold: 0.12 });
+                els.forEach(el => io.observe(el));
+            } else {
+                // fallback
+                els.forEach(el => el.classList.add('visible'));
+            }
+        })();
+
+        // keyboard accessibility: allow focusing chapters and reveal if focused
+        document.querySelectorAll('.chapter').forEach(ch => {
+            ch.addEventListener('focus', () => {
+                ch.classList.add('visible');
+            });
+        });
+    </script>
+</body>
+
+</html>
