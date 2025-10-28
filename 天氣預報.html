@@ -85,6 +85,7 @@
                 <button class="btn btn-info btn-sm" @click="enableAudio" v-if="!isAudioEnabled">
                     <i class="bi bi-bell-fill"></i> 啟用聲音警示
                 </button>
+                <small v-if="!isAudioEnabled" class="text-muted ms-1">(需手動啟用)</small>
                 <span v-if="isAudioEnabled" class="text-success small">
                     <i class="bi bi-check-circle-fill"></i> 聲音已啟用
                 </span>
@@ -93,7 +94,9 @@
             <!-- 警示訊息框 -->
             <div v-if="alertMessage" class="alert alert-warning alert-dismissible fade show mt-3" role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
                 <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                <strong>降雨警示：</strong> {{ alertMessage }}
+                <strong>降雨警示</strong>
+                <br>
+                <pre>{{ alertMessage }}</pre>
                 <button type="button" class="btn-close" @click="alertMessage = null"></button>
             </div>
         </header>
@@ -114,12 +117,12 @@
             <section v-for="location in locations" :key="location.name" class="location-section">
                 <h2 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h2>
                 <div class="row">
-                    <div class="col-lg-8">
+                    <!-- <div class="col-lg-8">
                         <h3 class="h5 text-muted">綜合天氣趨勢</h3>
                         <div class="chart-container mb-5">
                             <canvas :id="'chart-' + location.name"></canvas>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-lg-4">
                         <h3 class="h5 text-muted">降雨趨勢</h3>
                         <div class="rain-chart-container mb-5">
@@ -431,17 +434,15 @@
                         const synth = new Tone.Synth().toDestination();
                         // 2. 獲取當前音訊時間
                         const now = Tone.now();
-                        // 3. 建立一個迴圈 (Tone.Loop)
-                        //    "4n" = 每秒播放 4 次
-                        //    每次迴圈觸發一個 "16n" (十六分音符) 長度的 "C5" 音調
+                        // 3. 建立一個迴圈 (Tone.Loop)，"4n" = 每秒播放 4 次，每次迴圈觸發一個 "16n" (十六分音符)長度的 "C5" 音調
                         const loop = new Tone.Loop(time => {
                             // time 是 Tone.js 傳入的精確排程時間
                             synth.triggerAttackRelease("C5", "16n", time);
-                        }, "4n"); // 您可以調整 "4n" (4次/秒) 或 "8n" (8次/秒) 來改變頻率
+                        }, "4n"); // 可以調整 "4n" (4次/秒) 或 "8n" (8次/秒) 來改變頻率
                         // 4. 讓迴圈從 "現在" (now) 開始
                         loop.start(now);
                         // 5. 讓迴圈在 "5秒後" (now + 5) 自動停止
-                        loop.stop(now + 5);
+                        loop.stop(now + 4);
                         // 6. 確保 Tone.Transport (主節拍器) 正在運行
                         //    (enableAudio 應該已經啟動了它，但這是個保險)
                         if (Tone.Transport.state !== "started") {
@@ -477,11 +478,11 @@
                         this.alertMessage = null;
                     }, 60000);
                 },
-                // 觸發聲音和語音
+                // 檢查所有地區，並彙總所有警示
                 checkRainAlert(locations) {
-                    if (!this.isAudioEnabled || this.alertMessage) return;
+                    if (!this.isAudioEnabled) return;
 
-                    let alertReason = null;
+                    let alertMessages = []; // 建立一個陣列來收集所有警示
                     const rainLevels = this.rainLevelsText;
 
                     for (const location of locations) {
@@ -491,6 +492,7 @@
                         const currentRainLevel = location.forecasts[0].rainLevel;
                         const nextRainLevel = location.forecasts[1].rainLevel;
                         const nextStartTime = this.formatTime(location.forecasts[1].startTime);
+                        let alertReason = null; // 重設單一地區的警示理由
 
                         if (currentRainLevel === 0 && nextRainLevel > 0) {
                             // 情況1：從無雨變有雨
@@ -499,19 +501,24 @@
                             // 情況2：雨勢增強 (例如 小雨->中雨 或 中雨->大雨)
                             alertReason = `${location.name} 預計在 ${nextStartTime} 左右雨勢將從 ${rainLevels[currentRainLevel]} 增強為 ${rainLevels[nextRainLevel]}。`;
                         }
-
                         if (alertReason) {
-                            console.log(alertReason);
-                            // 1. 播放聲音
-                            this.playAlertSound();
-                            // 2. 顯示文字
-                            this.showRainAlert(alertReason);
-                            // 3. 等待 5 秒鐘 (讓嗶嗶聲播完)，然後播放語音
-                            setTimeout(() => {
-                                this.speakAlert(alertReason);
-                            }, 5000);
-                            break;
+                            alertMessages.push(alertReason); // 將此地區的警示加入陣列
                         }
+                    }
+
+                    // 迴圈結束後，檢查是否有任何警示
+                    if (alertMessages.length > 0) {
+                        // 將所有警示訊息組合成一個字串
+                        const fullAlertMessage = alertMessages.join("\n");
+                        console.log(alertMessages);
+                        // 1. 播放聲音 (只播一次)
+                        this.playAlertSound();
+                        // 2. 顯示文字 (顯示所有彙總的訊息)
+                        this.showRainAlert(fullAlertMessage);
+                        // 3. 讓嗶嗶聲播完然後播放語音
+                        setTimeout(() => {
+                            this.speakAlert(fullAlertMessage);
+                        }, 5000);
                     }
                 },
                 formatTime(dateTimeStr) {
@@ -543,7 +550,7 @@
                 for (const key in this.rainChartInstances) this.rainChartInstances[key].destroy();
                 clearInterval(this.dataInterval);
                 clearInterval(this.countdownInterval);
-                window.speechSynthesis.cancel(); // 離開頁面時停止所有語音
+                window.speechSynthesis.cancel();
             }
         }).mount('#app');
     </script>
