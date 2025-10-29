@@ -58,6 +58,50 @@
             border-radius: 0.375rem;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
+
+        /* 焦點引導樣式 */
+        .tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            /* 使用半透明背景和濾鏡 */
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: grayscale(80%) blur(2px);
+            z-index: 9998;
+        }
+
+        .tour-highlight-focus {
+            position: relative;
+            z-index: 9999; /* 確保按鈕在遮罩之上 */
+            /* 高亮光暈效果 */
+            box-shadow: 0 0 0 10px rgba(255, 255, 255, 0.7);
+            border-radius: 5px; /* 確保光暈是圓角 */
+            animation: pulse 1.5s infinite;
+        }
+
+        .tour-tooltip {
+            position: absolute;
+            background-color: white;
+            padding: 1rem;
+            border-radius: 5px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 10000; /* 在最頂層 */
+            max-width: 300px;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0px rgba(255, 255, 255, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 255, 255, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0px rgba(255, 255, 255, 0);
+            }
+        }
     </style>
 </head>
 
@@ -72,129 +116,146 @@
     </nav> -->
 
     <div id="app">
-        <header class="text-center my-4">
-            <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報與即時雨量</h1>
-            <p class="text-muted">（新店區、中和區、板橋區預報｜新北、中和、板橋觀測站即時資料）</p>
-            <!-- 啟用音訊按鈕 -->
-            <button class="btn btn-info" @click="enableAudio" v-if="!isAudioEnabled">
-                <i class="bi bi-bell-fill"></i> 啟用聲音警示
-            </button>
-            <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
-            <!-- 聲音說明 -->
-            <small v-if="!isAudioEnabled" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
-        </header>
 
-        <div v-if="isLoading" class="text-center my-5">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p class="mt-2">正在載入天氣資料...</p>
-        </div>
+        <!-- 【*** 新增 ***】 焦點引導遮罩 (參考 feature.html) -->
+        <!-- 點擊遮罩時關閉引導 -->
+        <div v-if="showOnboarding" class="tour-overlay" @click="closeTour"></div>
 
-        <div v-if="error" class="alert alert-danger" role="alert">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <strong>資料載入失敗：</strong> {{ error }}
-        </div>
-
-        <main v-if="!isLoading && !error" class="d-flex flex-column gap-4">
-            <!-- 即時雨量觀測區塊 -->
-            <section>
-                <h2 class="text-center mb-3">💧 即時雨量觀測</h2>
-
-                <!-- 即時降雨警示 -->
-                <div v-if="immediateAlertMessage" class="alert alert-danger alert-dismissible fade show mt-3"
-                     role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                    <strong>即時降雨警示：</strong> {{ immediateAlertMessage }}
-                    <button type="button" class="btn-close" @click="clearImmediateAlert"></button>
-                </div>
-
-                <p class="text-center text-primary fw-bold" v-if="rainObservation.length > 0">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    API資料每10分鐘更新，將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後更新即時資料...
-                </p>
-                <div v-if="rainObservation.length > 0" class="row g-4">
-                    <div v-for="station in rainObservation" :key="station.StationId" class="col-md-4">
-                        <div class="p-3 realtime-rain-card h-100 d-flex flex-column">
-                            <h5 class="mb-3">{{ station.TownName }}</h5>
-                            <ul class="list-group list-group-flush flex-grow-1">
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    10分鐘雨量
-                                    <span class="badge bg-primary rounded-pill fs-6">{{ station.Past10Min }} mm</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    1小時雨量
-                                    <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past1hr }} mm</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    24小時雨量
-                                    <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past24hr }} mm</span>
-                                </li>
-                            </ul>
-                            <small class="text-muted mt-3 d-block text-center">
-                                觀測時間: {{ formatFullDateTime(station.ObsTime) }}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-                <div v-else class="text-center text-muted">
-                    <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                    正在載入即時雨量資料...
-                </div>
-            </section>
-
-            <!-- 天氣預報區塊 -->
-            <section class="location-section">
-                <h2 class="text-center mb-3">🌦️ 未來24小時天氣預報</h2>
-
-                <!-- 降雨預報警示 -->
-                <div v-if="forecastAlertMessage" class="alert alert-warning alert-dismissible fade show mt-3"
-                     role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
-                    <i class="bi bi-clock-fill me-2"></i>
-                    <strong>降雨預報警示：</strong> {{ forecastAlertMessage }}
-                    <button type="button" class="btn-close" @click="clearForecastAlert"></button>
-                </div>
-
-                <!-- 倒數計時器 -->
-                <p class="text-center text-success fw-bold" v-if="!isLoading && !error">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    預報將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
-                </p>
-
-                <!-- 更新時間設定 -->
-                <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
-                    每
-                    <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
-                    秒更新資訊
-                    <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
-                </div>
-                <!-- 預報圖表 (v-for) -->
-                <div v-for="location in locations" :key="location.name" class="mt-5">
-                    <h3 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h3>
-                    <div class="row">
-                        <div class="col-lg-4">
-                            <h4 class="h5 text-muted">降雨趨勢</h4>
-                            <div class="rain-chart-container mb-5">
-                                <canvas :id="'rain-chart-' + location.name"></canvas>
-                            </div>
-                        </div>
-                        <div class="col-lg-8">
-                            <h4 class="h5 text-muted">綜合天氣趨勢</h4>
-                            <div class="chart-container mb-5">
-                                <canvas :id="'chart-' + location.name"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-        <footer class="text-center text-muted mt-5">
-            <p>資料來源：<a href="https://opendata.cwa.gov.tw/" target="_blank">交通部中央氣象署</a></p>
-            <p>資料API：
-                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E9%A0%90%E5%A0%B1/get_v1_rest_datastore_F_D0047_069" target="_blank">天氣預報</a> |
-                <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E8%A7%80%E6%B8%AC/get_v1_rest_datastore_O_A0002_001" target="_blank">雨量觀測</a>
+        <!-- 【*** 新增 ***】 焦點引導提示框 (參考 feature.html) -->
+        <div v-if="showOnboarding" class="tour-tooltip" :style="tooltipStyle">
+            <strong>啟用聲音警示</strong>
+            <p class="mb-0 small text-muted mt-2">
+                請點擊此按鈕，以允許瀏覽器播放即時警示音效與語音。
             </p>
-        </footer>
+            <small class="text-muted d-block mt-2">(點擊任意灰色區域可關閉提示)</small>
+        </div>
+        
+        <!-- 【*** 修改 ***】 移除 .blur-content 相關的 class -->
+        <div class="app-content">
+            <header class="text-center my-4">
+                <h1 class="display-5 fw-bold">🏙️ 新北市天氣預報與即時雨量</h1>
+                <p class="text-muted">（新店區、中和區、板橋區預報｜新北、中和、板橋觀測站即時資料）</p>
+                <!-- 啟用音訊按鈕 -->
+                <button v-if="!isAudioEnabled" ref="enableAudioButtonRef" class="btn btn-info btn-sm" :class="{ 'tour-highlight-focus': showOnboarding }" @click="enableAudio">
+                    <i class="bi bi-bell-fill"></i> 啟用聲音警示
+                </button>
+                <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i> 聲音已啟用</span>
+                <!-- 聲音說明 -->
+                <small v-if="!isAudioEnabled && !showOnboarding" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
+            </header>
+
+            <div v-if="isLoading" class="text-center my-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">正在載入天氣資料...</p>
+            </div>
+
+            <div v-if="error" class="alert alert-danger" role="alert">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <strong>資料載入失敗：</strong> {{ error }}
+            </div>
+
+            <main v-if="!isLoading && !error" class="d-flex flex-column gap-4">
+                <!-- 即時雨量觀測區塊 -->
+                <section>
+                    <h2 class="text-center mb-3">💧 即時雨量觀測</h2>
+
+                    <!-- 即時降雨警示 -->
+                    <div v-if="immediateAlertMessage" class="alert alert-danger alert-dismissible fade show mt-3"
+                        role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                        <strong>即時降雨警示：</strong> {{ immediateAlertMessage }}
+                        <button type="button" class="btn-close" @click="clearImmediateAlert"></button>
+                    </div>
+
+                    <p class="text-center text-primary fw-bold" v-if="rainObservation.length > 0">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        API資料每10分鐘更新，將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後更新即時資料...
+                    </p>
+                    <div v-if="rainObservation.length > 0" class="row g-4">
+                        <div v-for="station in rainObservation" :key="station.StationId" class="col-md-4">
+                            <div class="p-3 realtime-rain-card h-100 d-flex flex-column">
+                                <h5 class="mb-3">{{ station.TownName }}</h5>
+                                <ul class="list-group list-group-flush flex-grow-1">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        10分鐘雨量
+                                        <span class="badge bg-primary rounded-pill fs-6">{{ station.Past10Min }} mm</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        1小時雨量
+                                        <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past1hr }} mm</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        24小時雨量
+                                        <span class="badge bg-secondary rounded-pill fs-6">{{ station.Past24hr }} mm</span>
+                                    </li>
+                                </ul>
+                                <small class="text-muted mt-3 d-block text-center">
+                                    觀測時間: {{ formatFullDateTime(station.ObsTime) }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="text-center text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                        正在載入即時雨量資料...
+                    </div>
+                </section>
+
+                <!-- 天氣預報區塊 -->
+                <section class="location-section">
+                    <h2 class="text-center mb-3">🌦️ 未來24小時天氣預報</h2>
+
+                    <!-- 降雨預報警示 -->
+                    <div v-if="forecastAlertMessage" class="alert alert-warning alert-dismissible fade show mt-3"
+                        role="alert" style="max-width: 800px; margin-left: auto; margin-right: auto;">
+                        <i class="bi bi-clock-fill me-2"></i>
+                        <strong>降雨預報警示：</strong> {{ forecastAlertMessage }}
+                        <button type="button" class="btn-close" @click="clearForecastAlert"></button>
+                    </div>
+
+                    <!-- 倒數計時器 -->
+                    <p class="text-center text-success fw-bold" v-if="!isLoading && !error">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        預報將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
+                    </p>
+
+                    <!-- 更新時間設定 -->
+                    <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
+                        每
+                        <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
+                        秒更新資訊
+                        <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
+                    </div>
+                    <!-- 預報圖表 (v-for) -->
+                    <div v-for="location in locations" :key="location.name" class="mt-5">
+                        <h3 class="mb-4 display-6 border-bottom pb-2">{{ location.name }}</h3>
+                        <div class="row">
+                            <div class="col-lg-4">
+                                <h4 class="h5 text-muted">降雨趨勢</h4>
+                                <div class="rain-chart-container mb-5">
+                                    <canvas :id="'rain-chart-' + location.name"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-lg-8">
+                                <h4 class="h5 text-muted">綜合天氣趨勢</h4>
+                                <div class="chart-container mb-5">
+                                    <canvas :id="'chart-' + location.name"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+            <footer class="text-center text-muted mt-5">
+                <p>資料來源：<a href="https://opendata.cwa.gov.tw/" target="_blank">交通部中央氣象署</a></p>
+                <p>資料API：
+                    <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E9%A0%90%E5%A0%B1/get_v1_rest_datastore_F_D0047_069" target="_blank">天氣預報</a> |
+                    <a href="https://opendata.cwa.gov.tw/dist/opendata-swagger.html#/%E8%A7%80%E6%B8%AC/get_v1_rest_datastore_O_A0002_001" target="_blank">雨量觀測</a>
+                </p>
+            </footer>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
@@ -214,6 +275,8 @@
 
                     isLoading: true,
                     error: null,
+                    showOnboarding: true, // 控制引導遮罩
+                    tooltipStyle: { top: '0px', left: '0px' }, // 提示框位置
 
                     // 預報資料
                     locations: [],
@@ -237,7 +300,6 @@
 
                     // 警示系統
                     isAudioEnabled: false,
-                    // 【*** 修改 ***】 拆分警示訊息
                     immediateAlertMessage: null, // 即時警示
                     forecastAlertMessage: null, // 預報警示
                     immediateAlertTimer: null, // 即時警示的計時器
@@ -453,6 +515,27 @@
                     }, 1000);
                 },
                 // --- 聲音與警示系統 ---
+                startTour() {
+                    this.$nextTick(() => { // 確保按鈕已渲染
+                        const targetElement = this.$refs.enableAudioButtonRef;
+                        if (!targetElement) {
+                            console.warn('引導目標 (enableAudioButtonRef) 未找到。');
+                            this.closeTour(); // 找不到目標，直接關閉引導
+                            return;
+                        }
+                        const rect = targetElement.getBoundingClientRect();
+                        // 計算提示框位置 (在按鈕下方)
+                        this.tooltipStyle = {
+                            top: (rect.bottom + 15 + window.scrollY) + 'px',
+                            left: (rect.left + window.scrollX) + 'px',
+                            // 避免提示框超出螢幕寬度
+                            transform: rect.left > (window.innerWidth - 300) ? 'translateX(-100%)' : 'none'
+                        };
+                    });
+                },
+                closeTour() {
+                    this.showOnboarding = false;
+                },
                 async enableAudio() {
                     try {
                         await Tone.start();
@@ -463,6 +546,7 @@
                         if (Tone.Transport.state !== "started") {
                             Tone.Transport.start();
                         }
+                        this.closeTour(); // 啟用後關閉引導
                     } catch (e) {
                         console.error("啟用音訊失敗:", e);
                         this.error = "瀏覽器限制，無法啟用音訊。";
@@ -653,6 +737,12 @@
                 }
             },
             mounted() {
+                // 等待 DOM 渲染，然後檢查是否需要啟動引導
+                this.$nextTick(() => { 
+                    if (this.showOnboarding && !this.isAudioEnabled) {
+                        this.startTour();
+                    }
+                });
                 // 立即載入所有資料
                 this.fetchWeatherData();
                 this.fetchRainObservation();
