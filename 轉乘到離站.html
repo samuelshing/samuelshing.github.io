@@ -230,11 +230,9 @@
                         isLoading.value = false;
                         return; // 終止函式
                     }
-
                     // 每次抓取新資料前，重設 UI 狀態
                     isLoading.value = true;
                     error.value = null;
-
                     try {
                         // 使用 Promise.all 可以「同時」發送多個非同步請求，效率比一個一個發送要高
                         const [tymcRes, trtcRes] = await Promise.all([axiosInstance.get(API_URLS.TYMC), axiosInstance.get(API_URLS.TRTC)]);
@@ -285,21 +283,6 @@
                 // onMounted 會在 Vue 元件被掛載到網頁上後執行一次
                 onMounted(() => {
                     fetchData(); // 立即執行一次，載入初始資料
-                    // setInterval(fetchData, 30000); // 設定計時器，每 30000 毫秒 (30秒) 自動呼叫 fetchData 函式來刷新資料
-                    axios.get('https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/LiveBoard/TRTC?$f$rmat=JSON', {
-                        headers: { 'Authorization': `Bearer ${accessToken.value}` }
-                    }).then(response => {
-                        console.log('及時到站：', response.data);
-                    }).catch(error => {
-                        console.error('發生錯誤：', error);
-                    });
-                    axios.get("https://tdx.transportdata.tw/api/basic/v2/Rail/Metro/S2STravelTime/TRTC?$f$lter=RouteID%20eq%20'BL-1'%20or%20RouteID%20eq%20'G-1'%20or%20RouteID%20eq%20'O-1'%20or%20RouteID%20eq%20'R-1'&$f$rmat=JSON", {
-                        headers: { 'Authorization': `Bearer ${accessToken.value}` }
-                    }).then(response => {
-                        console.log('站間時間：', response.data);
-                    }).catch(error => {
-                        console.error('發生錯誤：', error);
-                    });
                 });
                 return { metroData, isLoading, error, lastUpdateTime, formatEstimateTime };
             }
