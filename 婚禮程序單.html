@@ -52,8 +52,8 @@
             background-color: #FDFBF5;
             /* 一個非常淡的卡其/米色 */
             /* fallback for old browsers */
-            background: -webkit-linear-gradient(to bottom, #FBD786, #ffb0b2);
-            background: linear-gradient(to bottom, #FBD786, #ffb0b2);
+            background: -webkit-linear-gradient(to bottom, #ffebbc, #ffb0b2);
+            background: linear-gradient(to bottom, #ffebbc, #ffb0b2);
             overflow-x: hidden;
             /* 禁止橫向捲動 */
         }
@@ -77,7 +77,8 @@
             background-image: url('images/papyrus.png');
             background-blend-mode: multiply; /* 讓圖片紋理與底色融合 */
             background-size: cover;
-            background-position: center;
+            background-position: top;
+            filter: url(#paper-edge-filter); /* 套用不規則邊緣濾鏡 */
         }
 
         /* 書卷/紙張背景 */
@@ -279,15 +280,36 @@
         <!-- 報告 -->
         <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 450ms;">
             <h3 class="iansuifont text-2xl text-center">報告</h3>
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12 space-y-4">
+                <h4 class="font-serif text-xl font-bold">拍照順序</h4>
+                <div class="pl-4 border-l-2 border-dark-green mb-6">
+                    <p>雙方主婚人</p>
+                    <p>男方家人</p>
+                    <p>女方家人</p>
+                    <p>康華禮拜堂</p>
+                    <p>男方朋友</p>
+                    <p>女方朋友</p>
+                </div>
+            </div>
         </section>
 
         <!-- 頁尾 -->
         <footer class="text-center py-12 mt-8 fade-in" style="transition-delay: 500ms;">
             <!-- <p class="font-serif text-xl accent-pink">S & S</p> -->
-            <p class="lavishly-yours-regular text-dark-green/70 mt-2">Love never fails.</p>
+            <p class="lavishly-yours-regular text-2xl text-dark-green/70 mt-2">Love never fails.</p>
         </footer>
 
     </div>
+    
+    <svg style="display: none;">
+        <filter id="paper-edge-filter" x="-10%" y="-10%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R" yChannelSelector="G" result="displaced" />
+            <feGaussianBlur in="displaced" stdDeviation="1.5" result="blurred" />
+            <feComposite in="SourceGraphic" in2="blurred" operator="atop" />
+        </filter>
+    </svg>
 
     <!-- 滾動動畫的 JavaScript -->
     <script>
