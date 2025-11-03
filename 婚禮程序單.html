@@ -16,6 +16,26 @@
         rel="stylesheet">
 
     <style>
+        @font-face {
+            font-family: 'ElfFont';
+            src: url('fonts/elffont-fern.otf') format('opentype');
+        }
+
+        .elffont {
+            font-family: 'ElfFont', sans-serif;
+        }
+
+        @font-face {
+            font-family: 'Iansui';
+            src: url('fonts/iansui.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        .iansuifont {
+            font-family: 'Iansui', sans-serif;
+        }
+
         /* 自定義配色和字體 */
         body {
             /* 使用 Inter 作為基本字體 */
@@ -108,10 +128,10 @@
 
         <!-- 封面/標題 -->
         <header class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 text-center fade-in">
-            <h1 class="font-serif text-5xl md:text-6xl font-bold accent-pink mb-4">
+            <h1 class="iansuifont text-5xl md:text-6xl font-bold accent-pink mb-4">
                 忻聖瑀 <span class="text-dark-green">&</span> 蘇慧珂
             </h1>
-            <h1 class="font-serif text-4xl md:text-5xl text-dark-green mb-8">
+            <h1 class="iansuifont text-4xl md:text-5xl text-dark-green mb-8">
                 結婚感恩禮拜
             </h1>
 
@@ -133,136 +153,127 @@
             </div>
         </header>
 
-        <!-- 婚禮程序 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 100ms;">
-            <h2 class="font-serif text-3xl text-center mb-10">婚禮程序</h2>
+        <!-- 第一章 -->
+        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 250ms;">
+            <h3 class="iansuifont text-2xl text-center mb-2">第一章 愛的源頭</h3>
+            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">創造、救贖、審判，都因為祢的愛。</p> -->
+            <h4 class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄔㄨㄤˋㄗㄠˋ ㄐㄧㄡˋㄕㄨˊ ㄕㄣˇㄆㄢˋ ㄉㄡㄧㄣㄨㄟˋㄋㄧˇㄉㄜ˙ㄞˋ</h4>
 
-            <div class="space-y-8">
-                <!-- 進場 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center">進場</h3>
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12">
+                <h4 class="font-serif text-xl font-bold mb-3">序樂</h4>
+            </div>
+
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12">
+                <h4 class="font-serif text-xl font-bold mb-3">頌讚</h4>
+                <div class="pl-4 border-l-4 border-accent-pink/50 mb-6">
+                    <h5 class="font-serif text-lg font-bold mb-2">《天父世界》</h5>
+                    <p>這是天父世界　當我側耳傾聽<br>
+                        宇宙歌唱 萬物響應　星辰同聲讚美<br>
+                        這是天父世界　我心滿有平安<br>
+                        樹木花草　藍天碧海　述說天父全能</p><br>
+                    <p>這是天父世界　小鳥歡唱啼鳴<br>
+                        清晨明亮　百花美麗　宣揚創造大能<br>
+                        這是天父世界　祂愛充滿世間<br>
+                        風吹草動　將祂表現　萬物傳祂恩言</p><br>
+                    <p>這是天父世界　求主叫我不忘<br>
+                        黑暗勢力雖然猖狂　天父卻仍做王<br>
+                        這是天父世界　我心不必憂傷<br>
+                        上帝是王　宇宙歡唱　主恩統治萬方</p><br>
                 </div>
-
-                <!-- 序樂 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center">序樂</h3>
-                </div>
-
-                <!-- 第一章 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center mb-2">第一章 愛的源頭</h3>
-                    <p class="text-base text-center text-dark-green/80 italic mb-6">創造、救贖、審判，都因為祢的愛。</p>
-
-                    <!-- Sub-item container -->
-                    <div class="pl-4 md:pl-12">
-                        <h4 class="font-serif text-xl font-bold mb-3">頌讚</h4>
-                        <div class="pl-4 border-l-4 border-accent-pink/50 mb-6">
-                            <h5 class="font-serif text-lg font-bold mb-2">《天父世界》</h5>
-                            <p>這是天父世界　當我側耳傾聽<br>
-                                宇宙歌唱 萬物響應　星辰同聲讚美<br>
-                                這是天父世界　我心滿有平安<br>
-                                樹木花草　藍天碧海　述說天父全能</p><br>
-                            <p>這是天父世界　小鳥歡唱啼鳴<br>
-                                清晨明亮　百花美麗　宣揚創造大能<br>
-                                這是天父世界　祂愛充滿世間<br>
-                                風吹草動　將祂表現　萬物傳祂恩言</p><br>
-                            <p>這是天父世界　求主叫我不忘<br>
-                                黑暗勢力雖然猖狂　天父卻仍做王<br>
-                                這是天父世界　我心不必憂傷<br>
-                                上帝是王　宇宙歡唱　主恩統治萬方</p><br>
-                        </div>
-
-                        <div class="pl-4 border-l-4 border-accent-pink/50">
-                            <h5 class="font-serif text-lg font-bold mb-2">《神是愛》</h5>
-                            <p>
-                                神是愛　打開你的心高聲揚　神是愛　把它告訴各地方。<br>
-                                祂創造天空和那深海洋　祂創造飛鳥和那蜜蜂忙<br>
-                                祂造一切為你和我　因神是愛</p><br>
-                            <p>
-                                神是愛　打開你的心盡聲揚　神是愛　祂願世人知道它。<br>
-                                祂創造玫瑰和那蔓藤長　祂創造樹木和那星閃亮<br>
-                                祂造一切為你和我　因神是愛</p><br>
-                            <p>
-                                神是愛　天地和萬物都宣揚　神是愛　祂願世人分享它。<br>
-                                祂為失喪人預備生命路　用祂大能的手來拯救他<br>
-                                祂造一切為你和我　因神是愛</p><br>
-                            <p>
-                                神是愛　空氣中我能體會　恩典中我能體會<br>
-                                隨時我都能體會　從最深的海洋<br>
-                                到那最高高的山　萬物都告訴我神是愛</p><br>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 第二章 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center mb-2">第二章 愛的傳承</h3>
-                    <p class="text-base text-center text-dark-green/80 italic mb-6">供應、保護、忍耐，都因為你們的愛。</p>
-
-                    <!-- Sub-item container -->
-                    <div class="pl-4 md:pl-12">
-                        <h4 class="font-serif text-xl font-bold">謝親恩</h4>
-                    </div>
-                </div>
-
-                <!-- 第三章 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center mb-2">第三章 愛的約定</h3>
-                    <p class="text-base text-center text-dark-green/80 italic mb-6">委身、包容、相信，是我們的決定。</p>
-
-                    <!-- Sub-item container -->
-                    <div class="pl-4 md:pl-12 space-y-6">
-                        <div>
-                            <h4 class="font-serif text-xl font-bold mb-4">讀經 - 簡瑞麟、陳麗恩 宣教士</h4>
-                            <div class="scripture-reading text-lg leading-relaxed space-y-4 text-dark-green/90">
-                                <p><strong>合：</strong>婚姻，人人都當尊重。(來13:4)</p>
-                                <p><strong>合：</strong>耶和華神說：「那人獨居不好，我要為他造一個配偶幫助他。」因此，人要離開父母，與妻子連合，二人成為一體。(創2:18、24)</p>
-                                <p><strong>合：</strong>既然如此，夫妻不再是兩個人，而是一體的了。所以，神配合的，人不可分開。(太19:6)</p>
-                                <p><strong>男：</strong>才德的女子很多，唯獨你超過一切。(箴31:29)這是我骨中的骨、肉中的肉！(創2:23)</p>
-                                <p><strong>女：</strong>我的良人哪，你甚俊美可愛！(歌1:16)我屬我的良人，我的良人屬我。(歌6:3)</p>
-                                <p><strong>男：</strong>願你的心只向我敞開；</p>
-                                <p><strong>女：</strong>願你的手臂只擁抱我。</p>
-                                <p><strong>合：</strong>愛情跟死一樣堅強；戀情跟陰間一樣牢固。(歌8:6)</p>
-                                <p><strong>合：</strong>它爆出火焰，像烈火一樣燃燒。水不能息滅愛情，洪水也無法淹沒。(歌8:7)</p>
-                                <p><strong>合：</strong>相愛，不要只在言語和舌頭上，總要在行為和誠實上。(約壹3:18)</p>
-                                <p><strong>合：</strong>要存敬畏基督的心彼此順服。(弗5:21)</p>
-                                <p><strong>女：</strong>作妻子的，你們要順服自己的丈夫，如同順服主。因為丈夫是妻子的頭，如同基督是教會的頭。(弗5:22-23)</p>
-                                <p><strong>男：</strong>作丈夫的，你們要愛自己的妻子，正如基督愛教會，為教會捨己。(弗5:25)</p>
-                                <p><strong>合：</strong>你要盡心、盡性、盡意愛主－你的神。其次也相倣，就是要愛人如己。(太22:37、39)</p>
-                                <p><strong>合：</strong>愛是恆久忍耐，又有恩慈；愛是不嫉妒，愛是不自誇，不張狂，不作害羞的事，不求自己的益處，不輕易發怒，不計算人的惡，不喜歡不義，只喜歡真理；凡事包容，凡事相信，凡事盼望，凡事忍耐。愛是永不止息。(林前13:4-8)
-                                </p>
-                            </div>
-                        </div>
-
-                        <h4 class="font-serif text-xl font-bold mt-8 mb-4">證道 - 王聖斐傳道</h4>
-                        <h4 class="font-serif text-xl font-bold">證婚 - 林彥圭長老</h4>
-                    </div>
-                </div>
-
-                <!-- 第四章 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center mb-2">第四章 愛的祝福</h3>
-                    <p class="text-base text-center text-dark-green/80 italic mb-6">恩惠、慈愛、平安，是我們的祝福。</p>
-
-                    <!-- Sub-item container -->
-                    <div class="pl-4 md:pl-12 space-y-4">
-                        <h4 class="font-serif text-xl font-bold">詩歌</h4>
-                        <h4 class="font-serif text-xl font-bold">祝禱 - 某長老</h4>
-                        <h4 class="font-serif text-xl font-bold">殿樂</h4>
-                    </div>
-                </div>
-
-                <!-- 報告 -->
-                <div class="pt-8 border-t border-dark-green/20">
-                    <h3 class="font-serif text-2xl text-center">報告</h3>
+                <div class="pl-4 border-l-4 border-accent-pink/50">
+                    <h5 class="font-serif text-lg font-bold mb-2">《神是愛》</h5>
+                    <p>
+                        神是愛　打開你的心高聲揚　神是愛　把它告訴各地方。<br>
+                        祂創造天空和那深海洋　祂創造飛鳥和那蜜蜂忙<br>
+                        祂造一切為你和我　因神是愛</p><br>
+                    <p>
+                        神是愛　打開你的心盡聲揚　神是愛　祂願世人知道它。<br>
+                        祂創造玫瑰和那蔓藤長　祂創造樹木和那星閃亮<br>
+                        祂造一切為你和我　因神是愛</p><br>
+                    <p>
+                        神是愛　天地和萬物都宣揚　神是愛　祂願世人分享它。<br>
+                        祂為失喪人預備生命路　用祂大能的手來拯救他<br>
+                        祂造一切為你和我　因神是愛</p><br>
+                    <p>
+                        神是愛　空氣中我能體會　恩典中我能體會<br>
+                        隨時我都能體會　從最深的海洋<br>
+                        到那最高高的山　萬物都告訴我神是愛</p><br>
                 </div>
             </div>
         </section>
 
+        <!-- 第二章 -->
+        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 300ms;">
+            <h3 class="iansuifont text-2xl text-center mb-2">第二章 愛的傳承</h3>
+            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">供應、保護、忍耐，都因為你們的愛。</p> -->
+            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄍㄨㄥㄧㄥ ㄅㄠˇㄏㄨˋ ㄖㄣˇㄋㄞˋ ㄉㄡㄧㄣㄨㄟˋㄋㄧˇㄇㄣ˙ㄉㄜ˙ㄞˋ</p>
+
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12">
+                <h4 class="font-serif text-xl font-bold">謝親恩</h4>
+            </div>
+        </section>
+
+        <!-- 第三章 -->
+        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 350ms;">
+            <h3 class="iansuifont text-2xl text-center mb-2">第三章 愛的約定</h3>
+            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">委身、包容、相信，是我們的決定。</p> -->
+            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄨㄟˇㄕㄣ ㄅㄠㄖㄨㄥˊ ㄒㄧㄤㄒㄧㄣˋ ㄕˋㄨㄛˇㄇㄣ˙ㄉㄜ˙ㄐㄩㄝˊㄉㄧㄥˋ</p>
+
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12 space-y-6">
+                <div>
+                    <h4 class="font-serif text-xl font-bold mb-4">讀經 - 簡瑞麟、陳麗恩 宣教士</h4>
+                    <div class="scripture-reading text-lg leading-relaxed space-y-4 text-dark-green/90">
+                        <p><strong>合：</strong>婚姻，人人都當尊重。(來13:4)</p>
+                        <p><strong>合：</strong>耶和華神說：「那人獨居不好，我要為他造一個配偶幫助他。」因此，人要離開父母，與妻子連合，二人成為一體。(創2:18、24)</p>
+                        <p><strong>合：</strong>既然如此，夫妻不再是兩個人，而是一體的了。所以，神配合的，人不可分開。(太19:6)</p>
+                        <p><strong>男：</strong>才德的女子很多，唯獨你超過一切。(箴31:29)這是我骨中的骨、肉中的肉！(創2:23)</p>
+                        <p><strong>女：</strong>我的良人哪，你甚俊美可愛！(歌1:16)我屬我的良人，我的良人屬我。(歌6:3)</p>
+                        <p><strong>男：</strong>願你的心只向我敞開；</p>
+                        <p><strong>女：</strong>願你的手臂只擁抱我。</p>
+                        <p><strong>合：</strong>愛情跟死一樣堅強；戀情跟陰間一樣牢固。(歌8:6)</p>
+                        <p><strong>合：</strong>它爆出火焰，像烈火一樣燃燒。水不能息滅愛情，洪水也無法淹沒。(歌8:7)</p>
+                        <p><strong>合：</strong>相愛，不要只在言語和舌頭上，總要在行為和誠實上。(約壹3:18)</p>
+                        <p><strong>合：</strong>要存敬畏基督的心彼此順服。(弗5:21)</p>
+                        <p><strong>女：</strong>作妻子的，你們要順服自己的丈夫，如同順服主。因為丈夫是妻子的頭，如同基督是教會的頭。(弗5:22-23)</p>
+                        <p><strong>男：</strong>作丈夫的，你們要愛自己的妻子，正如基督愛教會，為教會捨己。(弗5:25)</p>
+                        <p><strong>合：</strong>你要盡心、盡性、盡意愛主－你的神。其次也相倣，就是要愛人如己。(太22:37、39)</p>
+                        <p><strong>合：</strong>愛是恆久忍耐，又有恩慈；愛是不嫉妒，愛是不自誇，不張狂，不作害羞的事，不求自己的益處，不輕易發怒，不計算人的惡，不喜歡不義，只喜歡真理；凡事包容，凡事相信，凡事盼望，凡事忍耐。愛是永不止息。(林前13:4-8)
+                        </p>
+                    </div>
+                </div>
+
+                <h4 class="font-serif text-xl font-bold mt-8 mb-4">證道 - 王聖斐傳道</h4>
+                <h4 class="font-serif text-xl font-bold">證婚 - 林彥圭長老</h4>
+            </div>
+        </section>
+
+        <!-- 第四章 -->
+        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 400ms;">
+            <h3 class="iansuifont text-2xl text-center mb-2">第四章 愛的祝福</h3>
+            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">恩惠、慈愛、平安，是我們的祝福。</p> -->
+            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄣㄏㄨㄟˋ ㄘˊㄞˋ ㄆㄧㄥˊㄢ ㄕˋㄨㄛˇㄇㄣ˙ㄉㄜ˙ㄓㄨˋㄈㄨˊ</p>
+
+            <!-- Sub-item container -->
+            <div class="pl-4 md:pl-12 space-y-4">
+                <h4 class="font-serif text-xl font-bold">詩歌</h4>
+                <h4 class="font-serif text-xl font-bold">祝禱 - 某長老</h4>
+                <h4 class="font-serif text-xl font-bold">殿樂</h4>
+            </div>
+        </section>
+
+        <!-- 報告 -->
+        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 450ms;">
+            <h3 class="iansuifont text-2xl text-center">報告</h3>
+        </section>
+
         <!-- 頁尾 -->
-        <footer class="text-center py-12 mt-8 fade-in" style="transition-delay: 400ms;">
-            <p class="font-serif text-xl accent-pink">S & S</p>
-            <p class="text-dark-green/70 mt-2">Love is patient, love is kind. (1 Cor 13:4)</p>
+        <footer class="text-center py-12 mt-8 fade-in" style="transition-delay: 500ms;">
+            <!-- <p class="font-serif text-xl accent-pink">S & S</p> -->
+            <p class="text-dark-green/70 mt-2">Love never fails.</p>
         </footer>
 
     </div>
