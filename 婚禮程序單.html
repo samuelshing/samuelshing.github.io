@@ -52,8 +52,8 @@
             background-color: #FDFBF5;
             /* 一個非常淡的卡其/米色 */
             /* fallback for old browsers */
-            background: -webkit-linear-gradient(to bottom, #FBD786, #C6FFDD, #f7797d);
-            background: linear-gradient(to bottom, #FBD786, #C6FFDD, #f7797d);
+            background: -webkit-linear-gradient(to bottom, #FBD786, #ffb0b2);
+            background: linear-gradient(to bottom, #FBD786, #ffb0b2);
             overflow-x: hidden;
             /* 禁止橫向捲動 */
         }
@@ -74,6 +74,10 @@
         /* 頁面背景 */
         .bg-khaki-paper {
             background-color: #FAF6ED;
+            background-image: url('images/papyrus.png');
+            background-blend-mode: multiply; /* 讓圖片紋理與底色融合 */
+            background-size: cover;
+            background-position: center;
         }
 
         /* 書卷/紙張背景 */
@@ -84,6 +88,10 @@
         /* 墨綠色文字 */
         .border-dark-green {
             border-color: #3A5A40;
+        }
+
+        .dark-green {
+            color: #3A5A40;
         }
 
         .accent-pink {
@@ -170,7 +178,7 @@
             <!-- Sub-item container -->
             <div class="pl-4 md:pl-12">
                 <h4 class="font-serif text-xl font-bold mb-3">頌讚</h4>
-                <div class="pl-4 border-l-4 border-accent-pink/50 mb-6">
+                <div class="pl-4 border-l-2 border-dark-green mb-6">
                     <h5 class="font-serif text-lg font-bold mb-2">《天父世界》</h5>
                     <p>這是天父世界　當我側耳傾聽<br>
                         宇宙歌唱 萬物響應　星辰同聲讚美<br>
@@ -185,7 +193,7 @@
                         這是天父世界　我心不必憂傷<br>
                         上帝是王　宇宙歡唱　主恩統治萬方</p><br>
                 </div>
-                <div class="pl-4 border-l-4 border-accent-pink/50">
+                <div class="pl-4 border-l-2 border-dark-green">
                     <h5 class="font-serif text-lg font-bold mb-2">《神是愛》</h5>
                     <p>
                         神是愛　打開你的心高聲揚　神是愛　把它告訴各地方。<br>
