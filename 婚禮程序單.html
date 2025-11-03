@@ -51,6 +51,11 @@
             /* 卡其色系背景 */
             background-color: #FDFBF5;
             /* 一個非常淡的卡其/米色 */
+            /* fallback for old browsers */
+            background: -webkit-linear-gradient(to bottom, #FBD786, #C6FFDD, #f7797d);
+            background: linear-gradient(to bottom, #FBD786, #C6FFDD, #f7797d);
+            overflow-x: hidden;
+            /* 禁止橫向捲動 */
         }
 
         /* 標題和姓名使用 Noto Serif TC */
@@ -102,16 +107,6 @@
         .fade-in-visible {
             opacity: 1;
             transform: translateY(0);
-        }
-
-        /* 為了 <pre> 標籤中的詩歌 */
-        pre {
-            white-space: pre-wrap;
-            /* 保持換行 */
-            font-family: 'Inter', sans-serif;
-            /* 保持字體一致 */
-            font-size: 0.95rem;
-            line-height: 1.8;
         }
 
         /* 經文朗讀的特殊排版 */
