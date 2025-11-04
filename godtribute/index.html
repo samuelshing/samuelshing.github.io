@@ -131,7 +131,7 @@
     </div>
 
     <script>
-    const { createApp, ref, reactive, onMounted } = Vue;
+    const { createApp, ref, reactive, onMounted, shallowRef } = Vue;
 
     createApp({
         setup() {
@@ -141,7 +141,7 @@
                 story: ''
             });
             const godtributes = ref([]);
-            const myRadarChart = ref(null); // 用來持有 Chart.js 實例
+            const myRadarChart = shallowRef(null); // 用來持有 Chart.js 實例
 
             // 2. 方法 (取代 methods)
             const updateChart = () => {
