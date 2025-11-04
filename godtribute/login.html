@@ -136,21 +136,21 @@
                                 role: "general",  // 預設角色為一般使用者
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             }).then(() => {
-                                // 初始化 godattrs 集合中的六筆資料
-                                const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                                // 初始化 godtribute 集合中的六筆資料
+                                const godtributesCollection = db.collection('users').doc(user.uid).collection('godtributes');
                                 const batch = db.batch();
 
                                 defaultAttr.forEach((attr) => {
-                                    const docRef = godattrsCollection.doc();
+                                    const docRef = godtributesCollection.doc();
                                     batch.set(docRef, attr);
                                 });
 
                                 return batch.commit();
                             });
                         }).then(() => {
-                            console.log('User data and default godattrs stored in Firestore');
+                            console.log('User data and default godtributes stored in Firestore');
                             // 重導到首頁
-                            window.location.href = 'godattrs.html';
+                            window.location.href = 'index.html';
                         }).catch((error) => {
                             var errorCode = error.code;
                             var errorMessage = error.message;
@@ -164,7 +164,7 @@
                         var user = userCredential.user;
                         console.log('User signed in:', user);
                         // 重導到首頁
-                        window.location.href = 'godattrs.html';
+                        window.location.href = 'index.html';
                     }).catch((error) => {
                         var errorCode = error.code;
                         var errorMessage = error.message;
@@ -197,12 +197,12 @@
                             role: "general",  // 預設角色為一般使用者
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         }).then(() => {
-                            // 初始化 godattrs 集合中的六筆資料
-                            const godattrsCollection = db.collection('users').doc(user.uid).collection('godattrs');
+                            // 初始化 godtribute 集合中的六筆資料
+                            const godtributesCollection = db.collection('users').doc(user.uid).collection('godtributes');
                             const batch = db.batch();
 
                             defaultAttr.forEach((attr) => {
-                                const docRef = godattrsCollection.doc();
+                                const docRef = godtributesCollection.doc();
                                 batch.set(docRef, attr);
                             });
 
@@ -215,7 +215,7 @@
             }).then(() => {
                 console.log('User data stored in Firestore');
                 // 重導到首頁
-                window.location.href = 'godattrs.html';
+                window.location.href = 'index.html';
             }).catch((error) => {
                 var errorCode = error.code;
                 var errorMessage = error.message;
