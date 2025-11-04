@@ -103,7 +103,7 @@
         </div>
     </div>
     <script>
-        const defaultAttr = [
+        const defaultGodtribute = [
             { attribute: "慈愛", story: "耶和華有憐憫，有恩典，不輕易發怒，且有豐盛的慈愛。（詩篇 103:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
             { attribute: "公義", story: "耶和華是公義的；祂喜愛公義，正直人必得見祂的面。（詩篇 11:7）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
             { attribute: "良善", story: "你們要嘗嘗主恩的滋味，便知道祂是美善的；投靠祂的人有福了！（詩篇 34:8）", timestamp: firebase.firestore.FieldValue.serverTimestamp() },
@@ -140,7 +140,7 @@
                                 const godtributesCollection = db.collection('users').doc(user.uid).collection('godtributes');
                                 const batch = db.batch();
 
-                                defaultAttr.forEach((attr) => {
+                                defaultGodtribute.forEach((attr) => {
                                     const docRef = godtributesCollection.doc();
                                     batch.set(docRef, attr);
                                 });
@@ -201,7 +201,7 @@
                             const godtributesCollection = db.collection('users').doc(user.uid).collection('godtributes');
                             const batch = db.batch();
 
-                            defaultAttr.forEach((attr) => {
+                            defaultGodtribute.forEach((attr) => {
                                 const docRef = godtributesCollection.doc();
                                 batch.set(docRef, attr);
                             });
