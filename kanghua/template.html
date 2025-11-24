@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<!-- saved from url=(0036)http://localhost/KangHuaTest/public/ -->
+<html lang="en">
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>康華禮拜堂</title>
+
+	<!-- Fonts -->
+	<link rel="preconnect" href="https://fonts.bunny.net">
+	<link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
+
+	<!-- Styles -->
+	<link rel="stylesheet" href="css/main.css">
+
+	<script type="module" src="js/firebase-init.js"></script>
+	<script type="module" src="js/auth.js"></script>
+</head>
+
+<body class="">
+
+	<!-- Header -->
+	<header id="header" style="background-position: left -16.05px;">
+		<div class="inner">
+
+			<h1>忠於聖經　傳講真理</h1>
+			<h1>團契生活　彼此相愛</h1>
+			<h1>委身基督　人人服事</h1>
+			<h1>得著青年　裝備人才</h1>
+			<h1>傳揚福音　普世宣教</h1>
+		</div>
+		<footer id="footer">
+			<div class="inner">
+				<ul class="icons">
+					<li><a href="https://www.youtube.com/@KanghuaChurch/streams" class="icon brands fa-youtube"
+							target="_blank"><span class="label">Youtube</span></a></li>
+					<li><a href="https://www.facebook.com/groups/210724272275020/" class="icon brands fa-facebook"
+							target="_blank"><span class="label">Facebook</span></a></li>
+					<li><a href="mailto:office@kanghua.org.tw" class="icon solid fa-envelope"><span
+								class="label">Email</span></a></li>
+				</ul>
+				<ul class="actions" style="margin-top: 20px;">
+					<li><a href="#" id="login-btn" class="button small">會員登入</a></li>
+					<li><span id="user-info" style="display:none; margin-right: 10px;"></span></li>
+					<li><a href="#" id="logout-btn" class="button small" style="display:none;">登出</a></li>
+				</ul>
+				<ul class="copyright">
+					<li>© 財團法人台北基督徒康華禮拜堂</li>
+					<li>Design: <a href="http://html5up.net/">HTML5 UP</a></li>
+				</ul>
+			</div>
+		</footer>
+	</header>
+
+	<!-- Main -->
+	<div id="main">
+		<!-- One -->
+		<section id="one">
+			<header class="major">
+				<h2>康華禮拜堂</h2>
+			</header>
+			<p>成為<strong>健康</strong>又彰顯上帝<strong>華美</strong>的教會</p>
+			<ul class="actions">
+				<li><a href="#" id="home-login-btn" class="button">康華家園</a></li>
+			</ul>
+		</section>
+
+		<!-- Two -->
+		<section id="two">
+			<h2>聚會時間</h2>
+			<section>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/主日崇拜.jpg"
+								alt=""></a>
+						<h3>主日崇拜</h3>
+						<p>地點：五樓會堂</p>
+						<ul>
+							<li>第一堂：09:15-10:30</li>
+							<li>第二堂：11:00-12:15</li>
+							<li>第三堂：13:00-14:15</li>
+						</ul>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>成人第一牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group4.png"
+								alt=""></a>
+						<h3>敦南小組</h3>
+						<p>
+							地點：教會6樓<br>
+							時間：每週五19:30-21:00<br>
+							我們是約 10 多位弟兄姊妹所組成的小組，每位都有獨特的個人特質，讓小組聚集分享充滿多元活力。
+							藉由分享屬靈書籍並不定期舉辦其他造就、團契性活動、年度聚餐等與主連結。
+							我們樂意擺上盡心盡意、連結恩賜一同服事，遵行愛神愛人，彼此互勉學習主話、並在生活中行出來。
+							我們個別看起來都不夠完美，可是主賜給每個人的恩典都夠用，我們聚在一起就像一張拼圖、每一片都很重要，最後拼出一張「愛的拼圖」。
+							透過彼此包容與學習，一起成長改變，成為最佳屬靈夥伴，攜手奔跑天路、與主同行見證恩典。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group1.png"
+								alt=""></a>
+						<h3>敦南讀書會</h3>
+						<p>
+							地點：教會6樓<br>
+							時間：每週五10:00-11:40<br>
+							我們小組成員都是喜歡閱讀，且常常陶醉於聆聽組員閱讀後的心得分享與生活應用，更珍惜聽到組員勇敢揭露個人失敗的經驗。
+							雖然成員的年齡層分布很廣，從50多歲到80歲，但大家的關係跟家人一般緊密。
+							我們體認到每次的閱讀與分享後，每個人都會被書的內容激勵，個性與屬靈生命不知不覺被改善，信仰與生活也更密切地結合。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group2.png"
+								alt=""></a>
+						<h3>泰順1小組</h3>
+						<p>
+							地點：教會6樓<br>
+							時間：每週三19:30-21:00<br>
+							小組成員約8位，有溫馨、熱情，幽默，在身心靈上共同扶持成長。聚會主要分享屬靈書籍「活潑的生命」，並不定期舉辦不同活動。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/金南小組.jpg"
+								alt=""></a>
+						<h3>金南小組</h3>
+						<p>
+							時間：每週四12:30-14:30<br>
+							地點：教會6樓<br>
+							小組成員年齡層在65~78歲間，大多數為退休人員，平常聚會主要是查經。
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>成人第二牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group7.png"
+								alt=""></a>
+						<h3>辛亥小組</h3>
+						<p>
+							地點：組員家<br>
+							時間：每週五19:30-21:30<br>
+							我們是多個家庭，約10來位弟兄姊妹所組成的小組，小組聚集是大家獲得上帝滋養的美麗時光，我們期待大家一同蒙恩，一同成長。
+							聚會以查經、分享主日信息與生活近況、代禱為主；每季舉辦郊遊、年終聚餐等。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group8.png"
+								alt=""></a>
+						<h3>三重小組</h3>
+						<p>
+							地點：組員家(有時戶外)<br>
+							時間：每月雙數週，隔週六15:00~17:00<br>
+							我們是多個與孩子交好的家庭父母所組成的小組，小組聚集是大家獲得上帝滋養的美麗時光，我們期待大家一同蒙恩，一同成長，使他們感受到溫暖、支持，渴慕更認識神。
+							聚會內容以小組查經、電影欣賞與信仰連結應用、戶外踏青為主，亦配合教會策略特別聚會。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group9.png"
+								alt=""></a>
+						<h3>姐妹會</h3>
+						<p>
+							地點：教會6樓<br>
+							時間：每週三10:00-12:00<br>
+							我們是由未上班的婦女組成的小組，目前成員有10幾位。盼望透過每次的聚集更多認識神、熟悉聖經內容、學習新知，並在生活中互相扶持、彼此代禱，一起體驗信仰。
+							聚會內容有查經、讀書討論、專題、影片及交通分享、外出活動等。
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>成人第三牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/南東小組.jpeg"
+								alt=""></a>
+						<h3>南東小組</h3>
+						<p>
+							地點：組員家<br>
+							時間：每週五20:00~21:30<br>
+							學習信仰就是生活，彼此鼓勵在生活中經歷神的恩典和神的同在。我們有好幾個家庭構成小組的核心，但也有單身的成員參加。喜歡唱歌，喜歡常常用詩歌敬拜神。
+							我們會一直維持和聯繫曾經在小組成長的慕道友的關係和關心，就算他們後來已經穩定在其它小組或其它教會聚會。
+							聚會內容依照教會的讀經進度，使用大衛鮑森的影片查經；生活分享及代禱；不定期的小組活動。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/新生小組.jpeg"
+								alt=""></a>
+						<h3>新生小組</h3>
+						<p>
+							地點：組員家<br>
+							時間：每週六15:00~17:30<br>
+							小組成員約三十人，持續增長中，是充滿朝氣與活力，彼此相愛的小組。大家一起在神的話語中紮根立基，在主的愛中成長、互相扶持，積極參與服事並同心合意傳揚福音。
+							聚會內容有查經、聖經人物研讀、電影欣賞、專題講座等， 每兩個月舉辦一次戶外旅遊或藝文參觀活動，亦不定期聚餐。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/永和小組.jpg"
+								alt=""></a>
+						<h3>永和小組</h3>
+						<p>
+							地點：教會六樓<br>
+							時間：每週五10:00<br>
+							智力、活力百分百的退休安可族。聚會內容以查經分享為主。
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>成人第四牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group5.png"
+								alt=""></a>
+						<h3>活水小組</h3>
+						<p>
+							地點：教會六樓<br>
+							時間：每月第三個週五<br>
+							我們是由中年、未婚的成員所組成，目前有4位成員。透過查經.讀書討論分享生命與生活，彼此代禱相互扶持，活出信仰。<br>
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/漢口小組.jpeg"
+								alt=""></a>
+						<h3>漢口小組</h3>
+						<p>
+							地點：青商眼鏡行<br>
+							時間：每月第一、第三週，週四18:30-20:30<br>
+							我們是由婦女姊妹組成的小組，目前成員有9幾位。透過每次的查經分享更多認識神，並在主裡互相支持鼓勵、彼此代禱，成為蒙恩相愛的肢體。<br>
+							聚會內容有查經、讀書討論、小組聚餐、小組郊遊等。<br>
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>成人第五牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/板橋小組.jpeg"
+								alt=""></a>
+						<h3>板橋小組</h3>
+						<p>
+							地點：教會五樓<br>
+							時間：隔週主日12:30-14:15<br>
+							我們是5個家庭，約9位弟兄姊妹所組成的小組。小組聚集是大家一同來到主前，彼此分享，扶持、傾聽、代禱的時光。
+							我們期待大家一同在倚靠主面對生活中的困難、透過讀聖經更認識神、學習在教會事奉成長、忠心守護生病的家人並期待每家的家人們及朋友都信主。
+							聚會內容有分享屬靈書籍、主題式禱告、小組郊遊。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/讚美小組.jpeg"
+								alt=""></a>
+						<h3>讚美小組</h3>
+						<p>
+							地點：教會六樓<br>
+							時間：每週四9:30~11:30<br>
+							聚會內容多元，查聖經及分享屬靈書籍並不定期舉辦團契出遊或福音性活動。
+							渴慕追求真理，學習耶穌樣式，彼此相愛代禱，安全敞開分享，溫馨接納成長，同心參與服事。
+							我們期待更多裝備自己，發揮恩賜，為主所用，勇敢傳揚福音，關懷慕道朋友，參與宣教使命。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/恩典小組.jpeg"
+								alt=""></a>
+						<h3>恩典小組</h3>
+						<p>
+							地點：教會六樓<br>
+							時間：每月第一、三週主日12：50~14：30<br>
+							我們是大約有10多位姊妹所組成的小組。每次小組聚集，是大家學習上帝話語及姊妹分享神恩典的美好時光。 期待我們是蒙神恩典的小組，在主的愛中一同成長。
+							聚會內容有查聖經及分享屬靈書籍，並不定期舉辦團契出遊及聚餐活動。
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/長青團契.jpg"
+								alt=""></a>
+						<h3>長青團契</h3>
+						<p>
+							地點：六樓<br>
+							時間：隔週二10:00-11:30<br>
+							「義人要發旺如棕樹，生長如黎巴嫩的香柏樹。他們栽於耶和華的殿中，發旺在我們神的院裡。他們年老的時候仍要結果子，要滿了汁漿而常發青。」(詩92：12-14)<br>
+							銀髮族身體會退化，是不可免的趨勢。
+							然而：以敬拜上帝為生命中心，靈性卻可以更新活潑；以教會團契為生命群體，彼此勉勵，奔走信心之路；以傳揚基督為生命信息，使銀髮族活得精采，並成為他人的祝福！
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>社青牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/雲彩團契.jpeg"
+								alt=""></a>
+						<h3>雲彩團契</h3>
+						<p>
+							地點：教會六樓<br>
+							時間：每週日中午12:30起<br>
+							在忙碌的生活世界與熙來攘往的人群裡 想<br>
+							此時此刻<br>
+							有沒有一個地方 可以<br>
+							許你我一刻安靜喘息<br>
+							多少路還沒走過 多少夢正要起飛<br>
+							人人都在追逐 停歇 在追逐的循環裡 築夢 逐夢<br>
+							如果有人可以懂 有人可以陪著哭泣 歡笑<br>
+							同往尋求造物主的心 步伐 踏著華爾茲的節奏<br>
+							雲霓搭起喜樂舞台<br>
+							彩霞舞出平安音符<br>
+							彼此 相視而笑莫逆於心<br>
+							此情此景 彷彿天庭<br>
+							圍牆 可以倒塌 沒有距離<br>
+							繞樑的歌聲 唱著不停止的舊詩章<br>
+							「我們既有這許多的見證人，如同雲彩圍著我們，就當放下各樣的重擔，脫去容易纏累我們的罪，存心忍耐，奔那擺在我們前頭的路程」(希伯來書12章1節)
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/畢業生團契.jpg"
+								alt=""></a>
+						<h3>畢業生團契</h3>
+						<p>
+							地點：教會六樓<br>
+							匙間：每周六18:00-21:00
+							離開學校，成為社會新鮮人。進入職場，真實地面對信仰的挑戰和考驗，如何維持信仰的生活，堅持信仰的原則，在職場中為主作見證，找到工作的呼召，讓我們一起來學習和努力。歡迎社會青年及研究生加入！
+							我們期盼：藉著 更認識上帝、更認識自己、更認識彼此，進而 更愛上帝、更愛自己、更彼此相愛。<br>
+							在職場上：知道如何為主工作。<br>
+							在感情上：學習經營單身生活與建立基督化家庭。<br>
+							在團契上：建立同奔天路的夥伴關係。<br>
+							在服事上：找到自己服事的崗位。<br>
+						</p>
+					</article>
+				</div>
+			</section>
+
+			<section>
+				<header>
+					<h4>學生牧區</h4>
+				</header>
+				<div class="row">
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group6.png"
+								alt=""></a>
+						<h3>學青團契</h3>
+						<p>
+							課輔班：每週六10:00-12:00(地點：教會6樓)<br>
+							團契聚會：每週六14:30-17:00(地點：教會6樓)<br>
+							造就班：每週六13:00-14:00(地點：教會6樓)<br>
+							查經班：每逢一三五週周日13:00-14:30(地點：教會5樓)<br>
+							我們是一群有熱情、有活力的學生，組成年齡是國中三年級到大學四年級，雖然來自不同的學校，也有不同的背景，但因著基督我們能合而為一、彼此相愛、共享主恩。<br>
+							希望透過團契生活能達成下面的信仰目標……<br>
+							在青少年階段，體驗耶穌是真的、活的，穩定靈修、樂於分享，願意委身給神。<br>
+							在大學階段，知道如何為主而活、發掘恩賜、裝備自己、找到服事方向、為上帝所用。<br>
+							目前我們分四個小組，每組有小組長和輔導，我們不僅一起參加聚會，也會一起讀書、聚餐、休閒，在每周小組時間，我們會彼此關心近況與禱告，透過寒暑假營會和偏鄉服務隊，我們更深認識神、認識彼此、認識自己。
+						</p>
+					</article>
+					<article class="col-6 col-12-xsmall work-item">
+						<a class="image fit thumb" style="cursor: pointer; outline: 0px;"><img src="images/group3.png"
+								alt=""></a>
+						<h3>少年團契</h3>
+						<p>
+							團契聚會：每週日10:30-12:00 (地點：大安區羅斯福路3段29號3樓)<br>
+							讀經班：每逢一三五週周日13:00-14:00(地點：教會5樓)<br>
+							桌遊：每逢二四週周日13:00-14:00 (地點：教會6樓)<br>
+							家長讀書會：每逢一三週周日13:00-14:00(地點：教會5樓)<br>
+							我們團契的組成是小學五年級到國中二年級的學生，藉著唱詩歌敬拜上帝，學習認識有關上帝的話，也會聽到很多真實的人生故事，交到很多好朋友。<br>
+							每週都有關心我們的輔導哥哥姐姐們，用活潑有趣的方式讓我們明白真理，我們會一起參與服事，學習彼此合作並尊重上帝，也學習用上帝的愛去愛人。<br>
+							生活中會遇到的大小事，我們都可以提出來請夥伴們禱告，輔導也會為我們設計寒暑假的營會，參加後生命會變得比較不一樣，這是一個歡樂學習的團契，歡迎加入我們！<br>
+						</p>
+					</article>
+				</div>
+			</section>
+		</section>
+
+		<!-- About -->
+		<section id="about">
+			<h2>關於康華</h2>
+			<section>
+				<header>
+					<h4>信仰宣言</h4>
+				</header>
+				<ul>
+					<li>信-全部新舊約聖經都是神所默示的，是教會及信徒信仰和生活的最高準則。</li>
+					<li>信-神是聖父、聖子、聖靈三位一體的真神。</li>
+					<li>信-聖父是全能的神，是創造的主。</li>
+					<li>信-聖子耶穌基督兼有真實的神人二性，因聖靈懷孕，藉童貞女瑪利亞而生，死於十字架，為世人的贖罪祭，死後第三日由死裡復活，升天坐在神的右邊為信徒的大祭司，將來必定再來，叫信的人復活得生，不信的復活定罪，祂的國度無窮無盡。
+					</li>
+					<li>信-聖靈已降臨，進入、居住並運行在信徒心中，作成重生工作，又使信徒進入真理，得著能力，過得勝的生活，並隨己意賜信徒各樣恩賜服事主。</li>
+					<li>信-人是按神的形像造的，後因悖逆而墮落，罪與死臨到世人身上，不只身體死亡，而且靈魂滅亡，與神隔絕。罪人得救是本乎神的恩典，憑耶穌的血，也因著信，所以信的人得永生，是神所賜，並不是靠著人的行為。
+					</li>
+					<li>信-教會是基督的身體，由一切重生得救的人所組成，教會負有主所託付的使命，以傳福音，直到地極，並在真道上建立信徒。</li>
+				</ul>
+				<header>
+					<h4>歷史篇</h4>
+				</header>
+				<p>
+					康華教會的立案名稱為『台北基督徒康華禮拜堂』，成立於1984年12月8日，這一日是康華禮拜堂開工禮拜，由林森南路禮拜堂差派黃孝亮長老、陳美桂傳道(夫婦)
+					執行植堂議案，完成康華教會的創始事工，正式開始本堂的聚會。並遵行地方教會長老治會的傳承，治理教會。起初堂會會址是永康街61巷1號地下樓，巷口是金華街與永康街口交叉處，故取名為『康華』。
+				</p>
+				<header>
+					<h4>現代篇</h4>
+				</header>
+				<p>
+					康華教會於1996年完成第一次的購堂事工，先後購買座落於羅斯福路二段75
+					號時代大廈5、6樓作為聚會堂址，但名稱仍為『康華』，不叫『羅斯福』。也期許我們的教會是一個『健康』『華美』的教會。目前聚會如首頁表列，歡迎親朋好友來參加聚會，聆聽基督福音，研讀聖經真理，過『彼此相愛』的教會生活。
+				</p>
+				<header>
+					<h4>信仰篇</h4>
+				</header>
+				<p>
+					康華教會始終以基督耶穌是救贖主為信仰中心；永活上帝坐在寶座上掌管國度為異象；見證主恩廣傳福音為使命，幫助信徒活出基督樣式的生命，即信仰與生活是一致的，人格是表裡合一的，『愛人如己』，既愛自己，也愛親友。
+				</p>
+				<header>
+					<h4>使命篇</h4>
+				</header>
+				<p>
+					『放膽傳講神國的道，將主耶穌基督的事教導人』。
+					期待：一人得救，全家得救！
+					一家得救，全族得救！
+					一城(台北城市)得救，全國得救！
+					一國得救，列國得救！
+				</p>
+			</section>
+		</section>
+
+		<!-- Three -->
+		<section id="three">
+			<h2>Get In Touch</h2>
+			<div class="row">
+				<div class="col-6 col-12-small">
+					<iframe
+						src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1807.6185430609992!2d121.52389647273864!3d25.026026969849703!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3442a99a8c0b0983%3A0x91bf1e3066f73c7!2z5Y-w5YyX5biC6LKh5ZyY5rOV5Lq65bq36I-v56au5ouc5aCC!5e0!3m2!1szh-TW!2stw!4v1678682439447!5m2!1szh-TW!2stw"
+						style="border:0;" allowfullscreen="" loading="lazy"
+						referrerpolicy="no-referrer-when-downgrade"></iframe>
+				</div>
+				<div class="col-6 col-12-small">
+					<ul class="labeled-icons">
+						<li>
+							<h3 class="icon solid fa-home"><span class="label">Address</span></h3>
+							羅斯福路二段75號6樓<br>
+							106台北市大安區<br>
+							台灣
+						</li>
+						<li>
+							<h3 class="icon solid fa-mobile-alt"><span class="label">Phone</span></h3>
+							+886 2 6632 2227
+						</li>
+						<li>
+							<h3 class="icon solid fa-envelope"><span class="label">Email</span></h3>
+							<a href="mailto:office@kanghua.org.tw">office@kanghua.org.tw</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<!-- Four -->
+		<!--<section id="four">
+		<h2>Elements</h2>
+
+		<section>
+			<h4>Text</h4>
+			<p>This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
+				This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
+				This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>. Finally, <a href="#">this is a link</a>.</p>
+			<hr/>
+			<header>
+				<h4>Heading with a Subtitle</h4>
+				<p>Lorem ipsum dolor sit amet nullam id egestas urna aliquam</p>
+			</header>
+			<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
+			<header>
+				<h5>Heading with a Subtitle</h5>
+				<p>Lorem ipsum dolor sit amet nullam id egestas urna aliquam</p>
+			</header>
+			<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
+			<hr/>
+			<h2>Heading Level 2</h2>
+			<h3>Heading Level 3</h3>
+			<h4>Heading Level 4</h4>
+			<h5>Heading Level 5</h5>
+			<h6>Heading Level 6</h6>
+			<hr/>
+			<h5>Blockquote</h5>
+			<blockquote>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan faucibus. Vestibulum ante ipsum primis in faucibus lorem
+				ipsum dolor sit amet nullam adipiscing eu felis.
+			</blockquote>
+			<h5>Preformatted</h5>
+			<pre><code>i = 0;
+					while (!deck.isInOrder()) {
+					print 'Iteration ' + i;
+					deck.shuffle();
+					i++;
+					}
+					print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
+		</section>
+
+		<section>
+			<h4>Lists</h4>
+			<div class="row">
+				<div class="col-6 col-12-xsmall">
+					<h5>Unordered</h5>
+					<ul>
+						<li>Dolor pulvinar etiam magna etiam.</li>
+						<li>Sagittis adipiscing lorem eleifend.</li>
+						<li>Felis enim feugiat dolore viverra.</li>
+					</ul>
+					<h5>Alternate</h5>
+					<ul class="alt">
+						<li>Dolor pulvinar etiam magna etiam.</li>
+						<li>Sagittis adipiscing lorem eleifend.</li>
+						<li>Felis enim feugiat dolore viverra.</li>
+					</ul>
+				</div>
+				<div class="col-6 col-12-xsmall">
+					<h5>Ordered</h5>
+					<ol>
+						<li>Dolor pulvinar etiam magna etiam.</li>
+						<li>Etiam vel felis at lorem sed viverra.</li>
+						<li>Felis enim feugiat dolore viverra.</li>
+						<li>Dolor pulvinar etiam magna etiam.</li>
+						<li>Etiam vel felis at lorem sed viverra.</li>
+						<li>Felis enim feugiat dolore viverra.</li>
+					</ol>
+					<h5>Icons</h5>
+					<ul class="icons">
+						<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+						<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+						<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+						<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+						<li><a href="#" class="icon brands fa-dribbble"><span class="label">Dribbble</span></a></li>
+						<li><a href="#" class="icon brands fa-tumblr"><span class="label">Tumblr</span></a></li>
+					</ul>
+				</div>
+			</div>
+			<h5>Actions</h5>
+			<ul class="actions">
+				<li><a href="#" class="button primary">Default</a></li>
+				<li><a href="#" class="button">Default</a></li>
+			</ul>
+			<ul class="actions small">
+				<li><a href="#" class="button primary small">Small</a></li>
+				<li><a href="#" class="button small">Small</a></li>
+			</ul>
+			<div class="row">
+				<div class="col-6 col-12-small">
+					<ul class="actions stacked">
+						<li><a href="#" class="button primary">Default</a></li>
+						<li><a href="#" class="button">Default</a></li>
+					</ul>
+				</div>
+				<div class="col-6 col-12-small">
+					<ul class="actions stacked">
+						<li><a href="#" class="button primary small">Small</a></li>
+						<li><a href="#" class="button small">Small</a></li>
+					</ul>
+				</div>
+				<div class="col-6 col-12-small">
+					<ul class="actions stacked">
+						<li><a href="#" class="button primary fit">Default</a></li>
+						<li><a href="#" class="button fit">Default</a></li>
+					</ul>
+				</div>
+				<div class="col-6 col-12-small">
+					<ul class="actions stacked">
+						<li><a href="#" class="button primary small fit">Small</a></li>
+						<li><a href="#" class="button small fit">Small</a></li>
+					</ul>
+				</div>
+			</div>
+		</section>
+
+		<section>
+			<h4>Table</h4>
+			<h5>Default</h5>
+			<div class="table-wrapper">
+				<table>
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Price</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr>
+						<td>Item One</td>
+						<td>Ante turpis integer aliquet porttitor.</td>
+						<td>29.99</td>
+					</tr>
+					<tr>
+						<td>Item Two</td>
+						<td>Vis ac commodo adipiscing arcu aliquet.</td>
+						<td>19.99</td>
+					</tr>
+					<tr>
+						<td>Item Three</td>
+						<td> Morbi faucibus arcu accumsan lorem.</td>
+						<td>29.99</td>
+					</tr>
+					<tr>
+						<td>Item Four</td>
+						<td>Vitae integer tempus condimentum.</td>
+						<td>19.99</td>
+					</tr>
+					<tr>
+						<td>Item Five</td>
+						<td>Ante turpis integer aliquet porttitor.</td>
+						<td>29.99</td>
+					</tr>
+					</tbody>
+					<tfoot>
+					<tr>
+						<td colspan="2"></td>
+						<td>100.00</td>
+					</tr>
+					</tfoot>
+				</table>
+			</div>
+
+			<h5>Alternate</h5>
+			<div class="table-wrapper">
+				<table class="alt">
+					<thead>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+						<th>Price</th>
+					</tr>
+					</thead>
+					<tbody>
+					<tr>
+						<td>Item One</td>
+						<td>Ante turpis integer aliquet porttitor.</td>
+						<td>29.99</td>
+					</tr>
+					<tr>
+						<td>Item Two</td>
+						<td>Vis ac commodo adipiscing arcu aliquet.</td>
+						<td>19.99</td>
+					</tr>
+					<tr>
+						<td>Item Three</td>
+						<td> Morbi faucibus arcu accumsan lorem.</td>
+						<td>29.99</td>
+					</tr>
+					<tr>
+						<td>Item Four</td>
+						<td>Vitae integer tempus condimentum.</td>
+						<td>19.99</td>
+					</tr>
+					<tr>
+						<td>Item Five</td>
+						<td>Ante turpis integer aliquet porttitor.</td>
+						<td>29.99</td>
+					</tr>
+					</tbody>
+					<tfoot>
+					<tr>
+						<td colspan="2"></td>
+						<td>100.00</td>
+					</tr>
+					</tfoot>
+				</table>
+			</div>
+		</section>
+
+		<section>
+			<h4>Buttons</h4>
+			<ul class="actions">
+				<li><a href="#" class="button primary">Primary</a></li>
+				<li><a href="#" class="button">Default</a></li>
+			</ul>
+			<ul class="actions">
+				<li><a href="#" class="button large">Large</a></li>
+				<li><a href="#" class="button">Default</a></li>
+				<li><a href="#" class="button small">Small</a></li>
+			</ul>
+			<ul class="actions fit">
+				<li><a href="#" class="button primary fit">Fit</a></li>
+				<li><a href="#" class="button fit">Fit</a></li>
+			</ul>
+			<ul class="actions fit small">
+				<li><a href="#" class="button primary fit small">Fit + Small</a></li>
+				<li><a href="#" class="button fit small">Fit + Small</a></li>
+			</ul>
+			<ul class="actions">
+				<li><a href="#" class="button primary icon solid fa-download">Icon</a></li>
+				<li><a href="#" class="button icon solid fa-download">Icon</a></li>
+			</ul>
+			<ul class="actions">
+				<li><span class="button primary disabled">Primary</span></li>
+				<li><span class="button disabled">Default</span></li>
+			</ul>
+		</section>
+
+		<section>
+			<h4>Form</h4>
+			<form method="post" action="#">
+				<div class="row gtr-uniform gtr-50">
+					<div class="col-6 col-12-xsmall">
+						<input type="text" name="demo-name" id="demo-name" value="" placeholder="Name"/>
+					</div>
+					<div class="col-6 col-12-xsmall">
+						<input type="email" name="demo-email" id="demo-email" value="" placeholder="Email"/>
+					</div>
+					<div class="col-12">
+						<select name="demo-category" id="demo-category">
+							<option value="">- Category -</option>
+							<option value="1">Manufacturing</option>
+							<option value="1">Shipping</option>
+							<option value="1">Administration</option>
+							<option value="1">Human Resources</option>
+						</select>
+					</div>
+					<div class="col-4 col-12-small">
+						<input type="radio" id="demo-priority-low" name="demo-priority" checked>
+						<label for="demo-priority-low">Low Priority</label>
+					</div>
+					<div class="col-4 col-12-small">
+						<input type="radio" id="demo-priority-normal" name="demo-priority">
+						<label for="demo-priority-normal">Normal Priority</label>
+					</div>
+					<div class="col-4 col-12-small">
+						<input type="radio" id="demo-priority-high" name="demo-priority">
+						<label for="demo-priority-high">High Priority</label>
+					</div>
+					<div class="col-6 col-12-small">
+						<input type="checkbox" id="demo-copy" name="demo-copy">
+						<label for="demo-copy">Email me a copy of this message</label>
+					</div>
+					<div class="col-6 col-12-small">
+						<input type="checkbox" id="demo-human" name="demo-human" checked>
+						<label for="demo-human">I am a human and not a robot</label>
+					</div>
+					<div class="col-12">
+						<textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
+					</div>
+					<div class="col-12">
+						<ul class="actions">
+							<li><input type="submit" value="Send Message" class="primary"/></li>
+							<li><input type="reset" value="Reset"/></li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</section>
+
+		<section>
+			<h4>Image</h4>
+			<h5>Fit</h5>
+			<div class="box alt">
+				<div class="row gtr-50 gtr-uniform">
+					<div class="col-12"><span class="image fit"><img src="images/fulls/05.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/01.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/02.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/03.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/04.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/05.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/06.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/03.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/02.jpg" alt=""/></span></div>
+					<div class="col-4"><span class="image fit"><img src="images/thumbs/01.jpg" alt=""/></span></div>
+				</div>
+			</div>
+			<h5>Left &amp; Right</h5>
+			<p><span class="image left"><img src="images/avatar.jpg" alt=""/></span>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing
+				accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Donec accumsan
+				interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod.
+				Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
+			<p><span class="image right"><img src="images/avatar.jpg" alt=""/></span>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing
+				accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Donec accumsan
+				interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod.
+				Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
+		</section>
+	</section> -->
+	</div>
+
+	<!-- Auth Modal -->
+	<div id="auth-modal"
+		style="display: none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center;">
+		<div
+			style="background-color: #fefefe; padding: 20px; border: 1px solid #888; width: 90%; max-width: 400px; border-radius: 8px; position: relative; color: #333;">
+			<span id="close-modal"
+				style="color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer;">&times;</span>
+			<h2 id="auth-title" style="color: #333; text-align: center;">會員登入</h2>
+			<form id="auth-form">
+				<div class="row gtr-uniform gtr-50">
+					<div class="col-12">
+						<input type="email" name="email" id="auth-email" placeholder="Email" required
+							style="color: #333; border-color: #ccc;" />
+					</div>
+					<div class="col-12">
+						<input type="password" name="password" id="auth-password" placeholder="Password" required
+							style="color: #333; border-color: #ccc;" />
+					</div>
+					<div class="col-12">
+						<ul class="actions fit">
+							<li><input type="submit" value="登入" class="button primary fit" id="auth-submit-btn" /></li>
+						</ul>
+					</div>
+					<div class="col-12" style="text-align: center;">
+						<a href="#" id="toggle-auth-mode"
+							style="color: #49bf9d; text-decoration: none; border-bottom: none;">沒有帳號？立即註冊</a>
+					</div>
+					<div class="col-12">
+						<hr />
+						<ul class="actions fit">
+							<li><button id="google-login-btn" class="button fit"
+									style="background-color: #db4437; color: white; border: none;">Google 登入</button>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+
+	<!-- Footer -->
+
+	<!-- Scripts -->
+	<script src="js/jquery.min.js"></script>
+	<script src="js/jquery.poptrox.min.js"></script>
+	<script src="js/browser.min.js"></script>
+	<script src="js/breakpoints.min.js"></script>
+	<script src="js/util.js"></script>
+	<script src="js/main.js"></script>
+
+	<div class="poptrox-overlay"
+		style="position: fixed; left: 0px; top: 0px; z-index: 1000; width: 100%; height: 100%; text-align: center; cursor: pointer; display: none;">
+		<div style="display:inline-block;height:100%;vertical-align:middle;"></div>
+		<div
+			style="position:absolute;left:0;top:0;width:100%;height:100%;background:#2c2c2c;opacity:0.85;filter:alpha(opacity=85);">
+		</div>
+		<div class="poptrox-popup"
+			style="display: none; vertical-align: middle; position: relative; z-index: 1; cursor: auto; min-width: 200px; min-height: 100px;">
+			<div class="loader" style="display: none;"></div>
+			<div class="pic" style="display: none;"></div>
+			<div class="caption" style="display: none;"></div>
+			<span class="closer" style="cursor: pointer; display: none;"></span>
+			<div class="nav-previous" style="display: none;"></div>
+			<div class="nav-next" style="display: none;"></div>
+		</div>
+	</div>
+</body>
+
+</html>
