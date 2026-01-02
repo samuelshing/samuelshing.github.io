@@ -1,349 +1,475 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW" class="scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>忻聖瑀 & 蘇慧珂 結婚感恩禮拜</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>婚禮程序單 | Wedding Program</title>
 
-    <!-- 引入 Google Fonts -->
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Serif+TC:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;600;700&display=swap"
         rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Lavishly+Yours&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS (CDN for standalone file) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // Background - A very light tint derived from the pinks to keep it clean
+                        paper: '#FFFCFD',
+
+                        // User's Palette
+                        palette: {
+                            navy: '#001454',   // Deepest - Main Text, Male
+                            purple: '#52256b', // Deep - Headings, Strong Accents
+                            magenta: '#8e3c7c',// Mid - Icons, Dividers, Together
+                            rose: '#c45c86',   // Light - Female, Subtitles
+                            pink: '#f2848f',   // Lightest - Backgrounds, Highlights
+                        },
+
+                        // Semantic Mappings (Aliases)
+                        text: {
+                            main: '#001454',   // Using Navy for main text
+                            muted: '#52256b',  // Using Purple for secondary text
+                        }
+                    },
+                    fontFamily: {
+                        serif: ['"Noto Serif TC"', 'serif'],
+                        sans: ['"Noto Sans TC"', 'sans-serif'],
+                    },
+                    spacing: {
+                        '128': '32rem',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Script for smooth scrolling in iframes/Google Sites -->
+    <script>
+        function scrollToSection(event, id) {
+            // Prevent default anchor behavior (which causes new tab/blank page in some embeds)
+            event.preventDefault();
+            const element = document.getElementById(id);
+            if (element) {
+                // Scroll into view smoothly
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    </script>
 
     <style>
-        @font-face {
-            font-family: 'ElfFont';
-            src: url('fonts/elffont-fern.otf') format('opentype');
-        }
-
-        .elffont {
-            font-family: 'ElfFont', sans-serif;
-        }
-
-        @font-face {
-            font-family: 'Iansui';
-            src: url('fonts/iansui.ttf') format('truetype');
-            font-weight: normal;
-            font-style: normal;
-        }
-
-        .iansuifont {
-            font-family: 'Iansui', sans-serif;
-        }
-
-        .lavishly-yours-regular {
-            font-family: "Lavishly Yours", cursive;
-            font-weight: 400;
-            font-style: normal;
-        }
-
-
-        /* 自定義配色和字體 */
         body {
-            /* 使用 Inter 作為基本字體 */
-            font-family: 'Inter', sans-serif;
-            /* 卡其色系背景 */
-            background-color: #FDFBF5;
-            /* 一個非常淡的卡其/米色 */
-            /* fallback for old browsers */
-            background: -webkit-linear-gradient(to bottom, #ffebbc, #ffb0b2);
-            background: linear-gradient(to bottom, #ffebbc, #ffb0b2);
-            overflow-x: hidden;
-            /* 禁止橫向捲動 */
+            background-color: #FFFCFD;
+            /* Paper background */
+            color: #001454;
+            /* Navy main text */
         }
 
-        /* 標題和姓名使用 Noto Serif TC */
-        h1,
-        h2,
-        h3,
-        .font-serif {
-            font-family: 'Noto Serif TC', serif;
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
         }
 
-        /* 定義主題色 */
-        .bg-khaki-light {
-            background-color: #FDFBF5;
+        ::-webkit-scrollbar-track {
+            background: #FFFCFD;
         }
 
-        /* 頁面背景 */
-        .bg-khaki-paper {
-            background-color: #FAF6ED;
-            background-image: url('images/papyrus.png');
-            background-blend-mode: multiply; /* 讓圖片紋理與底色融合 */
-            background-size: cover;
-            background-position: top;
-            filter: url(#paper-edge-filter); /* 套用不規則邊緣濾鏡 */
+        ::-webkit-scrollbar-thumb {
+            background: #f2848f;
+            /* Pink thumb */
+            border-radius: 3px;
         }
 
-        /* 書卷/紙張背景 */
-        .text-dark-green {
-            color: #3A5A40;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8e3c7c;
+            /* Magenta hover */
         }
 
-        /* 墨綠色文字 */
-        .border-dark-green {
-            border-color: #3A5A40;
+        .lyric-text {
+            line-height: 2;
+            letter-spacing: 0.05em;
         }
 
-        .dark-green {
-            color: #3A5A40;
+        /* Decorative Divider - Slightly adjusted for cards */
+        .chapter-divider {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 1.5rem 0 2rem 0;
+            opacity: 0.6;
+            /* Increased opacity for vibrancy */
         }
 
-        .accent-pink {
-            color: #D9A9A9;
+        .chapter-divider::before,
+        .chapter-divider::after {
+            content: "";
+            height: 2px;
+            /* Thicker line */
+            background-color: #8e3c7c;
+            /* Magenta */
+            flex-grow: 1;
+            max-width: 80px;
         }
 
-        /* 粉紅色點綴 */
-        .bg-accent-pink-light {
-            background-color: #F3E5E5;
-        }
-
-        /* 淡粉色背景 */
-
-        /* 淡入動畫 */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
-        .fade-in-visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        /* 經文朗讀的特殊排版 */
-        .scripture-reading p {
-            margin-bottom: 1rem;
-        }
-
-        .scripture-reading strong {
-            color: #3A5A40;
-            /* 墨綠色 */
-            font-family: 'Noto Serif TC', serif;
-            font-weight: 700;
-            margin-right: 0.5rem;
+        .chapter-divider i {
+            margin: 0 1rem;
+            color: #8e3c7c;
+            /* Magenta */
+            font-size: 1.2rem;
+            /* Larger icon */
         }
     </style>
 </head>
 
-<body class="bg-khaki-light text-dark-green antialiased">
+<body
+    class="font-sans antialiased text-base leading-relaxed pb-20 selection:bg-palette-pink selection:text-palette-navy">
 
-    <!-- 主容器 -->
-    <div class="container mx-auto max-w-4xl p-4 md:p-8">
+    <!-- Sticky Navigation -->
+    <nav
+        class="sticky top-0 z-50 bg-paper/95 backdrop-blur-sm border-b border-palette-pink/30 shadow-sm py-3 px-4 flex justify-between items-center transition-all duration-300">
+        <div class="font-serif font-bold text-palette-purple text-lg">
+            程序單
+        </div>
+        <div class="flex space-x-4 text-sm font-medium text-text-muted">
+            <a href="#chap1" onclick="scrollToSection(event, 'chap1')"
+                class="hover:text-palette-magenta transition-colors cursor-pointer">I. 源頭</a>
+            <a href="#chap2" onclick="scrollToSection(event, 'chap2')"
+                class="hover:text-palette-magenta transition-colors cursor-pointer">II. 傳承</a>
+            <a href="#chap3" onclick="scrollToSection(event, 'chap3')"
+                class="hover:text-palette-magenta transition-colors cursor-pointer">III. 約定</a>
+            <a href="#chap4" onclick="scrollToSection(event, 'chap4')"
+                class="hover:text-palette-magenta transition-colors cursor-pointer">IV. 祝福</a>
+        </div>
+    </nav>
 
-        <!-- 封面/標題 -->
-        <header class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 text-center fade-in">
-            <h1 class="iansuifont text-4xl md:text-5xl font-bold text-dark-green mb-4">
-                忻聖瑀 & 蘇慧珂
-            </h1>
-            <h1 class="iansuifont text-4xl md:text-5xl text-dark-green mb-8">
-                結婚感恩禮拜
-            </h1>
+    <!-- Header / Hero -->
+    <header class="text-center pt-12 pb-10 px-6 bg-gradient-to-b from-palette-pink/10 to-transparent">
+        <h1 class="font-serif text-3xl font-bold text-palette-purple mb-2 tracking-widest drop-shadow-sm">忻聖瑀 <span
+                class="text-palette-magenta text-2xl align-middle">&</span> 蘇慧珂</h1>
+        <p class="font-serif text-palette-rose text-xl italic mb-6 tracking-wider font-medium">結婚感恩禮拜</p>
+    </header>
 
-            <div class="info space-y-4 text-lg text-dark-green/90">
-                <p><strong class="font-serif">日期：</strong>2026 年 1 月 3 日（六）</p>
-                <p><strong class="font-serif">時間：</strong>15:00</p>
-                <div>
-                    <p class="text-base md:text-lg"><strong class="font-serif">地點：</strong>浸信會仁愛堂</p>
-                    <p class="text-base md:text-lg">（臺北市中正區八德路一段 11 號）</p>
+    <main class="max-w-xl mx-auto px-5">
+
+        <!-- Chapter 1: Source of Love (Vibrant Purple-Pink Mix) -->
+        <section id="chap1"
+            class="scroll-mt-24 rounded-3xl bg-gradient-to-br from-palette-pink/10 via-palette-purple/10 to-palette-purple/20 p-6 mb-8 shadow-md border border-palette-purple/20">
+            <div class="chapter-divider">
+                <i class="fa-solid fa-star text-palette-purple"></i>
+            </div>
+            <div class="text-center mb-8">
+                <h2 class="font-serif text-2xl font-bold text-palette-purple">第一章 愛的源頭</h2>
+                <p class="text-palette-rose text-sm mt-1 font-medium">創造、救贖、審判，都因為祢的愛。</p>
+            </div>
+
+            <!-- Song 1 -->
+            <div class="mb-10">
+                <div class="text-center mb-4">
+                    <span
+                        class="bg-palette-purple text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">頌讚</span>
+                    <h3 class="font-serif text-xl font-bold mt-3 text-palette-navy">天父世界</h3>
                 </div>
-
-                <!-- 主婚人 -->
-                <div class="flex flex-col md:flex-row justify-center items-center md:space-x-2 pt-4 text-base md:text-lg border-t border-dark-green/20 mt-6">
-                    <p><strong class="font-serif">男方主婚人：</strong>忻宏安先生、林燕琴女士</p>
-                    <span class="hidden md:inline accent-pink mx-2">｜</span>
-                    <p><strong class="font-serif">女方主婚人：</strong>蘇慕寰先生、高素琴女士</p>
+                <div class="lyric-text font-serif font-bold text-palette-navy text-center text-base">
+                    <p class="mb-4">這是天父世界 當我側耳傾聽<br>宇宙歌唱 萬物響應 星辰同聲讚美</p>
+                    <p class="mb-4">這是天父世界 我心滿有平安<br>樹木花草 藍天碧海 述說天父全能</p>
+                    <p class="mb-4">這是天父世界 小鳥歡唱啼鳴<br>清晨明亮 百花美麗 宣揚創造大能</p>
+                    <p class="mb-4">這是天父世界 祂愛充滿世間<br>風吹草動 將祂表現 萬物傳祂恩言</p>
+                    <p>這是天父世界 祂愛充滿世間<br>上帝是王 宇宙歡唱 主恩統治萬方</p>
                 </div>
             </div>
-        </header>
 
-        <!-- 第一章 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 250ms;">
-            <h3 class="iansuifont text-2xl text-center mb-2">第一章 愛的源頭</h3>
-            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">創造、救贖、審判，都因為祢的愛。</p> -->
-            <h4 class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄔㄨㄤˋㄗㄠˋ ㄐㄧㄡˋㄕㄨˊ ㄕㄣˇㄆㄢˋ ㄉㄡㄧㄣㄨㄟˋㄋㄧˇㄉㄜ˙ㄞˋ</h4>
-
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12">
-                <h4 class="font-serif text-xl font-bold mb-3">序樂</h4>
+            <!-- Song 2 -->
+            <div class="mb-10">
+                <div class="text-center mb-4">
+                    <h3 class="font-serif text-xl font-bold mt-2 text-palette-navy">神是愛</h3>
+                </div>
+                <div class="lyric-text font-serif font-bold text-palette-navy text-center text-base">
+                    <p class="mb-4">神是愛 打開你的心高聲揚<br>神是愛 把它告訴各地方<br>祂創造天空和那深海洋<br>祂創造飛鳥和那蜜蜂忙<br>祂造一切為你和我 因神是愛</p>
+                    <p class="mb-4">神是愛 打開你的心盡聲揚<br>神是愛 祂願世人知道它<br>祂創造玫瑰和那蔓藤長<br>祂創造樹木和那星閃亮<br>祂造一切為你和我 因神是愛</p>
+                    <p>神是愛 天地和萬物都宣揚<br>神是愛 祂願世人分享它<br>祂為失喪人預備生命路<br>用祂大能的手來拯救他<br>祂造一切為你和我 因神是愛<br>神是愛
+                        空氣中我能體會<br>恩典中我能體會 隨時我都能體會<br>從最深的海洋 到那最高高的山<br>萬物都告訴我神是愛</p>
+                </div>
             </div>
 
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12">
-                <h4 class="font-serif text-xl font-bold mb-3">頌讚</h4>
-                <div class="pl-4 border-l-2 border-dark-green mb-6">
-                    <h5 class="font-serif text-lg font-bold mb-2">《天父世界》</h5>
-                    <p>這是天父世界　當我側耳傾聽<br>
-                        宇宙歌唱 萬物響應　星辰同聲讚美<br>
-                        這是天父世界　我心滿有平安<br>
-                        樹木花草　藍天碧海　述說天父全能</p><br>
-                    <p>這是天父世界　小鳥歡唱啼鳴<br>
-                        清晨明亮　百花美麗　宣揚創造大能<br>
-                        這是天父世界　祂愛充滿世間<br>
-                        風吹草動　將祂表現　萬物傳祂恩言</p><br>
-                    <p>這是天父世界　求主叫我不忘<br>
-                        黑暗勢力雖然猖狂　天父卻仍做王<br>
-                        這是天父世界　我心不必憂傷<br>
-                        上帝是王　宇宙歡唱　主恩統治萬方</p><br>
-                </div>
-                <div class="pl-4 border-l-2 border-dark-green">
-                    <h5 class="font-serif text-lg font-bold mb-2">《神是愛》</h5>
-                    <p>
-                        神是愛　打開你的心高聲揚　神是愛　把它告訴各地方。<br>
-                        祂創造天空和那深海洋　祂創造飛鳥和那蜜蜂忙<br>
-                        祂造一切為你和我　因神是愛</p><br>
-                    <p>
-                        神是愛　打開你的心盡聲揚　神是愛　祂願世人知道它。<br>
-                        祂創造玫瑰和那蔓藤長　祂創造樹木和那星閃亮<br>
-                        祂造一切為你和我　因神是愛</p><br>
-                    <p>
-                        神是愛　天地和萬物都宣揚　神是愛　祂願世人分享它。<br>
-                        祂為失喪人預備生命路　用祂大能的手來拯救他<br>
-                        祂造一切為你和我　因神是愛</p><br>
-                    <p>
-                        神是愛　空氣中我能體會　恩典中我能體會<br>
-                        隨時我都能體會　從最深的海洋<br>
-                        到那最高高的山　萬物都告訴我神是愛</p><br>
+            <!-- Prayer -->
+            <div class="mb-4">
+                <div class="text-center">
+                    <span
+                        class="bg-palette-purple text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">禱告</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">黃心詠 宣教士</p>
                 </div>
             </div>
         </section>
 
-        <!-- 第二章 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 300ms;">
-            <h3 class="iansuifont text-2xl text-center mb-2">第二章 愛的傳承</h3>
-            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">供應、保護、忍耐，都因為你們的愛。</p> -->
-            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄍㄨㄥㄧㄥ ㄅㄠˇㄏㄨˋ ㄖㄣˇㄋㄞˋ ㄉㄡㄧㄣㄨㄟˋㄋㄧˇㄇㄣ˙ㄉㄜ˙ㄞˋ</p>
+        <!-- Chapter 2: Heritage of Love (Warm Rose-Pink) -->
+        <section id="chap2"
+            class="scroll-mt-24 rounded-3xl bg-gradient-to-bl from-white via-palette-rose/10 to-palette-rose/30 p-6 mb-8 shadow-md border border-palette-rose/20">
+            <div class="chapter-divider">
+                <i class="fa-solid fa-seedling text-palette-rose"></i>
+            </div>
+            <div class="text-center mb-8">
+                <h2 class="font-serif text-2xl font-bold text-palette-purple">第二章 愛的傳承</h2>
+                <p class="text-palette-rose text-sm mt-1 font-medium">供應、保護、忍耐，都因為你們的愛。</p>
+            </div>
 
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12">
-                <h4 class="font-serif text-xl font-bold">謝親恩</h4>
+            <div class="mb-4">
+                <div class="text-center">
+                    <span
+                        class="bg-palette-rose text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">謝親恩</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">新郎、新娘</p>
+                </div>
             </div>
         </section>
 
-        <!-- 第三章 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 350ms;">
-            <h3 class="iansuifont text-2xl text-center mb-2">第三章 愛的約定</h3>
-            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">委身、包容、相信，是我們的決定。</p> -->
-            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄨㄟˇㄕㄣ ㄅㄠㄖㄨㄥˊ ㄒㄧㄤㄒㄧㄣˋ ㄕˋㄨㄛˇㄇㄣ˙ㄉㄜ˙ㄐㄩㄝˊㄉㄧㄥˋ</p>
+        <!-- Chapter 3: Covenant of Love (Rich Magenta-Pink) -->
+        <section id="chap3"
+            class="scroll-mt-24 rounded-3xl bg-gradient-to-br from-white via-palette-magenta/10 to-palette-magenta/25 p-6 mb-8 shadow-lg border border-palette-magenta/30 ring-1 ring-palette-pink/20">
+            <div class="chapter-divider">
+                <i class="fa-solid fa-ring text-palette-magenta"></i>
+            </div>
+            <div class="text-center mb-8">
+                <h2 class="font-serif text-2xl font-bold text-palette-purple">第三章 愛的約定</h2>
+                <p class="text-palette-rose text-sm mt-1 font-medium">委身、包容、相信，是我們的決定。</p>
+            </div>
 
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12 space-y-6">
-                <div>
-                    <h4 class="font-serif text-xl font-bold mb-4">讀經 - 簡瑞麟、陳麗恩 宣教士</h4>
-                    <div class="scripture-reading text-lg leading-relaxed space-y-4 text-dark-green/90">
-                        <p><strong>合：</strong>婚姻，人人都當尊重。(來13:4)</p>
-                        <p><strong>合：</strong>耶和華神說：「那人獨居不好，我要為他造一個配偶幫助他。」因此，人要離開父母，與妻子連合，二人成為一體。(創2:18、24)</p>
-                        <p><strong>合：</strong>既然如此，夫妻不再是兩個人，而是一體的了。所以，神配合的，人不可分開。(太19:6)</p>
-                        <p><strong>男：</strong>才德的女子很多，唯獨你超過一切。(箴31:29)這是我骨中的骨、肉中的肉！(創2:23)</p>
-                        <p><strong>女：</strong>我的良人哪，你甚俊美可愛！(歌1:16)我屬我的良人，我的良人屬我。(歌6:3)</p>
-                        <p><strong>男：</strong>願你的心只向我敞開；</p>
-                        <p><strong>女：</strong>願你的手臂只擁抱我。</p>
-                        <p><strong>合：</strong>愛情跟死一樣堅強；戀情跟陰間一樣牢固。(歌8:6)</p>
-                        <p><strong>合：</strong>它爆出火焰，像烈火一樣燃燒。水不能息滅愛情，洪水也無法淹沒。(歌8:7)</p>
-                        <p><strong>合：</strong>相愛，不要只在言語和舌頭上，總要在行為和誠實上。(約壹3:18)</p>
-                        <p><strong>合：</strong>要存敬畏基督的心彼此順服。(弗5:21)</p>
-                        <p><strong>女：</strong>作妻子的，你們要順服自己的丈夫，如同順服主。因為丈夫是妻子的頭，如同基督是教會的頭。(弗5:22-23)</p>
-                        <p><strong>男：</strong>作丈夫的，你們要愛自己的妻子，正如基督愛教會，為教會捨己。(弗5:25)</p>
-                        <p><strong>合：</strong>你要盡心、盡性、盡意愛主－你的神。其次也相倣，就是要愛人如己。(太22:37、39)</p>
-                        <p><strong>合：</strong>愛是恆久忍耐，又有恩慈；愛是不嫉妒，愛是不自誇，不張狂，不作害羞的事，不求自己的益處，不輕易發怒，不計算人的惡，不喜歡不義，只喜歡真理；凡事包容，凡事相信，凡事盼望，凡事忍耐。愛是永不止息。(林前13:4-8)
+            <!-- Scripture Reading Section -->
+            <div class="mb-10">
+                <div class="text-center mb-6">
+                    <span
+                        class="bg-palette-magenta text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">讀經</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">簡瑞麟、陳麗恩 宣教士</p>
+                </div>
+
+                <!-- Dialogue UI -->
+                <div class="space-y-4 text-base">
+
+                    <!-- Together -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-magenta rounded-xl p-4 text-center shadow-md my-6 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-magenta text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            合</div>
+                        <p class="font-serif font-bold text-palette-navy mb-2">婚姻，人人都當尊重。(來13:4)</p>
+                        <p class="font-serif font-bold text-palette-navy mb-2">
+                            耶和華神說：「那人獨居不好，我要為他造一個配偶幫助他。」因此，人要離開父母，與妻子連合，二人成為一體。(創2:18、24)</p>
+                        <p class="font-serif font-bold text-palette-navy">既然如此，夫妻不再是兩個人，而是一體的了。所以，神配合的，人不可分開。(太19:6)</p>
+                    </div>
+
+                    <!-- Male (Using Navy Theme Card Style) -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-navy rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-navy text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            男</div>
+                        <p class="font-serif font-bold text-palette-navy">才德的女子很多，唯獨你超過一切。(箴31:29) 這是我骨中的骨、肉中的肉！(創2:23)
+                        </p>
+                    </div>
+
+                    <!-- Female (Using Rose Theme Card Style) -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-rose rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-rose text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            女</div>
+                        <p class="font-serif font-bold text-palette-navy">我的良人哪，你甚俊美可愛！(歌1:16) 我屬我的良人，我的良人屬我。(歌6:3)</p>
+                    </div>
+
+                    <!-- Male -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-navy rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-navy text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            男</div>
+                        <p class="font-serif font-bold text-palette-navy">願你的心只向我敞開；</p>
+                    </div>
+
+                    <!-- Female -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-rose rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-rose text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            女</div>
+                        <p class="font-serif font-bold text-palette-navy">願你的手臂只擁抱我。</p>
+                    </div>
+
+                    <!-- Together -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-magenta rounded-xl p-4 text-center shadow-md my-6 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-magenta text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            合</div>
+                        <p class="font-serif font-bold text-palette-navy mb-2">愛情跟死一樣堅強；戀情跟陰間一樣牢固。(歌8:6)</p>
+                        <p class="font-serif font-bold text-palette-navy">它爆出火焰，像烈火一樣燃燒。水不能息滅愛情，洪水也無法淹沒。(歌8:7)</p>
+                    </div>
+
+                    <!-- Together Short -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-magenta rounded-xl p-3 text-center shadow-sm my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-magenta text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            合</div>
+                        <p class="font-serif font-bold text-palette-navy">相愛，不要只在言語和舌頭上，總要在行為和誠實上。(約壹3:18)</p>
+                    </div>
+
+                    <!-- Together Short -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-magenta rounded-xl p-3 text-center shadow-sm my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-magenta text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            合</div>
+                        <p class="font-serif font-bold text-palette-navy">要存敬畏基督的心彼此順服。(弗5:21)</p>
+                    </div>
+
+                    <!-- Female -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-rose rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-rose text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            女</div>
+                        <p class="font-serif font-bold text-palette-navy">
+                            作妻子的，你們要順服自己的丈夫，如同順服主。因為丈夫是妻子的頭，如同基督是教會的頭。(弗5:22-23)</p>
+                    </div>
+
+                    <!-- Male -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-navy rounded-xl p-4 text-center shadow-md my-4 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-navy text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            男</div>
+                        <p class="font-serif font-bold text-palette-navy">作丈夫的，你們要愛自己的妻子，正如基督愛教會，為教會捨己。(弗5:25)</p>
+                    </div>
+
+                    <!-- Together Large Block -->
+                    <div
+                        class="relative bg-white/90 backdrop-blur-sm border-2 border-palette-magenta rounded-xl p-5 text-center shadow-md my-8 transform hover:scale-[1.01] transition-transform">
+                        <div
+                            class="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-palette-magenta text-white px-4 py-0.5 rounded-full text-sm font-bold shadow-sm ring-2 ring-white">
+                            合</div>
+                        <p class="font-serif font-bold text-palette-navy mb-3">
+                            你要盡心、盡性、盡意愛主－你的神。其次也相倣，就是要愛人如己。(太22:37、39)</p>
+                        <div class="w-16 h-0.5 bg-palette-pink/50 mx-auto my-3"></div>
+                        <p class="font-serif font-bold text-palette-navy italic">
+                            愛是恆久忍耐，又有恩慈；<br>
+                            愛是不嫉妒，愛是不自誇，不張狂，<br>
+                            不作害羞的事，不求自己的益處，<br>
+                            不輕易發怒，不計算人的惡，<br>
+                            不喜歡不義，只喜歡真理；<br>
+                            凡事包容，凡事相信，凡事盼望，凡事忍耐。<br>
+                            愛是永不止息。<br>
+                            <span class="text-sm font-normal not-italic mt-2 block">(林前13:4-8)</span>
                         </p>
                     </div>
                 </div>
 
-                <h4 class="font-serif text-xl font-bold mt-8 mb-4">證道 - 王聖斐傳道</h4>
-                <h4 class="font-serif text-xl font-bold">證婚 - 林彥圭長老</h4>
+                <div class="text-center mb-6 mt-12">
+                    <span
+                        class="bg-palette-magenta text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">證道</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">王聖斐 傳道</p>
+                </div>
+                <div class="text-center mb-6">
+                    <span
+                        class="bg-palette-magenta text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">證婚</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">林彥圭 長老</p>
+                </div>
             </div>
-        </section>
 
-        <!-- 第四章 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 400ms;">
-            <h3 class="iansuifont text-2xl text-center mb-2">第四章 愛的祝福</h3>
-            <!-- <p class="text-base text-center text-dark-green/80 italic mb-6 elffont">恩惠、慈愛、平安，是我們的祝福。</p> -->
-            <p class="elffont text-2xl text-center text-dark-green/80 italic mb-6">ㄣㄏㄨㄟˋ ㄘˊㄞˋ ㄆㄧㄥˊㄢ ㄕˋㄨㄛˇㄇㄣ˙ㄉㄜ˙ㄓㄨˋㄈㄨˊ</p>
-
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12 space-y-4">
-                <h4 class="font-serif text-xl font-bold">詩歌</h4>
-                <h4 class="font-serif text-xl font-bold">祝禱 - 某長老</h4>
-                <h4 class="font-serif text-xl font-bold">殿樂</h4>
-                <div class="scripture-reading text-lg leading-relaxed space-y-4 text-dark-green/90 text-center">
-                    <p>願耶和華賜福給你，保護你。</p>
-                    <p>願耶和華使祂的臉光照你，賜恩給你。</p>
-                    <p>願耶和華向你仰臉，賜你平安。</p>
+            <!-- Special Music -->
+            <div class="mb-4">
+                <div class="text-center mb-4">
+                    <span
+                        class="bg-palette-magenta text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">獻詩</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">新人、詩班</p>
+                    <h3 class="font-serif text-xl font-bold mt-2 text-palette-navy">委身之歌</h3>
+                </div>
+                <div class="lyric-text font-serif font-bold text-palette-navy text-center text-base">
+                    <p class="mb-4">我的心為祢歌唱 我的靈因祢剛強<br>祢的愛在我裡面醞釀 催我在世上作光</p>
+                    <p class="mb-4">我願意為祢擺上 我願意尊祢為王<br>指教我體貼祢的心腸 忠心持守直前勇往</p>
+                    <p class="mb-4">將我的眼光 定睛在祢的身上<br>即使我在驚濤駭浪之中 仍有信心和異象</p>
+                    <p>將我的眼光 定睛在祢的身上<br>我一生要向著標竿直跑 直到終點得著獎賞</p>
                 </div>
             </div>
         </section>
 
-        <!-- 報告 -->
-        <section class="bg-khaki-paper shadow-lg rounded-lg p-8 md:p-12 mt-8 fade-in" style="transition-delay: 450ms;">
-            <h3 class="iansuifont text-2xl text-center">報告</h3>
-            <!-- Sub-item container -->
-            <div class="pl-4 md:pl-12 space-y-4">
-                <h4 class="font-serif text-xl font-bold">拍照順序</h4>
-                <div class="pl-4 border-l-2 border-dark-green mb-6">
-                    <p>雙方主婚人</p>
-                    <p>男方家人</p>
-                    <p>女方家人</p>
-                    <p>康華禮拜堂</p>
-                    <p>男方朋友</p>
-                    <p>女方朋友</p>
+        <!-- Chapter 4: Blessing of Love (Uplifting Purple-Navy) -->
+        <section id="chap4"
+            class="scroll-mt-24 rounded-3xl bg-gradient-to-t from-palette-purple/20 via-palette-navy/10 to-white p-6 mb-8 shadow-md border border-palette-purple/20">
+            <div class="chapter-divider">
+                <i class="fa-solid fa-sun text-palette-purple"></i>
+            </div>
+            <div class="text-center mb-8">
+                <h2 class="font-serif text-2xl font-bold text-palette-purple">第四章 愛的祝福</h2>
+                <p class="text-palette-rose text-sm mt-1 font-medium">恩惠、慈愛、平安，是我們的祝福。</p>
+            </div>
+
+            <!-- Hymn -->
+            <div class="mb-10">
+                <div class="text-center mb-4">
+                    <span
+                        class="bg-palette-purple text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">詩歌</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">新人、詩班</p>
+                    <h3 class="font-serif text-xl font-bold mt-2 text-palette-navy">願主賜福保護你</h3>
+                </div>
+                <div class="lyric-text font-serif font-bold text-palette-navy text-center text-base">
+                    <p class="mb-4">願主賜福保護你<br>願上主的榮光遍照你<br>賜你平安 賜你平安<br>賜你平安 賜你平安</p>
+                    <p>主歡喜用他的光遍照你<br>又歡喜用慈悲來款待你<br>願主賜福你 願主賜福你 阿們</p>
+                </div>
+            </div>
+
+            <!-- Benediction -->
+            <div class="mb-4">
+                <div class="text-center">
+                    <span
+                        class="bg-palette-purple text-white px-3 py-1 rounded-full text-sm font-bold tracking-wider shadow-sm">祝禱</span>
+                    <p class="text-sm mt-2 font-medium text-text-muted">徐世達 長老</p>
                 </div>
             </div>
         </section>
 
-        <!-- 頁尾 -->
-        <footer class="text-center py-12 mt-8 fade-in" style="transition-delay: 500ms;">
-            <!-- <p class="font-serif text-xl accent-pink">S & S</p> -->
-            <p class="lavishly-yours-regular text-2xl text-dark-green/70 mt-2">Love never fails.</p>
+        <!-- Footer / Announcements -->
+        <footer
+            class="mt-16 border-t border-palette-pink/50 pt-10 pb-10 bg-gradient-to-b from-paper to-palette-pink/20">
+            <div class="text-center mb-8">
+                <h3 class="font-serif text-lg font-bold text-palette-navy mb-2">報告事項</h3>
+                <p class="text-sm text-text-muted">司會</p>
+            </div>
+
+            <!-- Photo Sequence Grid -->
+            <div class="bg-white rounded-xl shadow-sm p-6 mx-2 border border-palette-pink/30">
+                <div class="flex items-center justify-center mb-4 text-palette-magenta">
+                    <i class="fa-solid fa-camera mr-2"></i>
+                    <h4 class="font-serif font-bold text-lg">拍照順序</h4>
+                </div>
+                <div class="grid grid-cols-1 gap-y-3 text-center text-sm text-text-main">
+                    <div class="py-2 border-b border-dashed border-gray-200">婚禮婚宴同工</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">雙方主婚人</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">男方家人</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">女方家人</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">男方同學朋友</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">女方同學朋友</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">男方同事</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">女方同事</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">康華禮拜堂畢契、學青</div>
+                    <div class="py-2 border-b border-dashed border-gray-200">康華禮拜堂、主內弟兄姊妹</div>
+                </div>
+            </div>
+
+            <div class="text-center mt-10 text-sm text-palette-rose/70">
+                <p>&copy; 2025 Wedding Ceremony. May God Bless You.</p>
+            </div>
         </footer>
 
-    </div>
-    
-    <svg style="display: none;">
-        <filter id="paper-edge-filter" x="-10%" y="-10%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.1" numOctaves="3" result="noise" />
-            <feDisplacementMap in="SourceGraphic" in2="noise" scale="15" xChannelSelector="R" yChannelSelector="G" result="displaced" />
-            <feGaussianBlur in="displaced" stdDeviation="1.5" result="blurred" />
-            <feComposite in="SourceGraphic" in2="blurred" operator="atop" />
-        </filter>
-    </svg>
-
-    <!-- 滾動動畫的 JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const observers = new Map();
-
-            const observerCallback = (entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('fade-in-visible');
-                        // 可選：觀察到後即停止觀察
-                        // const observer = observers.get(entry.target);
-                        // if (observer) {
-                        //     observer.unobserve(entry.target);
-                        //     observers.delete(entry.target);
-                        // }
-                    }
-                });
-            };
-
-            document.querySelectorAll('.fade-in').forEach(target => {
-                const observer = new IntersectionObserver(observerCallback, {
-                    threshold: 0.1, // 元素進入 10% 可見時觸發
-                    rootMargin: '0px 0px -50px 0px' // 稍微提早觸發
-                });
-                observer.observe(target);
-                observers.set(target, observer);
-            });
-        });
-    </script>
+    </main>
 
 </body>
 
