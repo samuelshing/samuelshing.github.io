@@ -187,8 +187,7 @@
             data() {
                 return {
                     radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON',
-                    // radarApiUrl: './get_radar.php',
-
+                    
                     // 資料
                     radarObservation: [],
                     previousRadarDBZ: {},
@@ -226,9 +225,9 @@
                     this.error = null;
 
                     try {
-                        // 【*** 修正點 ***】 使用 CORS Proxy 解決跨域問題
-                        // corsproxy.io 是一個免費且穩定的公共代理，支援重新導向
-                        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(this.radarApiUrl);
+                        // 【*** 修正點 ***】 切換 CORS Proxy 服務
+                        // corsproxy.io 回傳 403，改用 allorigins.win，這通常能繞過簡單的 Referer 檢查
+                        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(this.radarApiUrl);
 
                         const response = await fetch(proxyUrl, {
                             method: 'GET',
@@ -295,7 +294,7 @@
                         if (retries > 0) {
                             setTimeout(() => this.fetchRadarData(retries - 1, delay * 2), delay);
                         } else {
-                            this.error = "雷達資料獲取失敗。可能因瀏覽器 CORS 限制，請嘗試使用無痕模式或檢查網路。";
+                            this.error = "雷達資料獲取失敗，這可能是代理伺服器忙碌。請點擊重試。";
                             this.isLoading = false;
                         }
                     }
