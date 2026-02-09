@@ -226,9 +226,13 @@
                     this.error = null;
 
                     try {
-                        const response = await fetch(this.radarApiUrl, {
+                        // 【*** 修正點 ***】 使用 CORS Proxy 解決跨域問題
+                        // corsproxy.io 是一個免費且穩定的公共代理，支援重新導向
+                        const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(this.radarApiUrl);
+
+                        const response = await fetch(proxyUrl, {
                             method: 'GET',
-                            mode: 'cors',
+                            // 這裡不需要 mode: 'cors'，因為代理伺服器會處理
                             cache: 'no-cache'
                         });
 
@@ -291,7 +295,7 @@
                         if (retries > 0) {
                             setTimeout(() => this.fetchRadarData(retries - 1, delay * 2), delay);
                         } else {
-                            this.error = "雷達資料獲取失敗，請檢查網路。";
+                            this.error = "雷達資料獲取失敗。可能因瀏覽器 CORS 限制，請嘗試使用無痕模式或檢查網路。";
                             this.isLoading = false;
                         }
                     }
