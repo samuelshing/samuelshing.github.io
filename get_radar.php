@@ -7,7 +7,7 @@ header('Content-Type: application/json; charset=utf-8');
 
 // 2. 定義氣象署的雷達 API 網址 (包含您的 Authorization Key)
 // 注意：這裡直接寫死在 PHP 裡，前端就不用暴露 Key
-$apiUrl = 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON';
+$apiUrl = 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON';
 
 // 3. 初始化 cURL
 $ch = curl_init();

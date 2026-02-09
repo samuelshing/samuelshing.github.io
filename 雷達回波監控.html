@@ -9,9 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- 引入 Tone.js 用於播放音效 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
-    <!-- 引入 Vue 3 -->
     <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
 
     <style>
@@ -20,7 +18,7 @@
         }
 
         #app {
-            max-width: 800px; /* 不需要太寬 */
+            max-width: 800px;
             margin: auto;
             padding: 1rem;
         }
@@ -41,26 +39,37 @@
 
         /* 圖片卡片樣式 */
         .radar-image-container {
-            background-color: #000; /* 雷達圖通常背景較深，用黑色襯托 */
+            /* background-color: #212529; */
+            /* 深色背景襯托雷達圖 */
             border-radius: 0.375rem;
             overflow: hidden;
             position: relative;
-            min-height: 300px;
+            min-height: 350px;
+            /* 固定最小高度避免跳動 */
             display: flex;
             align-items: center;
             justify-content: center;
         }
-        
+
         .radar-image {
-            width: 100%;
+            width: 80%;
             height: auto;
             display: block;
+            object-fit: contain;
         }
 
         @keyframes border-pulse {
-            0% { box-shadow: 0 0 0 0px rgba(220, 53, 69, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
-            100% { box-shadow: 0 0 0 0px rgba(220, 53, 69, 0); }
+            0% {
+                box-shadow: 0 0 0 0px rgba(220, 53, 69, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0px rgba(220, 53, 69, 0);
+            }
         }
 
         /* 焦點引導樣式 */
@@ -89,7 +98,8 @@
             border-radius: 8px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
             z-index: 10000;
-            max-width: 350px;
+            max-width: 90%;
+            width: 350px;
             text-align: center;
         }
     </style>
@@ -97,114 +107,122 @@
 
 <body>
     <div id="app">
-        <!-- 焦點引導遮罩 -->
         <div v-if="showOnboarding" class="tour-overlay" @click="closeTour"></div>
 
-        <!-- 焦點引導提示框 -->
         <div v-if="showOnboarding" class="tour-tooltip" :style="tooltipStyle">
             <h5 class="mb-3">啟用聲音警示</h5>
             <p class="text-muted mb-3">
-                瀏覽器需要您的許可才能在背景播放警示音。請點擊按鈕啟用功能。
+                瀏覽器需要您的許可才能在背景播放警示音。<br>請點擊下方按鈕啟用功能。
             </p>
-            <button class="btn btn-primary btn-sm w-100" @click="triggerEnableAudio">我知道了</button>
+            <button class="btn btn-primary w-100" @click="enableAudio">
+                <i class="bi bi-volume-up-fill me-1"></i> 啟用並開始監控
+            </button>
         </div>
 
         <div class="app-content">
             <header class="text-center my-4">
                 <h1 class="display-5 fw-bold">📡 雷達回波監控</h1>
                 <p class="text-muted">（新店、中和、板橋即時 dBZ 掃描 ＆ 樹林雷達圖）</p>
-                
+
                 <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
-                    <!-- 啟用音訊按鈕 -->
                     <button v-if="!isAudioEnabled" ref="enableAudioButtonRef" class="btn btn-info btn-sm"
                         :class="{ 'tour-highlight-focus': showOnboarding }" @click="enableAudio">
                         <i class="bi bi-bell-fill"></i> 啟用聲音警示
                     </button>
-                    <span v-if="isAudioEnabled" class="text-success small fw-bold">
-                        <i class="bi bi-check-circle-fill"></i> 聲音監控中
+                    <span v-if="isAudioEnabled"
+                        class="text-success small fw-bold badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill">
+                        <i class="bi bi-activity"></i> 聲音監控中
                     </span>
                 </div>
-                
+
                 <div class="d-flex justify-content-center align-items-center gap-3 text-secondary small">
-                    <span><i class="bi bi-clock-history"></i> 更新倒數: {{ countdownSeconds }} 秒</span>
-                    <button class="btn btn-link btn-sm text-secondary p-0" @click="fetchAllData" :disabled="isLoading">
+                    <span><i class="bi bi-clock-history"></i> 自動更新: {{ countdownSeconds }} 秒</span>
+                    <button class="btn btn-link btn-sm text-secondary p-0 text-decoration-none" @click="fetchAllData"
+                        :disabled="isLoading">
                         <i class="bi bi-arrow-clockwise" :class="{'bi-spin': isLoading}"></i> 立即更新
                     </button>
                 </div>
             </header>
 
-            <!-- 載入中狀態 -->
-            <div v-if="isLoading" class="text-center my-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 text-muted">正在分析雷達回波數據...</p>
-            </div>
-
-            <!-- 錯誤訊息 -->
-            <div v-if="error" class="alert alert-danger mx-auto" role="alert">
-                <i class="bi bi-exclamation-triangle-fill"></i>
-                <strong>錯誤：</strong> {{ error }}
+            <div v-if="error" class="alert alert-danger mx-auto shadow-sm" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <strong>連線錯誤：</strong> {{ error }}
                 <button class="btn btn-sm btn-outline-danger ms-3" @click="fetchAllData">重試</button>
             </div>
 
-            <main v-if="!isLoading" class="d-flex flex-column gap-4">
-                <!-- 1. 雷達回波圖區塊 (新增) -->
-                <section v-if="radarImageUrl">
-                    <h4 class="text-center mb-3">📡 樹林雷達合成回波圖</h4>
+            <main class="d-flex flex-column gap-4">
+                <section>
+                    <h4 class="text-center mb-3 h5 text-muted">樹林雷達站回波圖</h4>
                     <div class="radar-image-container shadow-sm">
-                        <img :src="radarImageUrl" alt="樹林雷達回波圖" class="radar-image" @error="handleImageError">
-                        <div class="position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 small opacity-75 rounded-start">
+                        <div v-if="isLoading && !radarImageUrl" class="text-light">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                            <span class="ms-2">影像載入中...</span>
+                        </div>
+
+                        <img v-if="radarImageUrl" :src="radarImageUrl" alt="樹林雷達站回波圖" class="radar-image"
+                            @error="handleImageError">
+
+                        <div v-if="radarImageTime"
+                            class="position-absolute bottom-0 end-0 bg-dark text-white px-3 py-1 small opacity-75 rounded-top-start">
                             {{ formatFullDateTime(radarImageTime) }}
                         </div>
                     </div>
                 </section>
-                
-                <!-- 2. 雷達數值掃描區塊 -->
+
                 <section>
                     <div class="alert alert-light border text-center text-secondary small mb-4">
-                        <i class="bi bi-info-circle-fill me-1"></i> 
-                        dBZ 回波值越高代表降雨越劇烈。<strong>>15 dBZ</strong> 判定為有雨並觸發警示。
+                        <i class="bi bi-info-circle-fill me-1"></i>
+                        dBZ 回波值越高代表降雨越劇烈。<strong>>15 dBZ</strong> 判定為有雨。
                     </div>
-                    
-                    <div class="row g-3">
+
+                    <div v-if="isLoading && radarObservation.length === 0" class="text-center my-4 text-muted">
+                        <div class="spinner-border text-secondary" role="status"></div>
+                        <p class="mt-2 small">正在掃描雷達格點...</p>
+                    </div>
+
+                    <div v-else class="row g-3">
                         <div v-for="loc in radarObservation" :key="loc.name" class="col-12">
                             <div class="p-3 radar-card d-flex align-items-center justify-content-between"
                                 :class="{'alert-active': loc.dbz >= 15}">
-                                
-                                <div class="d-flex align-items-center gap-3">
-                                    <div class="text-center" style="min-width: 80px;">
-                                        <h4 class="mb-0 fw-bold">{{ loc.name }}</h4>
+
+                                <div class="d-flex align-items-center gap-3 flex-grow-1">
+                                    <div class="text-center" style="min-width: 70px;">
+                                        <h4 class="mb-0 fw-bold h5">{{ loc.name }}</h4>
                                     </div>
-                                    <div style="width: 120px;">
-                                        <div class="display-6 fw-bold mb-0 text-center">
+                                    <div style="min-width: 90px;">
+                                        <div class="display-6 fw-bold mb-0 text-center fs-2">
                                             {{ loc.dbz }} <span class="fs-6 text-muted">dBZ</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="flex-grow-1 mx-3 d-none d-sm-block">
-                                    <div class="progress" style="height: 12px;">
-                                        <div class="progress-bar" role="progressbar"
+                                <div class="flex-grow-1 mx-3 d-none d-md-block">
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar transition-all" role="progressbar"
                                             :style="{width: (Math.min(loc.dbz, 60) / 60 * 100) + '%', backgroundColor: getRadarColor(loc.dbz)}">
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="text-end" style="min-width: 100px;">
-                                    <span :class="loc.dbz >= 15 ? 'text-danger fw-bold' : 'text-success'">
+                                <div class="text-end" style="min-width: 80px;">
+                                    <span class="badge rounded-pill"
+                                        :class="loc.dbz >= 15 ? 'bg-danger' : 'bg-success'">
                                         {{ loc.status }}
                                     </span>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="text-center mt-3 text-muted small" v-if="dataTime">
-                        數值資料時間：{{ formatFullDateTime(dataTime) }}
+                        資料時間：{{ formatFullDateTime(dataTime) }}
                     </div>
                 </section>
             </main>
+
+            <footer class="mt-5 text-center text-muted small pb-4">
+                <p>資料來源：中央氣象署 (Open Data)</p>
+            </footer>
         </div>
     </div>
 
@@ -214,39 +232,42 @@
         createApp({
             data() {
                 return {
+                    // API 設定
                     // 雷達圖片 API (JSON 內含 PNG 網址)
-                    radarPngUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0084-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
+                    // radarPngUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0084-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
+                    radarPngUrl: './get_radar_image.php',
                     // 雷達數值 API (JSON)
-                    radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
-                    
-                    // 資料 - 數值
+                    // radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
+                    radarApiUrl: './get_radar.php',
+
+                    // 資料狀態
                     radarObservation: [],
                     previousRadarDBZ: {},
                     dataTime: null,
 
-                    // 資料 - 圖片
                     radarImageUrl: null,
                     radarImageTime: null,
-                    
-                    // 座標
+
+                    // 監控座標
                     targetPoints: [
                         { name: "新店", lat: 24.9828108, lng: 121.541716 },
                         { name: "中和", lat: 25.002385, lng: 121.496251 },
                         { name: "板橋", lat: 25.0153035, lng: 121.464625 }
                     ],
 
-                    // UI 狀態
+                    // 系統狀態
                     isLoading: true,
                     error: null,
                     showOnboarding: true,
                     isAudioEnabled: false,
-                    tooltipStyle: { top: '0px', left: '0px' },
+                    tooltipStyle: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }, // 預設置中
 
                     // 計時器
                     countdown: 300,
-                    radarInterval: null,
                     activeCountdownSetting: 300,
-                    
+                    radarInterval: null,
+                    countdownInterval: null, // 新增：倒數計時器變數
+
                     // 語音
                     selectedVoice: null,
                 };
@@ -255,29 +276,32 @@
                 countdownSeconds() { return this.countdown.toString().padStart(3, '0'); }
             },
             methods: {
-                // 統一獲取所有資料
                 async fetchAllData() {
                     this.isLoading = true;
-                    this.error = null;
-                    
-                    // 平行執行兩個請求
-                    await Promise.all([
-                        this.fetchRadarData(3, 0),
-                        this.fetchRadarImage()
-                    ]);
-                    
-                    this.isLoading = false;
-                    this.countdown = this.activeCountdownSetting;
-                },
+                    // Error 不清空，保留舊的錯誤直到成功，或僅在需要時清空
 
-                // 獲取雷達數值
+                    try {
+                        await Promise.all([
+                            this.fetchRadarData(3, 0),
+                            this.fetchRadarImage()
+                        ]);
+                        this.error = null; // 成功後清空錯誤
+                        this.countdown = this.activeCountdownSetting;
+                    } catch (e) {
+                        // 這裡 catch 可能抓不到 Promise.all 內部的 error，因為內部有自己的 try-catch
+                        // 但保留以防萬一
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
                 async fetchRadarData(retries = 3, delay = 1000) {
                     try {
                         const response = await fetch(this.radarApiUrl, { method: 'GET', cache: 'no-cache' });
-
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                        
+
                         const data = await response.json();
+                        if (data.error) throw new Error(data.error);
+
                         const dataset = data.cwaopendata.dataset;
                         const info = dataset.datasetInfo.parameterSet;
                         const content = dataset.contents.content;
@@ -290,7 +314,7 @@
                         const res = parseFloat(info.GridResolution);
                         const dimX = parseInt(info.GridDimensionX);
                         const dbzValues = content.split(',').map(v => parseFloat(v));
-                        
+
                         const results = [];
                         let alertTriggered = false;
                         let alertText = "";
@@ -299,21 +323,32 @@
                             const x_idx = Math.round((point.lng - startLng) / res);
                             const y_idx = Math.round((point.lat - startLat) / res);
                             const index = y_idx * dimX + x_idx;
+
                             let val = dbzValues[index] || 0;
                             if (val < 0) val = 0;
 
+                            // 1. 取得上次的數值與等級
                             const prevVal = this.previousRadarDBZ[point.name] || 0;
-                            let status = "無回波";
-                            if (val >= 45) status = "劇烈雷雨";
-                            else if (val >= 30) status = "持續降雨";
-                            else if (val >= 15) status = "有雨";
+                            const prevLevel = this.getRadarLevel(prevVal);
 
-                            if (val >= 15 && prevVal < 15) {
+                            // 2. 取得本次的等級與狀態文字
+                            const currentLevel = this.getRadarLevel(val);
+                            const statusText = this.getLevelText(currentLevel);
+
+                            // 3. 警示邏輯：當「等級提升」時觸發 (例如：無雨->小雨，或 小雨->大雨)
+                            if (currentLevel > prevLevel && currentLevel > 0) {
                                 alertTriggered = true;
-                                alertText += `${point.name} ${val}dBZ，`;
+                                // 語音內容優化：更自然的口語
+                                if (prevLevel === 0) {
+                                    alertText += `${point.name}開始下雨(${statusText})，`;
+                                } else {
+                                    alertText += `${point.name}雨勢增強為${statusText}，`;
+                                }
                             }
 
-                            results.push({ name: point.name, dbz: val, status: status });
+                            results.push({ name: point.name, dbz: val, status: statusText });
+
+                            // 更新歷史紀錄
                             this.previousRadarDBZ[point.name] = val;
                         });
 
@@ -321,96 +356,127 @@
 
                         if (alertTriggered && this.isAudioEnabled) {
                             this.playAlertSound();
-                            setTimeout(() => this.speakAlert("雷達警示：" + alertText + "偵測到降雨回波。"), 1500);
+                            // 語音延遲一點點，讓警示音先響完
+                            setTimeout(() => this.speakAlert("氣象警示：" + alertText + "請留意安全。"), 1000);
                         }
+
                     } catch (err) {
-                        console.error(`雷達數值獲取失敗 (剩餘重試: ${retries}):`, err);
+                        console.error(`雷達數值獲取失敗:`, err);
                         if (retries > 0) {
                             setTimeout(() => this.fetchRadarData(retries - 1, delay * 2), delay);
                         } else {
-                            this.error = "雷達數值獲取失敗，請重試。";
+                            this.error = "無法讀取雷達數值";
                         }
                     }
                 },
-
-                // 獲取雷達圖片 URL
                 async fetchRadarImage() {
                     try {
                         const response = await fetch(this.radarPngUrl, { method: 'GET', cache: 'no-cache' });
-                        
-                        if (!response.ok) throw new Error(`Image API HTTP error!`);
-                        
+                        if (!response.ok) throw new Error(`Image API error`);
+
                         const data = await response.json();
-                        // 解析 JSON 結構取得 ProductURL
+                        if (data.error) throw new Error(data.error);
+
                         const resource = data.cwaopendata.dataset.resource;
-                        const time = data.cwaopendata.dataset.DateTime;
-                        
+                        const time = data.cwaopendata.dataset.DateTime; // 修正路徑
+
                         if (resource && resource.ProductURL) {
-                            this.radarImageUrl = resource.ProductURL;
+                            // 加入時間戳記避免快取
+                            this.radarImageUrl = resource.ProductURL + '?t=' + new Date().getTime();
                             this.radarImageTime = time;
                         }
                     } catch (err) {
-                        console.error("雷達圖片 API 獲取失敗:", err);
-                        // 圖片失敗不阻擋主程式，只顯示錯誤 log
+                        console.error("雷達圖片失敗:", err);
+                        // 圖片失敗不設為全域錯誤，只在 console 顯示
                     }
                 },
-
+                // 判斷 dBZ 等級 (0~4)
+                getRadarLevel(dbz) {
+                    if (dbz >= 55) return 4; // 豪雨/雷雨 (紫色)
+                    if (dbz >= 45) return 3; // 大雨 (紅色)
+                    if (dbz >= 30) return 2; // 中雨 (橘色)
+                    if (dbz >= 15) return 1; // 小雨 (綠色)
+                    return 0;                // 無雨
+                },
+                // 取得等級對應文字
+                getLevelText(level) {
+                    switch (level) {
+                        case 4: return "劇烈雷雨";
+                        case 3: return "大雨";
+                        case 2: return "中雨";
+                        case 1: return "小雨";
+                        default: return "無回波";
+                    }
+                },
+                // 取得對應顏色 (配合新的分級)
                 getRadarColor(dbz) {
-                    if (dbz >= 50) return '#800080'; // 紫色
-                    if (dbz >= 40) return '#ff0000'; // 紅色
-                    if (dbz >= 30) return '#ffa500'; // 橘色
-                    if (dbz >= 15) return '#00ff00'; // 綠色
-                    return '#e9ecef'; // 灰色
+                    if (dbz >= 55) return '#800080'; // 紫色 (豪雨)
+                    if (dbz >= 45) return '#dc3545'; // 紅色 (大雨)
+                    if (dbz >= 30) return '#fd7e14'; // 橘色 (中雨)
+                    if (dbz >= 15) return '#198754'; // 綠色 (小雨)
+                    return '#e9ecef';                // 灰色
                 },
-
                 handleImageError() {
-                    this.radarImageUrl = null; // 圖片載入失敗時隱藏
-                    console.error("雷達圖片載入失敗 (404 或 網路錯誤)");
+                    this.radarImageUrl = null;
+                    console.error("雷達圖片載入失敗");
                 },
-
                 // --- 聲音系統 ---
-                triggerEnableAudio() {
-                    this.$refs.enableAudioButtonRef.click();
-                },
                 enableAudio() {
                     Tone.start().then(() => {
                         this.isAudioEnabled = true;
                         this.loadSpeechVoices();
-                        this.playAlertSound();
+                        this.playAlertSound(); // 播放測試音效
                         this.closeTour();
                     }).catch(e => {
                         console.error('音訊啟動失敗', e);
+                        // 即使失敗也關閉引導，避免卡住
                         this.closeTour();
                     });
                 },
                 loadSpeechVoices() {
-                    speechSynthesis.onvoiceschanged = () => {
+                    const load = () => {
                         const v = speechSynthesis.getVoices();
                         this.selectedVoice = v.find(i => i.name === 'Google 中文 (臺灣)') || v.find(i => i.lang === 'zh-TW');
                     };
-                    if (speechSynthesis.getVoices().length > 0) speechSynthesis.onvoiceschanged();
+                    speechSynthesis.onvoiceschanged = load;
+                    load(); // 立即嘗試一次
                 },
                 playAlertSound() {
-                    const synth = new Tone.Synth().toDestination();
-                    const now = Tone.now();
-                    synth.triggerAttackRelease("C5", "16n", now);
-                    synth.triggerAttackRelease("C5", "16n", now + 0.15);
-                    synth.triggerAttackRelease("G5", "16n", now + 0.3);
+                    try {
+                        const synth = new Tone.Synth().toDestination();
+                        const now = Tone.now();
+                        synth.triggerAttackRelease("C5", "8n", now);
+                        synth.triggerAttackRelease("E5", "8n", now + 0.15);
+                        synth.triggerAttackRelease("G5", "8n", now + 0.3);
+                    } catch (e) { console.error("Tone.js Error:", e); }
                 },
                 speakAlert(msg) {
-                    if (!this.isAudioEnabled || !this.selectedVoice) return;
+                    if (!this.isAudioEnabled) return;
                     window.speechSynthesis.cancel();
                     const u = new SpeechSynthesisUtterance(msg);
-                    u.voice = this.selectedVoice;
+                    if (this.selectedVoice) u.voice = this.selectedVoice;
                     window.speechSynthesis.speak(u);
                 },
-
                 // --- UI ---
-                formatFullDateTime: s => new Date(s).toLocaleString('zh-TW', { hour12: false }),
+                formatFullDateTime(s) {
+                    if (!s) return '-';
+                    return new Date(s).toLocaleString('zh-TW', {
+                        month: '2-digit', day: '2-digit',
+                        hour: '2-digit', minute: '2-digit', hour12: false
+                    });
+                },
                 startTour() {
                     this.$nextTick(() => {
+                        // 預設將提示框置中顯示，不依賴按鈕位置，避免手機板跑版
+                        // 如果需要精確定位到按鈕，可恢復原本的 getBoundingClientRect 邏輯
                         const rect = this.$refs.enableAudioButtonRef?.getBoundingClientRect();
-                        if (rect) this.tooltipStyle = { top: (rect.bottom + 15) + 'px', left: '50%', transform: 'translateX(-50%)' };
+                        if (rect && window.innerWidth > 576) {
+                            // 電腦版：定位在按鈕下方
+                            this.tooltipStyle = { top: (rect.bottom + 15) + 'px', left: (rect.left + rect.width / 2) + 'px', transform: 'translateX(-50%)' };
+                        } else {
+                            // 手機版：畫面正中央
+                            this.tooltipStyle = { top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '85%' };
+                        }
                     });
                 },
                 closeTour() { this.showOnboarding = false; }
@@ -419,16 +485,20 @@
                 this.startTour();
                 this.fetchAllData();
 
-                // 倒數計時
-                setInterval(() => { if (this.countdown > 0) this.countdown--; }, 1000);
-                
-                // 自動更新 (5分鐘)
+                // 修正：賦值給變數以便銷毀
+                this.countdownInterval = setInterval(() => {
+                    if (this.countdown > 0) this.countdown--;
+                }, 1000);
+
                 this.radarInterval = setInterval(() => this.fetchAllData(), 300000);
             },
             beforeUnmount() {
                 clearInterval(this.radarInterval);
+                clearInterval(this.countdownInterval); // 修正：清除倒數計時器
+                window.speechSynthesis.cancel(); // 離開時停止說話
             }
         }).mount('#app');
     </script>
 </body>
+
 </html>
