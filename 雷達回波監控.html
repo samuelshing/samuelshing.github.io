@@ -39,6 +39,24 @@
             animation: border-pulse 2s infinite;
         }
 
+        /* 圖片卡片樣式 */
+        .radar-image-container {
+            background-color: #000; /* 雷達圖通常背景較深，用黑色襯托 */
+            border-radius: 0.375rem;
+            overflow: hidden;
+            position: relative;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .radar-image {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
         @keyframes border-pulse {
             0% { box-shadow: 0 0 0 0px rgba(220, 53, 69, 0.4); }
             70% { box-shadow: 0 0 0 10px rgba(220, 53, 69, 0); }
@@ -94,7 +112,7 @@
         <div class="app-content">
             <header class="text-center my-4">
                 <h1 class="display-5 fw-bold">📡 雷達回波監控</h1>
-                <p class="text-muted">（新店、中和、板橋即時 dBZ 掃描）</p>
+                <p class="text-muted">（新店、中和、板橋即時 dBZ 掃描 ＆ 樹林雷達圖）</p>
                 
                 <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
                     <!-- 啟用音訊按鈕 -->
@@ -109,7 +127,7 @@
                 
                 <div class="d-flex justify-content-center align-items-center gap-3 text-secondary small">
                     <span><i class="bi bi-clock-history"></i> 更新倒數: {{ countdownSeconds }} 秒</span>
-                    <button class="btn btn-link btn-sm text-secondary p-0" @click="fetchRadarData(3, 0)" :disabled="isLoading">
+                    <button class="btn btn-link btn-sm text-secondary p-0" @click="fetchAllData" :disabled="isLoading">
                         <i class="bi bi-arrow-clockwise" :class="{'bi-spin': isLoading}"></i> 立即更新
                     </button>
                 </div>
@@ -127,12 +145,22 @@
             <div v-if="error" class="alert alert-danger mx-auto" role="alert">
                 <i class="bi bi-exclamation-triangle-fill"></i>
                 <strong>錯誤：</strong> {{ error }}
-                <button class="btn btn-sm btn-outline-danger ms-3" @click="fetchRadarData(3, 0)">重試</button>
+                <button class="btn btn-sm btn-outline-danger ms-3" @click="fetchAllData">重試</button>
             </div>
 
             <main v-if="!isLoading" class="d-flex flex-column gap-4">
+                <!-- 1. 雷達回波圖區塊 (新增) -->
+                <section v-if="radarImageUrl">
+                    <h4 class="text-center mb-3">📡 樹林雷達合成回波圖</h4>
+                    <div class="radar-image-container shadow-sm">
+                        <img :src="radarImageUrl" alt="樹林雷達回波圖" class="radar-image" @error="handleImageError">
+                        <div class="position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 small opacity-75 rounded-start">
+                            {{ formatFullDateTime(radarImageTime) }}
+                        </div>
+                    </div>
+                </section>
                 
-                <!-- 雷達掃描區塊 -->
+                <!-- 2. 雷達數值掃描區塊 -->
                 <section>
                     <div class="alert alert-light border text-center text-secondary small mb-4">
                         <i class="bi bi-info-circle-fill me-1"></i> 
@@ -173,7 +201,7 @@
                     </div>
                     
                     <div class="text-center mt-3 text-muted small" v-if="dataTime">
-                        資料時間：{{ formatFullDateTime(dataTime) }}
+                        數值資料時間：{{ formatFullDateTime(dataTime) }}
                     </div>
                 </section>
             </main>
@@ -186,14 +214,19 @@
         createApp({
             data() {
                 return {
+                    // 雷達圖片 API (JSON 內含 PNG 網址)
                     radarPngUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0084-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
-                    radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON',
-                    // radarApiUrl: './get_radar.php',
-
-                    // 資料
+                    // 雷達數值 API (JSON)
+                    radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&downloadType=WEB&format=JSON',
+                    
+                    // 資料 - 數值
                     radarObservation: [],
                     previousRadarDBZ: {},
                     dataTime: null,
+
+                    // 資料 - 圖片
+                    radarImageUrl: null,
+                    radarImageTime: null,
                     
                     // 座標
                     targetPoints: [
@@ -222,16 +255,25 @@
                 countdownSeconds() { return this.countdown.toString().padStart(3, '0'); }
             },
             methods: {
-                async fetchRadarData(retries = 3, delay = 1000) {
+                // 統一獲取所有資料
+                async fetchAllData() {
                     this.isLoading = true;
                     this.error = null;
+                    
+                    // 平行執行兩個請求
+                    await Promise.all([
+                        this.fetchRadarData(3, 0),
+                        this.fetchRadarImage()
+                    ]);
+                    
+                    this.isLoading = false;
+                    this.countdown = this.activeCountdownSetting;
+                },
 
+                // 獲取雷達數值
+                async fetchRadarData(retries = 3, delay = 1000) {
                     try {
-                        const response = await fetch(this.radarApiUrl, {
-                            method: 'GET',
-                            mode: 'cors',
-                            cache: 'no-cache'
-                        });
+                        const response = await fetch(this.radarApiUrl, { method: 'GET', cache: 'no-cache' });
 
                         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                         
@@ -242,15 +284,13 @@
 
                         if (!content) throw new Error("API 資料異常");
 
-                        // 記錄資料時間
                         this.dataTime = info.DateTime;
-
                         const startLng = parseFloat(info.StartPointLongitude);
                         const startLat = parseFloat(info.StartPointLatitude);
                         const res = parseFloat(info.GridResolution);
                         const dimX = parseInt(info.GridDimensionX);
-
                         const dbzValues = content.split(',').map(v => parseFloat(v));
+                        
                         const results = [];
                         let alertTriggered = false;
                         let alertText = "";
@@ -259,7 +299,6 @@
                             const x_idx = Math.round((point.lng - startLng) / res);
                             const y_idx = Math.round((point.lat - startLat) / res);
                             const index = y_idx * dimX + x_idx;
-
                             let val = dbzValues[index] || 0;
                             if (val < 0) val = 0;
 
@@ -279,22 +318,40 @@
                         });
 
                         this.radarObservation = results;
-                        this.countdown = this.activeCountdownSetting; // 重置倒數
 
                         if (alertTriggered && this.isAudioEnabled) {
                             this.playAlertSound();
                             setTimeout(() => this.speakAlert("雷達警示：" + alertText + "偵測到降雨回波。"), 1500);
                         }
-                        this.isLoading = false;
-
                     } catch (err) {
-                        console.error(`獲取失敗 (剩餘重試: ${retries}):`, err);
+                        console.error(`雷達數值獲取失敗 (剩餘重試: ${retries}):`, err);
                         if (retries > 0) {
                             setTimeout(() => this.fetchRadarData(retries - 1, delay * 2), delay);
                         } else {
-                            this.error = "雷達資料獲取失敗，請檢查網路。";
-                            this.isLoading = false;
+                            this.error = "雷達數值獲取失敗，請重試。";
                         }
+                    }
+                },
+
+                // 獲取雷達圖片 URL
+                async fetchRadarImage() {
+                    try {
+                        const response = await fetch(this.radarPngUrl, { method: 'GET', cache: 'no-cache' });
+                        
+                        if (!response.ok) throw new Error(`Image API HTTP error!`);
+                        
+                        const data = await response.json();
+                        // 解析 JSON 結構取得 ProductURL
+                        const resource = data.cwaopendata.dataset.resource;
+                        const time = data.cwaopendata.dataset.DateTime;
+                        
+                        if (resource && resource.ProductURL) {
+                            this.radarImageUrl = resource.ProductURL;
+                            this.radarImageTime = time;
+                        }
+                    } catch (err) {
+                        console.error("雷達圖片 API 獲取失敗:", err);
+                        // 圖片失敗不阻擋主程式，只顯示錯誤 log
                     }
                 },
 
@@ -306,9 +363,13 @@
                     return '#e9ecef'; // 灰色
                 },
 
+                handleImageError() {
+                    this.radarImageUrl = null; // 圖片載入失敗時隱藏
+                    console.error("雷達圖片載入失敗 (404 或 網路錯誤)");
+                },
+
                 // --- 聲音系統 ---
                 triggerEnableAudio() {
-                    // 模擬點擊主要按鈕
                     this.$refs.enableAudioButtonRef.click();
                 },
                 enableAudio() {
@@ -319,7 +380,6 @@
                         this.closeTour();
                     }).catch(e => {
                         console.error('音訊啟動失敗', e);
-                        // 即使失敗也關閉引導，避免卡住
                         this.closeTour();
                     });
                 },
@@ -357,13 +417,13 @@
             },
             mounted() {
                 this.startTour();
-                this.fetchRadarData();
+                this.fetchAllData();
 
                 // 倒數計時
                 setInterval(() => { if (this.countdown > 0) this.countdown--; }, 1000);
                 
                 // 自動更新 (5分鐘)
-                this.radarInterval = setInterval(() => this.fetchRadarData(), 300000);
+                this.radarInterval = setInterval(() => this.fetchAllData(), 300000);
             },
             beforeUnmount() {
                 clearInterval(this.radarInterval);
