@@ -133,8 +133,20 @@
                 <span v-if="isAudioEnabled" class="text-success small"><i class="bi bi-check-circle-fill"></i>
                     聲音已啟用</span>
                 <!-- 聲音說明 -->
-                <small v-if="!isAudioEnabled && !showOnboarding" class="text-center text-muted d-block mt-2">*
-                    請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
+                <small v-if="!isAudioEnabled && !showOnboarding" class="text-center text-muted d-block mt-2">* 請點擊「啟用聲音警示」以允許瀏覽器播放即時警示音效與語音。</small>
+
+                <!-- 倒數計時器 -->
+                <p class="text-center text-success fw-bold" v-if="!isLoading && !error">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    API資料每5分鐘更新，將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
+                </p>
+                <!-- 更新時間設定 -->
+                <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
+                    每
+                    <input type="number" class="form-control" v-model.number="newCountdownValue" min="1" placeholder="秒數" style="width: 100px;">
+                    秒更新資訊
+                    <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
+                </div>
             </header>
 
             <!-- 載入中狀態 -->
@@ -193,10 +205,6 @@
                         <strong>即時降雨警示：</strong> {{ immediateAlertMessage }}
                         <button type="button" class="btn-close" @click="clearImmediateAlert"></button>
                     </div>
-
-                    <p class="text-center text-primary fw-bold">
-                        API資料每10分鐘更新，將於 {{ rainCountdownMinutes }} 分 {{ rainCountdownSeconds }} 秒後更新即時資料...
-                    </p>
                     <div v-if="rainObservation.length > 0" class="row g-4">
                         <div v-for="station in rainObservation" :key="station.StationId" class="col-md-4">
                             <div class="p-3 realtime-rain-card h-100 d-flex flex-column">
@@ -240,21 +248,6 @@
                         <i class="bi bi-clock-fill me-2"></i>
                         <strong>預報警報：</strong> {{ forecastAlertMessage }}
                         <button type="button" class="btn-close" @click="clearForecastAlert"></button>
-                    </div>
-
-                    <!-- 倒數計時器 -->
-                    <p class="text-center text-success fw-bold" v-if="!isLoading && !error">
-                        <i class="bi bi-arrow-clockwise"></i>
-                        預報將於 {{ countdownMinutes }} 分 {{ countdownSeconds }} 秒後自動更新...
-                    </p>
-
-                    <!-- 更新時間設定 -->
-                    <div class="d-flex justify-content-center align-items-center mt-2 gap-2">
-                        每
-                        <input type="number" class="form-control" v-model.number="newCountdownValue" min="1"
-                            placeholder="秒數" style="width: 100px;">
-                        秒更新資訊
-                        <button class="btn btn-secondary btn-sm" @click="applyNewCountdown">設定</button>
                     </div>
                     <!-- 預報圖表 (v-for) -->
                     <div v-for="location in locations" :key="location.name" class="mt-5">
@@ -302,6 +295,7 @@
                     forecastApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/F-D0047-069?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&LocationName=新店區,中和區,板橋區&ElementName=3小時降雨機率,溫度,天氣現象,體感溫度',
                     rainApiUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0002-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=466881,C0AG80,C0AJ80',
                     radarApiUrl: 'https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0059-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON',
+                    // radarApiUrl: './get_radar.php',
 
                     // 資料存儲
                     radarObservation: [],
