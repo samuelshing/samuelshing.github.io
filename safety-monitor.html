@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>降雨軌道溫度監測系統</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <style>
+        :root {
+            --bg-glass: rgba(255, 255, 255, 0.85);
+            --border-glass: rgba(220, 224, 230, 0.8);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f1f3f7 0%, #e4e8f0 100%);
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+        }
+
+        #app {
+            max-width: 1400px;
+            margin: auto;
+            padding: 1.5rem;
+        }
+
+        /* 頂部標題毛玻璃效果 */
+        .header-glass {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+        }
+
+        /* 雙欄卡片基礎樣式 */
+        .monitor-column {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-glass);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.06);
+            height: 100%;
+        }
+
+        .section-title {
+            position: relative;
+            padding-left: 0.75rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+        }
+
+        /* 雷達圖卡片與說明 */
+        .radar-image-container {
+            background-color: #1a1e21;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+            min-height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .radar-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+        }
+
+        /* 告警動態框 */
+        .radar-card,
+        .temp-card {
+            background-color: #ffffff;
+            border: 1px solid #dee2e6;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .radar-card.alert-active {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+            animation: border-pulse-red 2s infinite;
+        }
+
+        .temp-card.alert-active {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+            animation: border-pulse-red 2s infinite;
+        }
+
+        .temp-card.warning-active {
+            border-color: #ffc107;
+            background-color: #fffdf5;
+            animation: border-pulse-yellow 2s infinite;
+        }
+
+        @keyframes border-pulse-red {
+            0% {
+                box-shadow: 0 0 0 0px rgba(220, 53, 69, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0px rgba(220, 53, 69, 0);
+            }
+        }
+
+        @keyframes border-pulse-yellow {
+            0% {
+                box-shadow: 0 0 0 0px rgba(255, 193, 7, 0.4);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0px rgba(255, 193, 7, 0);
+            }
+        }
+
+        .legend-color-box {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-right: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+        }
+
+        /* 導覽遮罩 */
+        .tour-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 9998;
+        }
+
+        .tour-tooltip {
+            position: absolute;
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            z-index: 10000;
+            width: 330px;
+            text-align: center;
+        }
+
+        /* 模擬工具箱 */
+        .sim-toolbox {
+            border: 1px dashed #fd7e14;
+            background-color: #fffaf5;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .pulse-badge {
+            animation: text-pulse 1.5s infinite alternate;
+        }
+
+        @keyframes text-pulse {
+            from {
+                opacity: 0.6;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <!-- 聲音啟用導覽遮罩 -->
+        <div v-if="showOnboarding" class="tour-overlay" @click="closeTour"></div>
+        <div v-if="showOnboarding" class="tour-tooltip" :style="tooltipStyle">
+            <h5 class="mb-3"><i class="bi bi-volume-up-fill text-primary"></i> 啟用聲音與語音告警</h5>
+            <p class="text-muted mb-3 small">瀏覽器需要您的互動許可，才能在降雨或軌道溫度過高時播放即時警告語音。</p>
+            <button class="btn btn-primary w-100" @click="enableAudio">
+                <i class="bi bi-check-circle-fill me-1"></i> 同意並開始監控
+            </button>
+        </div>
+
+        <!-- 頂部資訊區 -->
+        <header class="header-glass mb-4 text-center">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div class="text-start">
+                    <h1 class="h3 fw-bold mb-1">🌦️ 降雨量與軌道溫度監測系統</h1>
+                    <p class="text-muted small mb-0">即時監測新店、中和、板橋防汛降雨與軌道溫度狀況，保障營運安全</p>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                    <button v-if="!isAudioEnabled" ref="enableAudioButtonRef"
+                        class="btn btn-warning text-dark fw-bold btn-sm shadow-sm" @click="enableAudio">
+                        <i class="bi bi-bell-fill"></i> 啟用聲音/語音告警
+                    </button>
+                    <span v-else
+                        class="badge bg-success-subtle text-success border border-success px-3 py-2 rounded-pill fw-bold">
+                        <i class="bi bi-activity"></i> 系統動態監控中
+                    </span>
+
+                    <button class="btn btn-outline-secondary btn-sm" @click="refreshAll" :disabled="isLoading">
+                        <i class="bi bi-arrow-clockwise" :class="{'bi-spin': isLoading}"></i> 更新數值
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 雙欄排版 -->
+        <div class="row g-4">
+            <!-- 左欄：雨量與雷達回波 -->
+            <div class="col-lg-6">
+                <div class="monitor-column">
+                    <h3 class="h5 section-title">
+                        <i class="bi bi-cloud-rain-heavy-fill text-primary me-2"></i>即時降雨與雷達回波
+                    </h3>
+
+                    <div v-if="errorRadar" class="alert alert-danger py-2 small mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorRadar }}
+                    </div>
+
+                    <!-- 雷達圖區塊 -->
+                    <div class="radar-image-container shadow-sm mb-4">
+                        <div v-if="simRain" class="text-warning text-center p-3">
+                            <i class="bi bi-exclamation-triangle-fill fs-1 d-block mb-2"></i>
+                            <span class="fw-bold">測試模式中（無即時雷達回波圖）</span>
+                        </div>
+                        <template v-else>
+                            <div v-if="isLoading && !radarImageUrl" class="text-light small">
+                                <div class="spinner-border spinner-border-sm" role="status"></div> 影像載入中...
+                            </div>
+                            <img v-if="radarImageUrl" :src="radarImageUrl" alt="雷達回波圖" class="radar-image"
+                                @error="handleImageError">
+                            <div v-if="radarImageTime"
+                                class="position-absolute bottom-0 end-0 bg-dark text-white px-2 py-1 small opacity-75 rounded-top-start">
+                                雷達時間：{{ formatFullDateTime(radarImageTime) }}
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- 即時 dBZ 數值顯示 -->
+                    <div class="row g-2 mb-4">
+                        <div v-for="loc in displayRadarObservation" :key="loc.name" class="col-4">
+                            <div class="p-3 radar-card h-100 d-flex flex-column justify-content-between"
+                                :class="{'alert-active': loc.currentLevel >= 2}">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="fw-bold small">{{ loc.name }}</span>
+                                    <span class="badge rounded-pill text-white"
+                                        :style="{backgroundColor: getRadarColor(loc.dbz), fontSize: '10px'}">
+                                        {{ loc.status }}
+                                    </span>
+                                </div>
+                                <div class="text-center my-2">
+                                    <div class="h3 fw-bold mb-0">{{ loc.dbz }}</div>
+                                    <div class="text-muted" style="font-size: 10px;">dBZ</div>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar transition-all" role="progressbar"
+                                        :style="{width: (Math.min(loc.dbz, 65) / 65 * 100) + '%', backgroundColor: getRadarColor(loc.dbz)}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 降雨強度分級定義 -->
+                    <div class="card shadow-sm border-0 small">
+                        <div class="card-header bg-light fw-bold py-2 text-muted">
+                            <i class="bi bi-info-circle-fill me-1"></i> 雷達回波分級與警報條件
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered mb-0 text-center align-middle"
+                                style="font-size: 11px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>代表色</th>
+                                        <th>回波值 (dBZ)</th>
+                                        <th>強度等級</th>
+                                        <th>聲音告警</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><span class="legend-color-box" style="background-color: #adb5bd;"></span>
+                                        </td>
+                                        <td>&lt; 15</td>
+                                        <td class="text-muted">無回波</td>
+                                        <td class="text-muted">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="legend-color-box" style="background-color: #198754;"></span>
+                                        </td>
+                                        <td>15 ~ 30</td>
+                                        <td class="text-success fw-bold">小雨</td>
+                                        <td>雨勢升級時</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="legend-color-box" style="background-color: #fd7e14;"></span>
+                                        </td>
+                                        <td>30 ~ 45</td>
+                                        <td class="text-warning fw-bold">中雨</td>
+                                        <td>雨勢升級時</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="legend-color-box" style="background-color: #dc3545;"></span>
+                                        </td>
+                                        <td>45 ~ 55</td>
+                                        <td class="text-danger fw-bold">大雨</td>
+                                        <td>雨勢升級時</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="legend-color-box" style="background-color: #800080;"></span>
+                                        </td>
+                                        <td>&ge; 55</td>
+                                        <td style="color: purple; font-weight: bold;">豪雨/雷雨</td>
+                                        <td>雨勢升級時</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="p-2 bg-light-subtle text-muted text-start"
+                            style="font-size: 11px; border-top: 1px solid #dee2e6;">
+                            <strong>觸發邏輯：</strong>僅在回波等級 <strong>向上跨越門檻</strong> 時發出警示音與語音，若維持或下降則不打擾。
+                        </div>
+                    </div>
+
+                    <!-- 降雨模擬測試 (折疊面板) -->
+                    <div class="card border shadow-sm mt-3">
+                        <div class="card-header bg-light py-2" style="cursor: pointer;"
+                            @click="showRainSimBox = !showRainSimBox">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark small"><i class="bi bi-sliders me-1 text-primary"></i>
+                                    降雨模擬測試面板</span>
+                                <i class="bi" :class="showRainSimBox ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                            </div>
+                        </div>
+                        <div v-show="showRainSimBox" class="card-body bg-light-subtle p-3">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="simRainSwitch"
+                                    v-model="simRain">
+                                <label class="form-check-label fw-bold small text-dark"
+                                    for="simRainSwitch">啟用手動模擬降雨數據</label>
+                            </div>
+
+                            <div v-if="simRain" class="row g-3">
+                                <!-- 模擬降雨數值 -->
+                                <div class="col-12 border-bottom pb-2">
+                                    <div class="row g-2">
+                                        <div class="col-4">
+                                            <label class="form-label small text-muted d-flex justify-content-between">
+                                                <span>新店:</span>
+                                                <span class="fw-bold text-primary font-monospace">{{ simRadarXindian }}
+                                                    dBZ</span>
+                                            </label>
+                                            <input type="range" class="form-range" min="0" max="65" step="1"
+                                                v-model.number="simRadarXindian">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small text-muted d-flex justify-content-between">
+                                                <span>中和:</span>
+                                                <span class="fw-bold text-primary font-monospace">{{ simRadarZhonghe }}
+                                                    dBZ</span>
+                                            </label>
+                                            <input type="range" class="form-range" min="0" max="65" step="1"
+                                                v-model.number="simRadarZhonghe">
+                                        </div>
+                                        <div class="col-4">
+                                            <label class="form-label small text-muted d-flex justify-content-between">
+                                                <span>板橋:</span>
+                                                <span class="fw-bold text-primary font-monospace">{{ simRadarBanqiao }}
+                                                    dBZ</span>
+                                            </label>
+                                            <input type="range" class="form-range" min="0" max="65" step="1"
+                                                v-model.number="simRadarBanqiao">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 快速測試按鈕 -->
+                                <div class="col-12 d-flex gap-2">
+                                    <button class="btn btn-outline-info btn-xs flex-fill" style="font-size: 11px;"
+                                        @click="quickTest('rain')">測試降雨警示</button>
+                                    <button class="btn btn-outline-success btn-xs flex-fill" style="font-size: 11px;"
+                                        @click="quickTest('normal_rain')">恢復正常</button>
+                                </div>
+                            </div>
+                            <div v-else class="text-center text-muted py-2 small">
+                                目前使用真實 CWA 降雨數據。<br>
+                                勾選上方開關以模擬不同降雨 dBZ 觸發警示音效。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右欄：軌道溫度監控與大氣溫度 -->
+            <div class="col-lg-6">
+                <div class="monitor-column">
+                    <h3 class="h5 section-title">
+                        <i class="bi bi-thermometer-high text-warning me-2"></i>即時軌道溫度與大氣監控
+                    </h3>
+
+                    <!-- 監控時段狀態 -->
+                    <div class="card mb-3 border-0 shadow-sm">
+                        <div class="card-body p-3 d-flex justify-content-between align-items-center"
+                            :class="isMonitorTimeActive ? 'bg-warning-subtle' : 'bg-light'">
+                            <div>
+                                <h6 class="fw-bold mb-1">
+                                    <i class="bi bi-clock-history me-1"></i> 每年高溫監控時段
+                                </h6>
+                                <p class="text-muted mb-0 small">監控期間：6月至9月，每日 11:00 至 16:00</p>
+                            </div>
+                            <span v-if="isMonitorTimeActive"
+                                class="badge bg-warning text-dark fw-bold px-3 py-2 fs-7 pulse-badge">
+                                監控進行中
+                            </span>
+                            <span v-else class="badge bg-secondary text-white px-3 py-2 fs-7">
+                                非監控時段
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- 大氣溫度警示 -->
+                    <div v-if="airTempAlertActive"
+                        class="alert alert-warning border border-warning shadow-sm py-2 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+                            <div>
+                                <strong class="d-block text-dark">⚠️ 大氣溫度已超過 36℃！</strong>
+                                <span class="small text-muted">請值班同仁立即檢視軌道溫度監控系統，注意軌道溫度是否超過 65℃！</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 軌道溫度措施警示 -->
+                    <div v-if="trackTempAlertActive" class="alert alert-danger border border-danger shadow-sm py-2 mb-3"
+                        style="animation: border-pulse-red 1.5s infinite">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-octagon-fill fs-4 me-3 text-danger"></i>
+                            <div>
+                                <strong class="d-block text-danger">🚨 軌道溫度過高警報 (超過 65℃)！</strong>
+                                <span class="small text-dark fw-bold">因應措施：請依規定每小時執行「正線車巡」1 次。</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div v-if="errorTrack" class="alert alert-danger py-2 small mb-3">
+                        <i class="bi bi-exclamation-triangle-fill me-2"></i> {{ errorTrack }}
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <!-- 大氣溫度 (CWA) -->
+                        <div class="col-12">
+                            <div class="p-3 bg-white rounded shadow-sm border"
+                                :class="{'warning-active': airTempAlertActive}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-secondary small"><i class="bi bi-cloud-sun me-1"></i>
+                                        即時大氣溫度</span>
+                                    <span v-if="isAtmosphericMocked"
+                                        class="badge bg-warning text-dark font-monospace">模擬</span>
+                                    <span v-else class="badge bg-primary-subtle text-primary font-monospace">氣象署
+                                        API</span>
+                                </div>
+                                <div class="row align-items-center">
+                                    <div class="col-6">
+                                        <div class="display-5 fw-bold text-dark font-monospace">{{ displayAirTemp
+                                            }}<span class="fs-4">℃</span></div>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <div v-for="st in airObservationList" :key="st.name" class="small text-muted"
+                                            style="font-size: 11px;">
+                                            {{ st.name }}: {{ st.temp }}℃
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="text-muted mt-2 text-start" style="font-size: 10px;">
+                                    測站最大氣溫更新時間：{{ formatFullDateTime(airObsTime) }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 軌道溫度感測器 -->
+                        <div v-for="(sensor, key) in trackSensors" :key="key" class="col-6">
+                            <div class="p-3 bg-white rounded shadow-sm border temp-card"
+                                :class="{'alert-active': sensor.temperature !== null && sensor.temperature >= 65}">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-secondary small"><i class="bi bi-hdd-rack me-1"></i> {{
+                                        sensor.sensorName }}</span>
+                                    <span class="badge rounded-pill text-white"
+                                        :class="sensor.temperature !== null && sensor.temperature >= 65 ? 'bg-danger' : (sensor.temperature !== null ? 'bg-success' : 'bg-secondary')"
+                                        style="font-size: 10px;">
+                                        {{ sensor.temperature !== null && sensor.temperature >= 65 ? '過熱' :
+                                        (sensor.temperature !== null ? '正常' : '無資料') }}
+                                    </span>
+                                </div>
+                                <div class="text-center my-2">
+                                    <div class="h2 fw-bold font-monospace"
+                                        :class="{'text-danger': sensor.temperature !== null && sensor.temperature >= 65}">
+                                        {{ sensor.temperature !== null ? sensor.temperature.toFixed(1) : '--' }}<span
+                                            class="fs-6">℃</span>
+                                    </div>
+                                </div>
+                                <div class="text-muted mt-1 text-center" style="font-size: 9px;">
+                                    感測時間: {{ sensor.updateTime ? sensor.updateTime.substring(11, 19) : '-' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 溫度模擬測試 (折疊面板) -->
+                    <div class="card border shadow-sm mt-3">
+                        <div class="card-header bg-light py-2" style="cursor: pointer;"
+                            @click="showTempSimBox = !showTempSimBox">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-bold text-dark small"><i class="bi bi-sliders me-1 text-warning"></i>
+                                    溫度模擬測試面板</span>
+                                <i class="bi" :class="showTempSimBox ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+                            </div>
+                        </div>
+                        <div v-show="showTempSimBox" class="card-body bg-light-subtle p-3">
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="simModeSwitch"
+                                    v-model="simMode">
+                                <label class="form-check-label fw-bold small text-dark"
+                                    for="simModeSwitch">啟用手動模擬溫度數據</label>
+                            </div>
+
+                            <div v-if="simMode" class="row g-3">
+                                <!-- 模擬大氣溫度 -->
+                                <div class="col-12">
+                                    <label class="form-label small text-muted d-flex justify-content-between">
+                                        <span>模擬大氣溫度:</span>
+                                        <span class="fw-bold text-warning font-monospace">{{ simAirTemp }}℃</span>
+                                    </label>
+                                    <input type="range" class="form-range" min="15" max="45" step="0.5"
+                                        v-model.number="simAirTemp">
+                                </div>
+
+                                <!-- 模擬軌道感測器溫度 -->
+                                <div class="col-6">
+                                    <label class="form-label small text-muted d-flex justify-content-between">
+                                        <span>模擬軌道1:</span>
+                                        <span class="fw-bold text-danger font-monospace">{{ simTrackTemp1 }}℃</span>
+                                    </label>
+                                    <input type="range" class="form-range" min="20" max="75" step="0.5"
+                                        v-model.number="simTrackTemp1">
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small text-muted d-flex justify-content-between">
+                                        <span>模擬軌道2:</span>
+                                        <span class="fw-bold text-danger font-monospace">{{ simTrackTemp2 }}℃</span>
+                                    </label>
+                                    <input type="range" class="form-range" min="20" max="75" step="0.5"
+                                        v-model.number="simTrackTemp2">
+                                </div>
+
+                                <!-- 無視監控時段 -->
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" role="switch"
+                                            id="forceTimeSwitch" v-model="forceActiveTime">
+                                        <label class="form-check-label small"
+                                            for="forceTimeSwitch">強制啟動「高溫監控時段」限制</label>
+                                    </div>
+                                </div>
+
+                                <!-- 快速測試按鈕 -->
+                                <div class="col-12 d-flex gap-2">
+                                    <button class="btn btn-outline-warning btn-xs flex-fill" style="font-size: 11px;"
+                                        @click="quickTest('air')">測試大氣過熱</button>
+                                    <button class="btn btn-outline-danger btn-xs flex-fill" style="font-size: 11px;"
+                                        @click="quickTest('track')">測試軌道溫度過熱</button>
+                                    <button class="btn btn-outline-success btn-xs flex-fill" style="font-size: 11px;"
+                                        @click="quickTest('normal_temp')">恢復正常</button>
+                                </div>
+                            </div>
+                            <div v-else class="text-center text-muted py-2 small">
+                                目前使用真實 CWA 大氣溫度與軌道溫度 API。<br>
+                                勾選上方開關以模擬高溫狀態觸發警報音效。
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <footer class="mt-5 text-center text-muted small pb-4">
+            <p>即時雨量與大氣溫度資料來源：交通部中央氣象署 Open Data (O-A0059-001, O-A0003-001)</p>
+            <p>&copy; 2026 軌道溫度監控系統. All Rights Reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    // API 設定
+                    radarPngUrl: './get_radar_image.php',
+                    radarApiUrl: './get_radar.php',
+                    // CWA 氣候觀測 API
+                    weatherObsUrl: 'https://opendata.cwa.gov.tw/api/v1/rest/datastore/O-A0003-001?Authorization=CWA-F36D4CE9-10F1-43BA-82E6-8E7DA63697F7&format=JSON&StationId=466881,C0AG80,C0AJ80',
+                    // 軌道溫度 Proxy API
+                    trackTempUrl: './get_track_temp.php',
+
+                    // 降雨雷達資料
+                    radarObservation: [],
+                    previousRadarDBZ: {},
+                    radarImageUrl: null,
+                    radarImageTime: null,
+                    dataTime: null,
+                    targetPoints: [
+                        { name: "新店", lat: 24.9828108, lng: 121.541716 },
+                        { name: "中和", lat: 25.002385, lng: 121.496251 },
+                        { name: "板橋", lat: 25.0153035, lng: 121.464625 }
+                    ],
+
+                    // 大氣溫度資料
+                    airObsTime: null,
+                    airObservationList: [],
+                    actualAirTemp: 28.0, // 預設真實氣溫值
+
+                    // 軌道溫度感測器資料
+                    trackSensors: {
+                        temp1: { sensorName: "十四張進站軌道", temperature: null, updateTime: null },
+                        temp2: { sensorName: "十四張進站避車彎", temperature: null, updateTime: null }
+                    },
+
+                    // 狀態與警報記錄
+                    isLoading: false,
+                    errorRadar: null,
+                    errorTrack: null,
+                    showOnboarding: true,
+                    isAudioEnabled: false,
+                    tooltipStyle: { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' },
+
+                    // 警報狀態轉移記錄 (防止重複播放語音)
+                    prevAirTempAlert: false,
+                    prevTrackTempAlert: false,
+
+                    // 模擬設定
+                    simMode: false,
+                    simAirTemp: 32.5,
+                    simTrackTemp1: 45.0,
+                    simTrackTemp2: 48.0,
+                    simRain: false,
+                    simRadarXindian: 0,
+                    simRadarZhonghe: 0,
+                    simRadarBanqiao: 0,
+                    forceActiveTime: false, // 模擬模式無視時間限制
+                    showRainSimBox: false,
+                    showTempSimBox: false,
+
+                    // 語音
+                    selectedVoice: null,
+
+                    // 定期排程
+                    refreshInterval: null,
+                };
+            },
+            computed: {
+                // 大氣溫度監控時段判定：每年 6 ~ 9 月，早上 11:00 ~ 下午 16:00
+                isMonitorTimeActive() {
+                    if (this.simMode && this.forceActiveTime) {
+                        return true;
+                    }
+                    const now = new Date();
+                    const month = now.getMonth() + 1; // 0-indexed
+                    const hour = now.getHours();
+
+                    const isMonthValid = (month >= 6 && month <= 9);
+                    const isHourValid = (hour >= 11 && hour < 16);
+
+                    return isMonthValid && isHourValid;
+                },
+                // 決定顯示的大氣溫度（真實或模擬）
+                displayAirTemp() {
+                    return this.simMode ? this.simAirTemp : this.actualAirTemp;
+                },
+                isAtmosphericMocked() {
+                    return this.simMode;
+                },
+                // 大氣溫度是否超過 36℃ (需在監控時段內)
+                airTempAlertActive() {
+                    return this.isMonitorTimeActive && (this.displayAirTemp > 36);
+                },
+                // 軌道溫度是否超過 65℃
+                trackTempAlertActive() {
+                    const t1 = this.simMode ? this.simTrackTemp1 : this.trackSensors.temp1.temperature;
+                    const t2 = this.simMode ? this.simTrackTemp2 : this.trackSensors.temp2.temperature;
+                    return (t1 > 65 || t2 > 65);
+                },
+                // 決定顯示的雷達觀測資料（真實或模擬）
+                displayRadarObservation() {
+                    if (this.simRain) {
+                        return [
+                            { name: "新店", dbz: this.simRadarXindian, status: this.getLevelText(this.getRadarLevel(this.simRadarXindian)), currentLevel: this.getRadarLevel(this.simRadarXindian) },
+                            { name: "中和", dbz: this.simRadarZhonghe, status: this.getLevelText(this.getRadarLevel(this.simRadarZhonghe)), currentLevel: this.getRadarLevel(this.simRadarZhonghe) },
+                            { name: "板橋", dbz: this.simRadarBanqiao, status: this.getLevelText(this.getRadarLevel(this.simRadarBanqiao)), currentLevel: this.getRadarLevel(this.simRadarBanqiao) }
+                        ];
+                    }
+                    return this.radarObservation;
+                }
+            },
+            watch: {
+                // 監看大氣溫度警示變化，觸發告警語音
+                airTempAlertActive(newVal) {
+                    if (newVal && !this.prevAirTempAlert) {
+                        this.playAlertSound();
+                        setTimeout(() => {
+                            this.speakAlert(`注意！大氣溫度已達 ${this.displayAirTemp} 度，請檢視軌道溫度是否超過 65 度！`);
+                        }, 1000);
+                    }
+                    this.prevAirTempAlert = newVal;
+                },
+                // 監看軌道溫度警示變化，觸發告警語音
+                trackTempAlertActive(newVal) {
+                    if (newVal && !this.prevTrackTempAlert) {
+                        const t1 = this.simMode ? this.simTrackTemp1 : this.trackSensors.temp1.temperature;
+                        const t2 = this.simMode ? this.simTrackTemp2 : this.trackSensors.temp2.temperature;
+                        let hotSensors = [];
+                        if (t1 !== null && t1 > 65) hotSensors.push(`軌道一 ${t1.toFixed(1)}度`);
+                        if (t2 !== null && t2 > 65) hotSensors.push(`軌道二 ${t2.toFixed(1)}度`);
+
+                        this.playAlertSound();
+                        setTimeout(() => {
+                            this.speakAlert(`警告！軌道溫度過高，${hotSensors.join('、')}，請每小時執行正線車巡一次。`);
+                        }, 1000);
+                    }
+                    this.prevTrackTempAlert = newVal;
+                },
+                // 監看模擬降雨數值變化，觸發告警語音
+                simRadarXindian(newVal, oldVal) {
+                    this.checkSimRainAlert("新店", newVal, oldVal);
+                },
+                simRadarZhonghe(newVal, oldVal) {
+                    this.checkSimRainAlert("中和", newVal, oldVal);
+                },
+                simRadarBanqiao(newVal, oldVal) {
+                    this.checkSimRainAlert("板橋", newVal, oldVal);
+                }
+            },
+            methods: {
+                // 快速測試按鈕
+                quickTest(type) {
+                    if (type === 'air') {
+                        this.simMode = true;
+                        this.forceActiveTime = true;
+                        this.simAirTemp = 36.5;
+                        this.simTrackTemp1 = 45.0;
+                        this.simTrackTemp2 = 48.0;
+                    } else if (type === 'track') {
+                        this.simMode = true;
+                        this.forceActiveTime = true;
+                        this.simAirTemp = 35.0;
+                        this.simTrackTemp1 = 66.5;
+                        this.simTrackTemp2 = 52.0;
+                    } else if (type === 'rain') {
+                        this.simRain = true;
+                        this.simRadarXindian = 0;
+                        this.simRadarZhonghe = 48; // 模擬中雨
+                        this.simRadarBanqiao = 0;
+                    } else if (type === 'normal_temp') {
+                        this.simMode = false;
+                        this.forceActiveTime = false;
+                        this.simAirTemp = 32.5;
+                        this.simTrackTemp1 = 45.0;
+                        this.simTrackTemp2 = 48.0;
+                    } else if (type === 'normal_rain') {
+                        this.simRain = false;
+                        this.simRadarXindian = 0;
+                        this.simRadarZhonghe = 0;
+                        this.simRadarBanqiao = 0;
+                    }
+                },
+                // 模擬降雨警告邏輯
+                checkSimRainAlert(name, newVal, oldVal) {
+                    if (this.simRain) {
+                        const currentLevel = this.getRadarLevel(newVal);
+                        const prevLevel = this.getRadarLevel(oldVal);
+                        if (currentLevel > prevLevel && currentLevel >= 1) {
+                            const statusText = this.getLevelText(currentLevel);
+                            let alertText = "";
+                            if (prevLevel === 0) alertText = `${name}開始下雨(${statusText})`;
+                            else alertText = `${name}雨勢增強為${statusText}`;
+
+                            if (this.isAudioEnabled) {
+                                this.playAlertSound();
+                                setTimeout(() => this.speakAlert("防汛降雨提示：" + alertText), 1000);
+                            }
+                        }
+                    }
+                },
+                async refreshAll() {
+                    this.isLoading = true;
+                    try {
+                        await Promise.all([
+                            this.fetchRadarData(),
+                            this.fetchRadarImage(),
+                            this.fetchAirTemperature(),
+                            this.fetchTrackTemperature()
+                        ]);
+                    } catch (e) {
+                        console.error("更新資料時發生錯誤:", e);
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                // --- 降雨與雷達回波 API ---
+                async fetchRadarData() {
+                    try {
+                        const response = await fetch(this.radarApiUrl, { cache: 'no-cache' });
+                        if (!response.ok) throw new Error("雷達 API 回傳錯誤");
+                        const data = await response.json();
+                        if (data.error) throw new Error(data.error);
+
+                        const dataset = data.cwaopendata.dataset;
+                        const info = dataset.datasetInfo.parameterSet;
+                        const content = dataset.contents.content;
+
+                        this.dataTime = info.DateTime;
+                        const startLng = parseFloat(info.StartPointLongitude);
+                        const startLat = parseFloat(info.StartPointLatitude);
+                        const res = parseFloat(info.GridResolution);
+                        const dimX = parseInt(info.GridDimensionX);
+                        const dbzValues = content.split(',').map(v => parseFloat(v));
+
+                        const results = [];
+                        let alertTriggered = false;
+                        let alertText = "";
+
+                        this.targetPoints.forEach(point => {
+                            const x_idx = Math.round((point.lng - startLng) / res);
+                            const y_idx = Math.round((point.lat - startLat) / res);
+                            const index = y_idx * dimX + x_idx;
+
+                            let val = dbzValues[index] || 0;
+                            if (val < 0) val = 0;
+
+                            const prevVal = this.previousRadarDBZ[point.name] || 0;
+                            const prevLevel = this.getRadarLevel(prevVal);
+                            const currentLevel = this.getRadarLevel(val);
+                            const statusText = this.getLevelText(currentLevel);
+
+                            // 雨勢等級提升時發出通知
+                            if (currentLevel > prevLevel && currentLevel >= 1) {
+                                alertTriggered = true;
+                                if (prevLevel === 0) alertText += `${point.name}開始下雨(${statusText})，`;
+                                else alertText += `${point.name}雨勢增強為${statusText}，`;
+                            }
+
+                            results.push({
+                                name: point.name,
+                                dbz: val,
+                                status: statusText,
+                                currentLevel: currentLevel
+                            });
+
+                            this.previousRadarDBZ[point.name] = val;
+                        });
+
+                        this.radarObservation = results;
+                        this.errorRadar = null;
+
+                        if (alertTriggered && this.isAudioEnabled) {
+                            this.playAlertSound();
+                            setTimeout(() => this.speakAlert("防汛降雨提示：" + alertText), 1000);
+                        }
+                    } catch (err) {
+                        console.error("雷達數據獲取失敗:", err);
+                        this.errorRadar = "雷達降雨數據更新失敗";
+                    }
+                },
+                async fetchRadarImage() {
+                    try {
+                        const res = await fetch(this.radarPngUrl);
+                        const data = await res.json();
+                        const r = data.cwaopendata.dataset.resource;
+                        if (r && r.ProductURL) {
+                            this.radarImageUrl = r.ProductURL + '?t=' + new Date().getTime();
+                            this.radarImageTime = data.cwaopendata.dataset.DateTime;
+                        }
+                    } catch (e) {
+                        console.error("雷達圖片獲取失敗", e);
+                    }
+                },
+                // --- 大氣氣溫 API (CWA) ---
+                async fetchAirTemperature() {
+                    try {
+                        const res = await axios.get(this.weatherObsUrl);
+                        if (res.data.success !== "true" || !res.data.records.Station) {
+                            throw new Error("氣象觀測資料格式異常");
+                        }
+
+                        const stations = res.data.records.Station;
+                        let maxTemp = -999;
+                        const airList = [];
+                        let latestTime = null;
+
+                        stations.forEach(st => {
+                            const name = st.GeoInfo.TownName || st.StationName;
+                            const temp = parseFloat(st.WeatherElement.AirTemperature);
+                            if (!isNaN(temp) && temp > -90) {
+                                if (temp > maxTemp) {
+                                    maxTemp = temp;
+                                }
+                                airList.push({ name, temp });
+                                if (st.ObsTime && st.ObsTime.DateTime) {
+                                    latestTime = st.ObsTime.DateTime;
+                                }
+                            }
+                        });
+
+                        if (airList.length > 0) {
+                            this.actualAirTemp = maxTemp;
+                            this.airObservationList = airList;
+                            this.airObsTime = latestTime;
+                        }
+                    } catch (err) {
+                        console.error("獲取大氣溫度失敗:", err);
+                    }
+                },
+                // --- 軌道溫度 API ---
+                async fetchTrackTemperature() {
+                    try {
+                        // 使用 POST 請求呼叫本地代理
+                        const response = await fetch(this.trackTempUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        if (!response.ok) {
+                            let errMsg = "軌道溫度 API 回傳異常";
+                            try {
+                                const errData = await response.json();
+                                if (errData && errData.error) errMsg = errData.error;
+                            } catch (e) { }
+                            throw new Error(errMsg);
+                        }
+                        const data = await response.json();
+
+                        if (data.result === true) {
+                            // 動態抽取所有 temp1, temp2... 屬性
+                            const sensors = {};
+                            Object.keys(data).forEach(key => {
+                                if (key.startsWith('temp') && data[key].sensorName) {
+                                    sensors[key] = {
+                                        sensorName: data[key].sensorName,
+                                        temperature: data[key].temperature !== null ? parseFloat(data[key].temperature) : null,
+                                        updateTime: data[key].updateTime
+                                    };
+                                }
+                            });
+                            if (Object.keys(sensors).length > 0) {
+                                this.trackSensors = sensors;
+                            }
+                            this.errorTrack = null;
+                        } else {
+                            throw new Error(data.error || "軌道溫度資料處理失敗");
+                        }
+                    } catch (err) {
+                        console.error("獲取軌道溫度失敗:", err);
+                        this.errorTrack = "無法連接軌道溫度感測系統：" + err.message;
+                        // 若非模擬模式且發生錯誤，將真實軌道溫度設為 null 以示抓不到資料
+                        if (!this.simMode) {
+                            if (this.trackSensors.temp1) this.trackSensors.temp1.temperature = null;
+                            if (this.trackSensors.temp2) this.trackSensors.temp2.temperature = null;
+                        }
+                    }
+                },
+                // --- 輔助分級功能 ---
+                getRadarLevel(dbz) {
+                    if (dbz >= 55) return 4; // 豪雨
+                    if (dbz >= 45) return 3; // 大雨
+                    if (dbz >= 30) return 2; // 中雨
+                    if (dbz >= 15) return 1; // 小雨
+                    return 0;                // 無雨
+                },
+                getLevelText(level) {
+                    const texts = ["無回波", "小雨", "中雨", "大雨", "豪雨"];
+                    return texts[level] || "未知";
+                },
+                getRadarColor(dbz) {
+                    if (dbz >= 55) return '#800080'; // 紫
+                    if (dbz >= 45) return '#dc3545'; // 紅
+                    if (dbz >= 30) return '#fd7e14'; // 橘
+                    if (dbz >= 15) return '#198754'; // 綠
+                    return '#adb5bd';                // 灰
+                },
+                handleImageError() {
+                    this.radarImageUrl = null;
+                    console.error("雷達圖片載入失敗");
+                },
+                // --- 聲音及語音告警系統 ---
+                enableAudio() {
+                    Tone.start().then(() => {
+                        this.isAudioEnabled = true;
+                        this.loadVoices();
+                        this.playAlertSound();
+                        this.closeTour();
+                    });
+                },
+                loadVoices() {
+                    const load = () => {
+                        const v = speechSynthesis.getVoices();
+                        this.selectedVoice = v.find(i => i.name === 'Google 中文 (臺灣)') || v.find(i => i.lang === 'zh-TW') || v.find(i => i.lang.startsWith('zh'));
+                    };
+                    speechSynthesis.onvoiceschanged = load;
+                    load();
+                },
+                playAlertSound() {
+                    if (!this.isAudioEnabled) return;
+                    try {
+                        const synth = new Tone.Synth().toDestination();
+                        const now = Tone.now();
+                        synth.triggerAttackRelease("C5", "8n", now);
+                        synth.triggerAttackRelease("E5", "8n", now + 0.12);
+                        synth.triggerAttackRelease("G5", "8n", now + 0.24);
+                    } catch (e) {
+                        console.error("播放提示音效錯誤:", e);
+                    }
+                },
+                speakAlert(msg) {
+                    if (!this.isAudioEnabled) return;
+                    try {
+                        window.speechSynthesis.cancel();
+                        const u = new SpeechSynthesisUtterance(msg);
+                        if (this.selectedVoice) u.voice = this.selectedVoice;
+                        window.speechSynthesis.speak(u);
+                    } catch (e) {
+                        console.error("TTS 播放失敗:", e);
+                    }
+                },
+                // --- 格式化工具 ---
+                formatFullDateTime(s) {
+                    return s ? new Date(s).toLocaleString('zh-TW', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }) : '-';
+                },
+                startTour() {
+                    this.$nextTick(() => {
+                        const rect = this.$refs.enableAudioButtonRef?.getBoundingClientRect();
+                        if (rect) {
+                            this.tooltipStyle = {
+                                top: (rect.bottom + 12 + window.scrollY) + 'px',
+                                left: (rect.left + rect.width / 2 + window.scrollX) + 'px',
+                                transform: 'translateX(-50%)'
+                            };
+                        }
+                    });
+                },
+                closeTour() { this.showOnboarding = false; }
+            },
+            mounted() {
+                this.startTour();
+                this.refreshAll();
+
+                // 設置 1 分鐘定時更新軌道溫度與大氣溫度，5 分鐘更新雷達
+                this.refreshInterval = setInterval(() => {
+                    const now = new Date();
+                    const minutes = now.getMinutes();
+
+                    // 每分鐘取得軌道溫度與氣象署大氣溫度
+                    this.fetchTrackTemperature();
+                    this.fetchAirTemperature();
+
+                    // 每 5 分鐘重載雷達觀測資料與圖片
+                    if (minutes % 5 === 0) {
+                        this.fetchRadarData();
+                        this.fetchRadarImage();
+                    }
+                }, 60000);
+            },
+            beforeUnmount() {
+                clearInterval(this.refreshInterval);
+                window.speechSynthesis.cancel();
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

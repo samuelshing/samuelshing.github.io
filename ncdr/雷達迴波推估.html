@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>新北捷運 - 氣象雷達預警系統</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: "Microsoft JhengHei", sans-serif;
+        }
+
+        .station-box {
+            border-radius: 10px;
+            border-left: 6px solid #007bff;
+            background: white;
+            transition: 0.3s;
+        }
+
+        .dbz-val {
+            font-size: 1.25rem;
+            font-weight: bold;
+        }
+
+        .status-safe {
+            color: #28a745;
+        }
+
+        .status-warn {
+            color: #fd7e14;
+        }
+
+        .status-danger {
+            color: #dc3545;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .radar-display {
+            background: #222;
+            border-radius: 8px;
+            position: relative;
+            min-height: 400px;
+        }
+
+        .radar-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .img-list-btn {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .active-img {
+            background-color: #007bff !important;
+            color: white !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="app" class="container py-4">
+        <header class="mb-4 d-flex justify-content-between align-items-end">
+            <div>
+                <h2 class="fw-bold text-primary">捷運沿線雷達回波監測</h2>
+                <p class="text-muted mb-0">行政處資訊室 - 自動預警面板</p>
+            </div>
+            <div class="text-end">
+                <button class="btn btn-outline-primary mb-2" @click="refreshAll" :disabled="loading">
+                    <span v-if="loading" class="spinner-border spinner-border-sm"></span> 立即更新資料
+                </button>
+                <div class="small text-muted">最後同步：{{ lastUpdateTime }}</div>
+            </div>
+        </header>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold">關鍵觀測站 (dBZ)</div>
+                    <div class="card-body p-0">
+                        <div v-for="s in stations" :key="s.StationName"
+                            class="p-3 border-bottom station-box m-2 shadow-sm">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-bold fs-5">{{ s.StationName }}</span>
+                                <span class="badge bg-light text-dark">現在</span>
+                            </div>
+                            <div class="d-flex align-items-baseline">
+                                <span :class="getDbzClass(s.T)" class="dbz-val">{{ s.T }}</span>
+                                <span class="ms-1 text-muted small">dBZ</span>
+                            </div>
+                            <div class="row mt-2 g-0 text-center border-top pt-2">
+                                <div class="col-4 small">
+                                    <div class="text-muted">+20分</div>
+                                    <div :class="getDbzClass(s['T+2'])" class="fw-bold">{{ s['T+2'] }}</div>
+                                </div>
+                                <div class="col-4 small border-start">
+                                    <div class="text-muted">+40分</div>
+                                    <div :class="getDbzClass(s['T+4'])" class="fw-bold">{{ s['T+4'] }}</div>
+                                </div>
+                                <div class="col-4 small border-start">
+                                    <div class="text-muted">+60分</div>
+                                    <div :class="getDbzClass(s['T+6'])" class="fw-bold">{{ s['T+6'] }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm border-0">
+                    <div class="card-body small">
+                        <h6 class="fw-bold">預警等級說明</h6>
+                        <div class="d-flex align-items-center mb-1">
+                            <div class="p-2 bg-success me-2 rounded"></div> 0-20: 無明顯降雨
+                        </div>
+                        <div class="d-flex align-items-center mb-1">
+                            <div class="p-2 bg-warning me-2 rounded"></div> 20-40: 輕至中雨
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="p-2 bg-danger me-2 rounded"></div> > 40: 強降雨(警戒)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white d-flex justify-content-between">
+                        <span class="fw-bold">未來 60 分鐘回波推估圖</span>
+                        <span class="text-primary small" v-if="imgList.length > 0">
+                            正在查看：{{ currentImgName }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <div class="radar-display d-flex align-items-center justify-content-center">
+                                    <img v-if="selectedImg" :src="selectedImg" class="radar-img">
+                                    <div v-else class="text-white">請點選右側圖檔進行預覽</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="list-group img-list-btn">
+                                    <button v-for="(img, index) in imgList" :key="index" @click="selectImage(img)"
+                                        class="list-group-item list-group-item-action small"
+                                        :class="{ 'active-img': selectedImg === img.url }">
+                                        {{ formatImgName(img.fileName) }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <footer class="mt-5 pb-3 border-top pt-3">
+            <div class="row">
+                <div class="col-md-12 text-muted small">
+                    <h6 class="fw-bold text-secondary" style="font-size: 0.9rem;">
+                        <i class="bi bi-info-square-fill me-1"></i> 資料來源與聲明
+                    </h6>
+                    <p class="mb-1">
+                        本系統介接 <strong>國家災害防救科技中心 (NCDR)</strong>
+                        <a href="https://datahub.ncdr.nat.gov.tw/" target="_blank"
+                            class="text-decoration-none">災害防救資料服務平台</a> 之開放資料：
+                    </p>
+                    <ul class="list-inline mb-2">
+                        <li class="list-inline-item">
+                            <i class="bi bi-link-45deg"></i>
+                            <a href="https://datahub.ncdr.nat.gov.tw/dataset/detail?pid=3d0110bd-eacf-4ba0-ab6f-09ff632615c5"
+                                target="_blank" class="text-secondary">未來 60 分鐘雷達回波推估值</a>
+                        </li>
+                        <li class="list-inline-item ms-3">
+                            <i class="bi bi-link-45deg"></i>
+                            <a href="https://datahub.ncdr.nat.gov.tw/dataset/detail?pid=a73ceb91-2190-4b41-832f-8aa8c09c179e"
+                                target="_blank" class="text-secondary">未來 60 分鐘雷達回波推估圖</a>
+                        </li>
+                    </ul>
+                    <p class="mb-0 text-secondary" style="font-size: 0.75rem;">
+                        * 數值及圖資更新頻率依來源平台為準（約每 10 分鐘更新）。本網頁呈現之資訊僅供決策參考，實際氣象狀況以中央氣象署發布為準。
+                    </p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const stations = ref([]);
+                const imgList = ref([]);
+                const selectedImg = ref('');
+                const currentImgName = ref('');
+                const loading = ref(false);
+                const lastUpdateTime = ref('-');
+
+                const refreshAll = async () => {
+                    loading.value = true;
+                    const ts = new Date().getTime();
+
+                    try {
+                        // 1. 抓取 JSON 數據 (新店、中和、板橋)
+                        const resJson = await axios.get(`ncdr_radar_json.php?t=${ts}`);
+                        stations.value = resJson.data.Data;
+
+                        // 2. 抓取圖片列表 (ZIP 解壓後的結果)
+                        const resImg = await axios.get(`ncdr_radar_image.php?t=${ts}`);
+                        if (resImg.data.status === 'success') {
+                            imgList.value = resImg.data.files;
+                            // 預設選取第一張圖 (通常是現在)
+                            if (imgList.value.length > 0) {
+                                selectImage(imgList.value[0]);
+                            }
+                        }
+
+                        lastUpdateTime.value = new Date().toLocaleTimeString();
+                    } catch (e) {
+                        console.error("更新資料失敗", e);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const selectImage = (img) => {
+                    selectedImg.value = img.url;
+                    currentImgName.value = img.fileName;
+                };
+
+                const formatImgName = (name) => {
+                    // 簡化檔名顯示，例如提取 s00, s10
+                    const match = name.match(/_s(\d+)\.png/);
+                    if (match) {
+                        return match[1] === '00' ? '現在 (T+0)' : `預估 T+${match[1]}`;
+                    }
+                    return name;
+                };
+
+                const getDbzClass = (val) => {
+                    if (val > 40) return 'status-danger';
+                    if (val >= 20) return 'status-warn';
+                    return 'status-safe';
+                };
+
+                onMounted(() => {
+                    refreshAll();
+                    // 每 10 分鐘自動重整
+                    setInterval(refreshAll, 600000);
+                });
+
+                return {
+                    stations, imgList, selectedImg, currentImgName, loading, lastUpdateTime,
+                    refreshAll, selectImage, formatImgName, getDbzClass
+                };
+            }
+        }).mount('#app');
+    </script>
+
+</body>
+
+</html>
