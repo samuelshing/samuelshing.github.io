@@ -98,48 +98,62 @@
 
         <!-- 安裝提示按鈕 -->
         <button id="install-btn">📲 將 APP 安裝至桌面</button>
+
+        <div id="ios-tip"
+            style="display: none; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-top: 20px; text-align: left; font-size: 15px; line-height: 1.6;">
+            💡 <strong>公司 iPhone 同仁安裝指引：</strong><br>
+            1. 請點擊下方導覽列的<strong>「分享」按鈕</strong>（方塊帶有向上箭頭 <span style="font-size: 18px;">⎋</span> 或 📤）。<br>
+            2. 在選單中向下滑動，點選<strong>「加入主畫面」</strong>（Add to Home Screen）。
+        </div>
     </div>
 
     <script>
-        // 1. 註冊 Service Worker (PWA 必備條件)
+        // 1. 註冊 Service Worker
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js')
                 .then(() => console.log('Service Worker 註冊成功'))
                 .catch(err => console.log('Service Worker 註冊失敗', err));
         }
 
-        // 2. 處理 PWA 安裝提示邏輯
+        // 宣告相關元素
         let deferredPrompt;
         const installBtn = document.getElementById('install-btn');
+        const iosTip = document.getElementById('ios-tip');
 
-        // 攔截瀏覽器預設的安裝提示事件
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); // 防止瀏覽器自動跳出提示
-            deferredPrompt = e; // 儲存事件以便稍後觸發
-            installBtn.style.display = 'block'; // 顯示我們的自訂安裝按鈕
-        });
+        // 偵測是否為 iOS 裝置
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        // 偵測目前是否「已經」是以 APP 獨立模式運行 (Standalone)
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
 
-        // 點擊自訂按鈕時觸發安裝
+        // 3. 針對不同系統進行引導
+        if (isStandalone) {
+            // 如果已經安裝並從桌面打開，隱藏所有安裝提示
+            installBtn.style.display = 'none';
+            iosTip.style.display = 'none';
+        } else if (isIOS) {
+            // 如果是 iOS 且尚未安裝，直接顯示蘋果專屬引導文字
+            iosTip.style.display = 'block';
+            installBtn.style.display = 'none';
+        } else {
+            // 如果是 Android 系統，走原本的攔截事件邏輯
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+                installBtn.style.display = 'block';
+                iosTip.style.display = 'none';
+            });
+        }
+
+        // Android 按鈕點擊事件
         installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
-                deferredPrompt.prompt(); // 顯示系統安裝對話框
+                deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
                 console.log(`使用者選擇: ${outcome}`);
                 deferredPrompt = null;
-                installBtn.style.display = 'none'; // 隱藏按鈕
+                installBtn.style.display = 'none';
             }
         });
-
-        // 偵測是否已經是以 APP 模式運行 (Standalone)
-        window.addEventListener('appinstalled', () => {
-            console.log('PWA 已成功安裝');
-            installBtn.style.display = 'none';
-        });
-
-        // 若已經在 APP 內，則隱藏安裝按鈕
-        if (window.matchMedia('(display-mode: standalone)').matches) {
-            installBtn.style.display = 'none';
-        }
     </script>
 </body>
 
