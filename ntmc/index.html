@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>主管緊急聯絡 Demo</title>
+    <!-- 載入 PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#005bac">
+    <!-- iOS 支援設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="緊急聯絡">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        /* 撥號按鈕樣式 */
+        .call-btn {
+            display: block;
+            background-color: #005bac;
+            /* 捷運藍 */
+            color: white;
+            text-decoration: none;
+            padding: 15px 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 91, 172, 0.3);
+            transition: background-color 0.3s;
+        }
+
+        .call-btn:active {
+            background-color: #004380;
+        }
+
+        /* 安裝 PWA 按鈕樣式 (預設隱藏) */
+        #install-btn {
+            display: none;
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h1>緊急聯絡 Demo</h1>
+        <p>這是一個 PWA 測試網頁。<br>請嘗試將此頁面加入主畫面，體驗無網址列的原生操作感。</p>
+
+        <!-- tel: 觸發原生撥號 -->
+        <a href="tel:+886222199333" class="call-btn">📞 撥打捷運公司總機</a>
+
+        <!-- 安裝提示按鈕 -->
+        <button id="install-btn">📲 將 APP 安裝至桌面</button>
+    </div>
+
+    <script>
+        // 1. 註冊 Service Worker (PWA 必備條件)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker 註冊成功'))
+                .catch(err => console.log('Service Worker 註冊失敗', err));
+        }
+
+        // 2. 處理 PWA 安裝提示邏輯
+        let deferredPrompt;
+        const installBtn = document.getElementById('install-btn');
+
+        // 攔截瀏覽器預設的安裝提示事件
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); // 防止瀏覽器自動跳出提示
+            deferredPrompt = e; // 儲存事件以便稍後觸發
+            installBtn.style.display = 'block'; // 顯示我們的自訂安裝按鈕
+        });
+
+        // 點擊自訂按鈕時觸發安裝
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt(); // 顯示系統安裝對話框
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`使用者選擇: ${outcome}`);
+                deferredPrompt = null;
+                installBtn.style.display = 'none'; // 隱藏按鈕
+            }
+        });
+
+        // 偵測是否已經是以 APP 模式運行 (Standalone)
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA 已成功安裝');
+            installBtn.style.display = 'none';
+        });
+
+        // 若已經在 APP 內，則隱藏安裝按鈕
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            installBtn.style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
